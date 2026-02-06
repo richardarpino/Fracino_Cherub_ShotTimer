@@ -30,6 +30,21 @@ Quick guide to the codebase structure:
 | **`lib/ShotDisplay/`** | **UI Rendering**. Handles drawing the split-screen layout, fonts, and manual graphics (like the degree symbol). |
 | **`lib/Themes/`** | **Styling**. Interface (`ITheme`) and concrete themes defining colors. |
 
+## Setup & Configuration
+The project relies on a `secrets.h` file for WiFi credentials, which is **excluded from git** for security.
+
+1.  Create a new file: `include/secrets.h`
+2.  Add your WiFi details:
+    ```c
+    #ifndef SECRETS_H
+    #define SECRETS_H
+
+    #define WIFI_SSID "YourWiFiName"
+    #define WIFI_PASSWORD "YourWiFiPassword"
+
+    #endif
+    ```
+
 ## Quick Start
 1.  **Check Wiring**: Ensure the pressure sensor is connected via the voltage divider to **GPIO 34**.
 2.  **Build**: Run `pio run` or use the PlatformIO Build button.
