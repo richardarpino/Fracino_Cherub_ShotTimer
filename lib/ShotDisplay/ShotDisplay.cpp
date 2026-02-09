@@ -19,6 +19,20 @@ void ShotDisplay::setTheme(ITheme* newTheme) {
     _lastDisplayedTempDeci = -1;
 }
 
+void ShotDisplay::update(const Reading& reading) {
+    if (!reading.isValid) return;
+
+    if (reading.label == "TIMER") {
+        updateTimer(reading.value);
+    } 
+    else if (reading.label == "BOILER") {
+        updatePressure(reading.value);
+    } 
+    else if (reading.label == "TEMP") {
+        updateTemperature(reading.value);
+    }
+}
+
 void ShotDisplay::showInfo(const String& topText, const String& bottomText) {
     _tft.fillScreen(_currentTheme->getBackgroundColor());
     _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
@@ -42,45 +56,47 @@ void ShotDisplay::updateTimer(float currentTime) {
     if (currentDeci != _lastDisplayedDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
-        // Right half (center at 180, y offset 35)
+        _tft.setTextPadding(140); // Standard width for timer area
         _tft.drawFloat(currentTime, 1, 180, 35, 7);
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
+        _tft.setTextPadding(0);
         _tft.drawString("SECS", 180, 105, 2);
 
         _lastDisplayedDeci = currentDeci;
     }
 }
 
-void ShotDisplay::updateBoilerState(float pressure, float temp) {
+void ShotDisplay::updatePressure(float pressure) {
     int pressureDeci = (int)(pressure * 10);
-    int tempDeci = (int)(temp * 10);
 
-    // --- Update Pressure (Top Left) ---
     if (pressureDeci != _lastDisplayedPressureDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
-        // Left half, Top (center at 60) - Font 4 (26px high)
+        _tft.setTextPadding(80); // Width for pressure value
         _tft.drawFloat(pressure, 1, 60, 15, 4);
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
-        _tft.drawString("BAR", 60, 42, 2); // Label immediately below
+        _tft.setTextPadding(0);
+        _tft.drawString("BAR", 60, 42, 2);
 
         _lastDisplayedPressureDeci = pressureDeci;
     }
+}
 
-    // --- Update Temperature (Bottom Left) ---
+void ShotDisplay::updateTemperature(float temp) {
+    int tempDeci = (int)(temp * 10);
+
     if (tempDeci != _lastDisplayedTempDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
-        // Left half, Bottom (center at 60) - Font 4
-        // Pushing it down slightly to match symmetry
+        _tft.setTextPadding(80); // Width for temp value
         _tft.drawFloat(temp, 0, 60, 75, 4); 
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
-        // Draw "C" and manually draw the degree symbol circle
+        _tft.setTextPadding(0);
         _tft.drawString("C", 64, 102, 2); 
-        _tft.drawCircle(54, 104, 2, _currentTheme->getLabelColor()); // Small degree circle
+        _tft.drawCircle(54, 104, 2, _currentTheme->getLabelColor());
 
         _lastDisplayedTempDeci = tempDeci;
     }
