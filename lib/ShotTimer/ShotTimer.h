@@ -19,7 +19,6 @@ private:
         TIMER_FINISHED
     };
     
-    float getCurrentTime() const;
     IRawSource* _pumpSource;
     unsigned long _debounceTime;
     unsigned long _startTime;

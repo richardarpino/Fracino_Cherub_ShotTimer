@@ -42,14 +42,6 @@ void ShotTimer::update() {
 }
 
 Reading ShotTimer::getReading() {
-    float time = getCurrentTime();
+    float time = (_state == TIMER_RUNNING) ? (millis() - _startTime) / 1000.0 : _finalTime;
     return Reading(time, "SECS", "TIMER", true);
-}
-
-
-float ShotTimer::getCurrentTime() const {
-    if (_state == TIMER_RUNNING) {
-        return (millis() - _startTime) / 1000.0;
-    }
-    return _finalTime;
 }
