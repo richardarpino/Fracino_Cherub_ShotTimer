@@ -8,12 +8,6 @@ class BoilerPressure : public ISensor {
 public:
     BoilerPressure(IRawSource* source) : _source(source), _pressure(0.0f), _lastSampleTime(0) {}
 
-    // Required for compatibility with current main.cpp initialize flow
-    void begin() {
-        if (_source) {
-            _pressure = calculatePressureFromRaw(_source->read());
-        }
-    }
 
     // ISensor Implementation
     Reading getReading() override {

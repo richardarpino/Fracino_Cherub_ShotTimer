@@ -55,8 +55,6 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
   digitalWrite(backlightPin, HIGH);
 
-  // Initialize Sensors
-  boilerPressure.begin();
   
   sensors.push_back(&boilerPressure);
   sensors.push_back(&boilerTemp);
