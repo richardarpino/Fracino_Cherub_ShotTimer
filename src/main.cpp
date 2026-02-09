@@ -108,33 +108,17 @@ void loop() {
     shotDisplay.update(sensor->getReading());
   }
 
-  // 3. State Coordination (The Orchestrator's Responsibility)
-  static TimerState lastState = TIMER_READY;
-  TimerState currentState = shotTimer.getState();
-
-  if (lastState != currentState) {
-    if (currentState == TIMER_RUNNING) {
-      shotDisplay.clearScreen();
-    } else if (currentState == TIMER_READY) {
-      shotDisplay.clearScreen();
-      shotDisplay.updateTimer(0.0);
-      shotDisplay.updatePressure(boilerPressure.getReading().value);
-      shotDisplay.updateTemperature(boilerTemp.getReading().value);
-    }
-    lastState = currentState;
-  }
-
-  // 4. Theme Switching Logic
+  // 3. Theme Switching Logic
   if (digitalRead(buttonPin) == LOW) {
     if (now - lastButtonPress > 250) {
       currentThemeIndex = (currentThemeIndex + 1) % numThemes;
       shotDisplay.setTheme(themes[currentThemeIndex]);
       lastButtonPress = now;
 
-      // Force Sync on theme change
-      shotDisplay.updateTimer(shotTimer.getReading().value);
-      shotDisplay.updatePressure(boilerPressure.getReading().value);
-      shotDisplay.updateTemperature(boilerTemp.getReading().value);
+      // Full sync on theme change
+      for (auto* sensor : sensors) {
+        shotDisplay.update(sensor->getReading());
+      }
     }
   }
 }

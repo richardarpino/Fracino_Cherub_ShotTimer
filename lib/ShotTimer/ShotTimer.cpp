@@ -46,9 +46,6 @@ Reading ShotTimer::getReading() {
     return Reading(time, "SECS", "TIMER", true);
 }
 
-TimerState ShotTimer::getState() const {
-    return _state;
-}
 
 float ShotTimer::getCurrentTime() const {
     if (_state == TIMER_RUNNING) {

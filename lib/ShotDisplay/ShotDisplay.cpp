@@ -56,10 +56,11 @@ void ShotDisplay::updateTimer(float currentTime) {
     if (currentDeci != _lastDisplayedDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
-        // Right half (center at 180, y offset 35)
+        _tft.setTextPadding(140); // Standard width for timer area
         _tft.drawFloat(currentTime, 1, 180, 35, 7);
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
+        _tft.setTextPadding(0);
         _tft.drawString("SECS", 180, 105, 2);
 
         _lastDisplayedDeci = currentDeci;
@@ -72,9 +73,11 @@ void ShotDisplay::updatePressure(float pressure) {
     if (pressureDeci != _lastDisplayedPressureDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
+        _tft.setTextPadding(80); // Width for pressure value
         _tft.drawFloat(pressure, 1, 60, 15, 4);
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
+        _tft.setTextPadding(0);
         _tft.drawString("BAR", 60, 42, 2);
 
         _lastDisplayedPressureDeci = pressureDeci;
@@ -87,9 +90,11 @@ void ShotDisplay::updateTemperature(float temp) {
     if (tempDeci != _lastDisplayedTempDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
+        _tft.setTextPadding(80); // Width for temp value
         _tft.drawFloat(temp, 0, 60, 75, 4); 
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
+        _tft.setTextPadding(0);
         _tft.drawString("C", 64, 102, 2); 
         _tft.drawCircle(54, 104, 2, _currentTheme->getLabelColor());
 

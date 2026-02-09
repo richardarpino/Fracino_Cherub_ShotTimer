@@ -4,12 +4,6 @@
 #include <Arduino.h>
 #include "../Interfaces/ISensor.h"
 
-enum TimerState {
-    TIMER_READY,
-    TIMER_RUNNING,
-    TIMER_FINISHED
-};
-
 class ShotTimer : public ISensor {
 public:
     ShotTimer(IRawSource* pumpSource, unsigned long debounceMs = 150, float minShotDuration = 10.0);
@@ -18,10 +12,13 @@ public:
     void update() override;
     Reading getReading() override;
 
-    // Direct Access for State
-    TimerState getState() const;
-
 private:
+    enum TimerState {
+        TIMER_READY,
+        TIMER_RUNNING,
+        TIMER_FINISHED
+    };
+    
     float getCurrentTime() const;
     IRawSource* _pumpSource;
     unsigned long _debounceTime;
