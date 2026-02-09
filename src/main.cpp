@@ -89,9 +89,6 @@ void setup() {
   }
 
   shotDisplay.clearScreen();
-  shotDisplay.updateTimer(0.0);
-  shotDisplay.updatePressure(boilerPressure.getReading().value);
-  shotDisplay.updateTemperature(boilerTemp.getReading().value);
 }
 
 void loop() {
@@ -114,11 +111,6 @@ void loop() {
       currentThemeIndex = (currentThemeIndex + 1) % numThemes;
       shotDisplay.setTheme(themes[currentThemeIndex]);
       lastButtonPress = now;
-
-      // Full sync on theme change
-      for (auto* sensor : sensors) {
-        shotDisplay.update(sensor->getReading());
-      }
     }
   }
 }
