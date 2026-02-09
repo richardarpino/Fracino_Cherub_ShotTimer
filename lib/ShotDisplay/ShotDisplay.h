@@ -3,6 +3,7 @@
 
 #include <TFT_eSPI.h>
 #include "../Themes/ITheme.h"
+#include "../Interfaces/ISensor.h"
 
 class ShotDisplay {
 public:
@@ -17,8 +18,10 @@ public:
     void clearScreen();
 
     // Updates
+    void update(const Reading& reading);
     void updateTimer(float currentTime);
-    void updateBoilerState(float pressure, float temp);
+    void updatePressure(float pressure);
+    void updateTemperature(float temp);
 
 private:
     TFT_eSPI _tft;

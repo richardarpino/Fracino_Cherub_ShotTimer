@@ -19,6 +19,20 @@ void ShotDisplay::setTheme(ITheme* newTheme) {
     _lastDisplayedTempDeci = -1;
 }
 
+void ShotDisplay::update(const Reading& reading) {
+    if (!reading.isValid) return;
+
+    if (reading.label == "TIMER") {
+        updateTimer(reading.value);
+    } 
+    else if (reading.label == "BOILER") {
+        updatePressure(reading.value);
+    } 
+    else if (reading.label == "TEMP") {
+        updateTemperature(reading.value);
+    }
+}
+
 void ShotDisplay::showInfo(const String& topText, const String& bottomText) {
     _tft.fillScreen(_currentTheme->getBackgroundColor());
     _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
@@ -52,35 +66,32 @@ void ShotDisplay::updateTimer(float currentTime) {
     }
 }
 
-void ShotDisplay::updateBoilerState(float pressure, float temp) {
+void ShotDisplay::updatePressure(float pressure) {
     int pressureDeci = (int)(pressure * 10);
-    int tempDeci = (int)(temp * 10);
 
-    // --- Update Pressure (Top Left) ---
     if (pressureDeci != _lastDisplayedPressureDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
-        // Left half, Top (center at 60) - Font 4 (26px high)
         _tft.drawFloat(pressure, 1, 60, 15, 4);
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
-        _tft.drawString("BAR", 60, 42, 2); // Label immediately below
+        _tft.drawString("BAR", 60, 42, 2);
 
         _lastDisplayedPressureDeci = pressureDeci;
     }
+}
 
-    // --- Update Temperature (Bottom Left) ---
+void ShotDisplay::updateTemperature(float temp) {
+    int tempDeci = (int)(temp * 10);
+
     if (tempDeci != _lastDisplayedTempDeci) {
         _tft.setTextColor(_currentTheme->getTextColor(), _currentTheme->getBackgroundColor());
         _tft.setTextDatum(TC_DATUM);
-        // Left half, Bottom (center at 60) - Font 4
-        // Pushing it down slightly to match symmetry
         _tft.drawFloat(temp, 0, 60, 75, 4); 
 
         _tft.setTextColor(_currentTheme->getLabelColor(), _currentTheme->getBackgroundColor());
-        // Draw "C" and manually draw the degree symbol circle
         _tft.drawString("C", 64, 102, 2); 
-        _tft.drawCircle(54, 104, 2, _currentTheme->getLabelColor()); // Small degree circle
+        _tft.drawCircle(54, 104, 2, _currentTheme->getLabelColor());
 
         _lastDisplayedTempDeci = tempDeci;
     }

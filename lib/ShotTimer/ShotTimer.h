@@ -2,6 +2,7 @@
 #define SHOT_TIMER_H
 
 #include <Arduino.h>
+#include "../Interfaces/ISensor.h"
 
 enum TimerState {
     TIMER_READY,
@@ -9,19 +10,20 @@ enum TimerState {
     TIMER_FINISHED
 };
 
-class ShotTimer {
+class ShotTimer : public ISensor {
 public:
-    ShotTimer(unsigned long debounceMs = 150, float minShotDuration = 10.0);
+    ShotTimer(IRawSource* pumpSource, unsigned long debounceMs = 150, float minShotDuration = 10.0);
 
-    // Call this loop frequently with the current state of the pump pin (ACTIVE/INACTIVE)
-    void update(bool isPumpActive, unsigned long currentTime);
+    // ISensor Implementation
+    void update() override;
+    Reading getReading() override;
 
+    // Direct Access for State
     TimerState getState() const;
-    float getCurrentTime() const;
-    float getFinalTime() const;
-    bool isRunning() const;
 
 private:
+    float getCurrentTime() const;
+    IRawSource* _pumpSource;
     unsigned long _debounceTime;
     unsigned long _startTime;
     unsigned long _lastActiveTime; // Last time the pump was seen active

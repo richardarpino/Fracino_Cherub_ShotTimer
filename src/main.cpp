@@ -4,8 +4,12 @@
 #include "ShotDisplay.h"
 #include "ShotTimer.h"
 #include "BoilerPressure.h"
+#include "ADCRawSource.h"
+#include "DigitalRawSource.h"
+#include "BoilerTemperature.h"
 #include <ArduinoOTA.h>
 #include <WiFi.h>
+#include <vector>
 #include "secrets.h"
 
 // --- Credentials ---
@@ -22,11 +26,16 @@ const float MIN_SHOT_SECONDS = 10.0;
 const unsigned long DEBOUNCE_MS = 150;
 
 // --- Objects ---
-ShotTimer shotTimer(DEBOUNCE_MS, MIN_SHOT_SECONDS);
-BoilerPressure boilerPressure;
+ADCRawSource pressureADC(pressurePin);
+DigitalRawSource pumpInput(pumpPin);
+
+BoilerPressure boilerPressure(&pressureADC);
+BoilerTemperature boilerTemp(&boilerPressure);
+ShotTimer shotTimer(&pumpInput, DEBOUNCE_MS, MIN_SHOT_SECONDS);
+
+std::vector<ISensor*> sensors;
 
 DefaultTheme defaultTheme;
-// ... (rest of theme definitions)
 CandyTheme candyTheme;
 ChristmasTheme christmasTheme;
 
@@ -34,7 +43,6 @@ ITheme *themes[] = {&defaultTheme, &candyTheme, &christmasTheme};
 const int numThemes = 3;
 int currentThemeIndex = 0;
 
-// Pass the initial theme
 ShotDisplay shotDisplay(themes[currentThemeIndex]);
 
 unsigned long lastButtonPress = 0;
@@ -42,18 +50,22 @@ unsigned long lastButtonPress = 0;
 void setup() {
   Serial.begin(115200);
 
-  pinMode(pumpPin, INPUT_PULLUP);
-  pinMode(buttonPin, INPUT_PULLUP); // Active LOW
+  // Hardware Pins
   pinMode(backlightPin, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
   digitalWrite(backlightPin, HIGH);
 
-  // Initialize Pressure Sensor
-  boilerPressure.begin(pressurePin);
+  // Initialize Sensors
+  boilerPressure.begin();
+  
+  sensors.push_back(&boilerPressure);
+  sensors.push_back(&boilerTemp);
+  sensors.push_back(&shotTimer);
 
   shotDisplay.init();
   shotDisplay.showInfo("CONNECTING...", ssid);
 
-  // WiFi Deep Clean
+  // WiFi Setup
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
   delay(1000);
@@ -69,7 +81,6 @@ void setup() {
   if (WiFi.status() == WL_CONNECTED) {
     ArduinoOTA.setHostname("Cherub-Timer");
     ArduinoOTA.begin();
-
     shotDisplay.showInfo("CONNECTED", WiFi.localIP().toString());
     delay(3000);
   } else {
@@ -79,53 +90,51 @@ void setup() {
 
   shotDisplay.clearScreen();
   shotDisplay.updateTimer(0.0);
-  shotDisplay.updateBoilerState(boilerPressure.getPressure(), boilerPressure.getEstimatedTemperature());
+  shotDisplay.updatePressure(boilerPressure.getReading().value);
+  shotDisplay.updateTemperature(boilerTemp.getReading().value);
 }
 
 void loop() {
   ArduinoOTA.handle();
-
   unsigned long now = millis();
 
-  // --- Theme Switching Logic ---
-  if (digitalRead(buttonPin) == LOW) {
-    if (now - lastButtonPress > 250) { // Simple debounce
-      currentThemeIndex = (currentThemeIndex + 1) % numThemes;
-      shotDisplay.setTheme(themes[currentThemeIndex]);
-      lastButtonPress = now;
-
-      // Force refresh if we are in READY state, as setTheme clears the screen
-      if (shotTimer.getState() == TIMER_READY) {
-        shotDisplay.clearScreen();
-        shotDisplay.updateTimer(0.0);
-        shotDisplay.updateBoilerState(boilerPressure.getPressure(), boilerPressure.getEstimatedTemperature());
-      }
-    }
+  // 1. Update All Sensors
+  for (auto* sensor : sensors) {
+    sensor->update();
   }
 
-  // --- Timer Logic ---
-  bool isPumpActive = (digitalRead(pumpPin) == LOW);
+  // 2. Update Display generically for all measurements
+  for (auto* sensor : sensors) {
+    shotDisplay.update(sensor->getReading());
+  }
 
-  TimerState prevState = shotTimer.getState();
-  shotTimer.update(isPumpActive, now);
+  // 3. State Coordination (The Orchestrator's Responsibility)
+  static TimerState lastState = TIMER_READY;
   TimerState currentState = shotTimer.getState();
 
-  // Handle Display transitions
-  if (prevState != currentState) {
+  if (lastState != currentState) {
     if (currentState == TIMER_RUNNING) {
       shotDisplay.clearScreen();
     } else if (currentState == TIMER_READY) {
       shotDisplay.clearScreen();
       shotDisplay.updateTimer(0.0);
-      shotDisplay.updateBoilerState(boilerPressure.getPressure(), boilerPressure.getEstimatedTemperature());
+      shotDisplay.updatePressure(boilerPressure.getReading().value);
+      shotDisplay.updateTemperature(boilerTemp.getReading().value);
+    }
+    lastState = currentState;
+  }
+
+  // 4. Theme Switching Logic
+  if (digitalRead(buttonPin) == LOW) {
+    if (now - lastButtonPress > 250) {
+      currentThemeIndex = (currentThemeIndex + 1) % numThemes;
+      shotDisplay.setTheme(themes[currentThemeIndex]);
+      lastButtonPress = now;
+
+      // Force Sync on theme change
+      shotDisplay.updateTimer(shotTimer.getReading().value);
+      shotDisplay.updatePressure(boilerPressure.getReading().value);
+      shotDisplay.updateTemperature(boilerTemp.getReading().value);
     }
   }
-
-  // Update Timer Display
-  if (currentState == TIMER_RUNNING || currentState == TIMER_FINISHED) {
-    shotDisplay.updateTimer(shotTimer.getCurrentTime());
-  }
-
-  // Always update pressure display
-  shotDisplay.updateBoilerState(boilerPressure.getPressure(), boilerPressure.getEstimatedTemperature());
 }

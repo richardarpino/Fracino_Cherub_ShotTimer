@@ -1,9 +1,16 @@
 #include "ShotTimer.h"
 
-ShotTimer::ShotTimer(unsigned long debounceMs, float minShotDuration) 
-    : _debounceTime(debounceMs), _startTime(0), _lastActiveTime(0), _state(TIMER_READY), _finalTime(0.0), _lastValidDuration(0.0), _minShotDuration(minShotDuration) {}
+ShotTimer::ShotTimer(IRawSource* pumpSource, unsigned long debounceMs, float minShotDuration) 
+    : _pumpSource(pumpSource), _debounceTime(debounceMs), _startTime(0), _lastActiveTime(0), _state(TIMER_READY), _finalTime(0.0), _lastValidDuration(0.0), _minShotDuration(minShotDuration) {}
 
-void ShotTimer::update(bool isPumpActive, unsigned long currentTime) {
+void ShotTimer::update() {
+    if (!_pumpSource) return;
+
+    RawReading raw = _pumpSource->read();
+    // Active LOW logic (Input Pullup): LOW = Pump Active
+    bool isPumpActive = (raw.value == LOW);
+    unsigned long currentTime = raw.timestamp;
+
     // If pump is currently active, update the last seen active time
     if (isPumpActive) {
         _lastActiveTime = currentTime;
@@ -34,6 +41,11 @@ void ShotTimer::update(bool isPumpActive, unsigned long currentTime) {
     }
 }
 
+Reading ShotTimer::getReading() {
+    float time = getCurrentTime();
+    return Reading(time, "SECS", "TIMER", true);
+}
+
 TimerState ShotTimer::getState() const {
     return _state;
 }
@@ -43,12 +55,4 @@ float ShotTimer::getCurrentTime() const {
         return (millis() - _startTime) / 1000.0;
     }
     return _finalTime;
-}
-
-float ShotTimer::getFinalTime() const {
-    return _finalTime;
-}
-
-bool ShotTimer::isRunning() const {
-    return _state == TIMER_RUNNING;
 }
