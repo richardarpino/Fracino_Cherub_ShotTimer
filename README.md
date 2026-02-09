@@ -19,16 +19,19 @@ This project is a custom ESP32-based mod for the Fracino Cherub espresso machine
   - **Button**: GPIO 35 (Theme toggle).
   - **Pressure Sensor**: GPIO 34 (ADC Input). **REQUIRES VOLTAGE DIVIDER** (4.7kΩ + 10kΩ) to step 4.5V down to ~3.0V.
 
-## Code TL;DR
-Quick guide to the codebase structure:
+## Project Structure (TL;DR)
 
-| File | Description |
+The code is organized into modular libraries to separate hardware drivers from application logic:
+
+| Component | Description |
 | :--- | :--- |
-| **`src/main.cpp`** | **Entry Point**. Sets up hardware, runs the main loop, handles theme switching, and coordinates the Timer/Display/Sensors. |
-| **`lib/BoilerPressure/`** | **Sensor Logic**. Handles ADC reading, voltage conversion, smoothing (EMA), and temperature calculation. |
-| **`lib/ShotTimer/`** | **Timing Logic**. State machine (READY -> RUNNING -> FINISHED) managing the shot duration logic. |
-| **`lib/ShotDisplay/`** | **UI Rendering**. Handles drawing the split-screen layout, fonts, and manual graphics (like the degree symbol). |
-| **`lib/Themes/`** | **Styling**. Interface (`ITheme`) and concrete themes defining colors. |
+| **`src/main.cpp`** | **Orchestrator**. Coordinates data flow between sensors and the display. |
+| **`lib/Hardware/`** | **Drivers**. Concrete implementations for ESP32 ADC and Digital pins. |
+| **`lib/Interfaces/`** | **Abstractions**. Defines how sensors and hardware sources communicate. |
+| **`lib/BoilerPressure/`** | **Pressure Logic**. Calculates Bar pressure from raw ADC data. |
+| **`lib/Sensors/`** | **Virtual Sensors**. Derived measurements like Boiler Temperature. |
+| **`lib/ShotTimer/`** | **Timing Logic**. State machine managing the shot duration. |
+| **`lib/ShotDisplay/`** | **UI & Themes**. Graphics rendering and the `ThemeManager` for styling. |
 
 ## Setup & Configuration
 The project relies on a `secrets.h` file for WiFi credentials, which is **excluded from git** for security.
