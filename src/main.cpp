@@ -1,6 +1,7 @@
+#include "ThemeManager.h"
+#include "../lib/Themes/DefaultTheme.h"
 #include "../lib/Themes/CandyTheme.h"
 #include "../lib/Themes/ChristmasTheme.h"
-#include "../lib/Themes/DefaultTheme.h"
 #include "ShotDisplay.h"
 #include "ShotTimer.h"
 #include "BoilerPressure.h"
@@ -28,6 +29,7 @@ const unsigned long DEBOUNCE_MS = 150;
 // --- Objects ---
 ADCRawSource pressureADC(pressurePin);
 DigitalRawSource pumpInput(pumpPin);
+DigitalRawSource buttonInput(buttonPin);
 
 BoilerPressure boilerPressure(&pressureADC);
 BoilerTemperature boilerTemp(&boilerPressure);
@@ -39,13 +41,8 @@ DefaultTheme defaultTheme;
 CandyTheme candyTheme;
 ChristmasTheme christmasTheme;
 
-ITheme *themes[] = {&defaultTheme, &candyTheme, &christmasTheme};
-const int numThemes = 3;
-int currentThemeIndex = 0;
-
-ShotDisplay shotDisplay(themes[currentThemeIndex]);
-
-unsigned long lastButtonPress = 0;
+ShotDisplay shotDisplay(&defaultTheme);
+ThemeManager themeManager(&shotDisplay, &buttonInput);
 
 void setup() {
   Serial.begin(115200);
@@ -59,6 +56,10 @@ void setup() {
   sensors.push_back(&boilerPressure);
   sensors.push_back(&boilerTemp);
   sensors.push_back(&shotTimer);
+
+  themeManager.addTheme(&defaultTheme);
+  themeManager.addTheme(&candyTheme);
+  themeManager.addTheme(&christmasTheme);
 
   shotDisplay.init();
   shotDisplay.showInfo("CONNECTING...", ssid);
@@ -91,19 +92,12 @@ void setup() {
 
 void loop() {
   ArduinoOTA.handle();
-  unsigned long now = millis();
 
   // 1. Update Display & Sample Sensors generically for all measurements
   for (auto* sensor : sensors) {
     shotDisplay.update(sensor->getReading());
   }
 
-  // 3. Theme Switching Logic
-  if (digitalRead(buttonPin) == LOW) {
-    if (now - lastButtonPress > 250) {
-      currentThemeIndex = (currentThemeIndex + 1) % numThemes;
-      shotDisplay.setTheme(themes[currentThemeIndex]);
-      lastButtonPress = now;
-    }
-  }
+  // 2. Encapsulated Theme Switching Logic
+  themeManager.update();
 }
