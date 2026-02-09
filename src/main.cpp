@@ -95,12 +95,7 @@ void loop() {
   ArduinoOTA.handle();
   unsigned long now = millis();
 
-  // 1. Update All Sensors
-  for (auto* sensor : sensors) {
-    sensor->update();
-  }
-
-  // 2. Update Display generically for all measurements
+  // 1. Update Display & Sample Sensors generically for all measurements
   for (auto* sensor : sensors) {
     shotDisplay.update(sensor->getReading());
   }

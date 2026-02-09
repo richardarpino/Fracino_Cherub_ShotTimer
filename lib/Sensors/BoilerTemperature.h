@@ -12,9 +12,6 @@ public:
     BoilerTemperature(BoilerPressure* pressureSensor) 
         : _pressureSensor(pressureSensor) {}
 
-    void update() override {
-        // Virtual sensor update is driven by the dependency
-    }
 
     Reading getReading() override {
         if (!_pressureSensor) return Reading(25.0f, "C", "TEMP", false);

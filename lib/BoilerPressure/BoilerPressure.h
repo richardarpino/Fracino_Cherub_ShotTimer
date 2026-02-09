@@ -6,7 +6,7 @@
 
 class BoilerPressure : public ISensor {
 public:
-    BoilerPressure(IRawSource* source) : _source(source), _pressure(0.0f) {}
+    BoilerPressure(IRawSource* source) : _source(source), _pressure(0.0f), _lastSampleTime(0) {}
 
     // Required for compatibility with current main.cpp initialize flow
     void begin() {
@@ -16,18 +16,22 @@ public:
     }
 
     // ISensor Implementation
-    void update() override {
-        if (!_source) return;
-        
-        RawReading raw = _source->read();
-        float currentReading = calculatePressureFromRaw(raw);
-        
-        // EMA Smoothing (alpha = 0.1)
-        _pressure = (_pressure * 0.9f) + (currentReading * 0.1f);
-        if (_pressure < 0.0f) _pressure = 0.0f;
-    }
-
     Reading getReading() override {
+        unsigned long now = millis();
+        
+        // Only sample hardware once per millisecond to avoid redundant overhead
+        if (now != _lastSampleTime) {
+            if (_source) {
+                RawReading raw = _source->read();
+                float currentReading = calculatePressureFromRaw(raw);
+                
+                // EMA Smoothing (alpha = 0.1)
+                _pressure = (_pressure * 0.9f) + (currentReading * 0.1f);
+                if (_pressure < 0.0f) _pressure = 0.0f;
+            }
+            _lastSampleTime = now;
+        }
+
         return Reading(_pressure, "BAR", "BOILER", true);
     }
 
@@ -50,6 +54,7 @@ public:
 private:
     IRawSource* _source;
     float _pressure;
+    unsigned long _lastSampleTime;
 
     const float MAX_PRESSURE_BAR = 5.0f;
     const float MIN_VOLTAGE = 0.5f;

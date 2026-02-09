@@ -9,7 +9,6 @@ public:
     ShotTimer(IRawSource* pumpSource, unsigned long debounceMs = 150, float minShotDuration = 10.0);
 
     // ISensor Implementation
-    void update() override;
     Reading getReading() override;
 
 private:
@@ -23,6 +22,7 @@ private:
     unsigned long _debounceTime;
     unsigned long _startTime;
     unsigned long _lastActiveTime; // Last time the pump was seen active
+    unsigned long _lastSampleTime;
     
     TimerState _state;
     float _finalTime;

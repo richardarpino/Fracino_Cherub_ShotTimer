@@ -42,7 +42,6 @@ public:
 class ISensor {
 public:
     virtual ~ISensor() {}
-    virtual void update() = 0;
     virtual Reading getReading() = 0;
 };
 
