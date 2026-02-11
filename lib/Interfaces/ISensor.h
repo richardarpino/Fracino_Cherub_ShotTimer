@@ -20,10 +20,11 @@ struct Reading {
     float value;
     String unit;
     String label;
+    int precision;
     bool isValid;
 
-    Reading(float v = 0.0f, String u = "", String l = "", bool valid = false) 
-        : value(v), unit(u), label(l), isValid(valid) {}
+    Reading(float v = 0.0f, String u = "", String l = "", int p = 1, bool valid = false) 
+        : value(v), unit(u), label(l), precision(p), isValid(valid) {}
 };
 
 /**

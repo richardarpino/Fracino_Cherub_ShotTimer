@@ -5,6 +5,11 @@
 #include "../Themes/ITheme.h"
 #include "../Interfaces/ISensor.h"
 
+#include <lvgl.h>
+
+
+#include "../UI/ScreenLayout.h"
+
 class ShotDisplay {
 public:
     ShotDisplay(ITheme* initialTheme);
@@ -13,24 +18,30 @@ public:
     // Theme Management
     void setTheme(ITheme* newTheme);
 
-    // Screens
+    // Screens (Status Widget)
     void showInfo(const String& topText, const String& bottomText);
-    void clearScreen();
+    void clearScreen(); // Replaced by theme refresh, but kept for compatibility
 
     // Updates
-    void update(const Reading& reading);
-    void updateTimer(float currentTime);
-    void updatePressure(float pressure);
-    void updateTemperature(float temp);
+    void update(); // The main "Pull" update
+    
+    ScreenLayout* getLayout() { return _layout; }
+    
+    // LVGL Flush Callback (Must be static to be a C callback)
+    static void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
 
 private:
     TFT_eSPI _tft;
     ITheme* _currentTheme;
-    int _lastDisplayedDeci;
-    int _lastDisplayedPressureDeci;
-    int _lastDisplayedTempDeci;
+    ScreenLayout* _layout;
 
-    void applyTheme(); // Helper to set background/text color generic defaults
+    // LVGL buffers and driver
+    static const uint16_t SCREEN_WIDTH = TFT_HEIGHT; // 240 in landscape
+    static const uint16_t SCREEN_HEIGHT = TFT_WIDTH; // 135 in landscape
+    static const uint32_t BUF_SIZE = SCREEN_WIDTH * 10; // 1/10th of screen
+    lv_disp_draw_buf_t _draw_buf;
+    lv_color_t* _buf; // Dyn alloc or static array is fine
+    lv_disp_drv_t _disp_drv;
 };
 
 #endif

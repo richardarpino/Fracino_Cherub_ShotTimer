@@ -19,7 +19,7 @@ public:
         float pressureBar = _pressureSensor->getReading().value;
         float temp = calculateTemperature(pressureBar);
         
-        return Reading(temp, "C", "TEMP", true);
+        return Reading(temp, "C", "TEMP", 0, true);
     }
 
 private:
