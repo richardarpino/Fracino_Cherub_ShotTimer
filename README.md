@@ -1,58 +1,63 @@
 # Fracino Cherub Shot Timer & Boiler Monitor
 
-This project is a custom ESP32-based mod for the Fracino Cherub espresso machine. It provides a shot timer and a real-time display of the boiler pressure and estimated temperature.
+Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
 
-## Features
-- **Auto-Shot Timer**: Detects when the pump is active (via GPIO) and automatically starts/stops the timer.
-- **Boiler Pressure Monitoring**: Reads a 0.5-4.5V pressure transducer (via voltage divider) to display pressure in Bar.
-- **Temperature Estimation**: Calculates the internal boiler temperature from the pressure reading using the **Antoine Equation** (for saturated steam).
-- **Split-Screen UI**: 
-  - **Left**: Boiler Status (Pressure & Temperature).
-  - **Right**: Shot Duration (Seconds).
-- **Theme Support**: Multiple visual themes (Default, Candy, Christmas) switchable via button.
+## 🚀 Quick Start
+1. **Hardware**: Connect Pressure Transducer to **GPIO 34** (via divider) and Pump AC signal to **GPIO 21** (via Optocoupler).
+2. **Secrets**: Create `include/secrets.h` with your WiFi credentials.
+3. **Build**: Use PlatformIO to build and upload to your ESP32 (e.g., TTGO T-Display).
 
-## Hardware
-- **MCU**: ESP32 (e.g., TTGO T-Display with built-in TFT).
-- **Pressure Sensor**: 5V Transducer (0.5V - 4.5V output). 0.5Mpa Range (0-5 Bar). 130 deg C max temp.
-- **Connection**:
-  - **Pump Signal**: GPIO 21 (Input Pullup). **CRITICAL**: Use an **AC Optocoupler** board to isolate the ESP32 from the machine's AC pump circuit. On the Fracino, the group head solenoid is wired in series with the pump and makes a good trigger, avoiding triggering the timer when the level sensor activates the pump.
-  - **Button**: GPIO 35 (Theme toggle).
-  - **Pressure Sensor**: GPIO 34 (ADC Input). **REQUIRES VOLTAGE DIVIDER** (4.7kΩ + 10kΩ) to step 4.5V down to ~3.0V.
+## 🏗 Modular Architecture
+The project uses a **Pull Model** to decouple data sources from the UI.
 
-## Project Structure (TL;DR)
+### 📡 Sensors (`lib/Interfaces`, `lib/BoilerPressure`, `lib/ShotTimer`)
+Everything providing data implements `ISensor`.
+- `BoilerPressure`: Raw ADC -> Bar.
+- `BoilerTemperature`: Bar -> Celsius (Antoine Equation).
+- `ShotTimer`: GPIO -> Seconds (Timing State Machine).
 
-The code is organized into modular libraries to separate hardware drivers from application logic:
+### 🎨 UI & Widgets (`lib/UI`)
+Widgets implement `IWidget` and pull data from sensors independently.
+- **Late-Parenting**: Widgets are created without parents and "adopted" by the layout manager.
+- **SRP Decoupling**: Widgets only manage their internal content; the layout manages all positioning.
 
-| Component | Description |
-| :--- | :--- |
-| **`src/main.cpp`** | **Orchestrator**. Coordinates data flow between sensors and the display. |
-| **`lib/Hardware/`** | **Drivers**. Concrete implementations for ESP32 ADC and Digital pins. |
-| **`lib/Interfaces/`** | **Abstractions**. Defines how sensors and hardware sources communicate. |
-| **`lib/BoilerPressure/`** | **Pressure Logic**. Calculates Bar pressure from raw ADC data. |
-| **`lib/Sensors/`** | **Virtual Sensors**. Derived measurements like Boiler Temperature. |
-| **`lib/ShotTimer/`** | **Timing Logic**. State machine managing the shot duration. |
-| **`lib/ShotDisplay/`** | **UI & Themes**. Graphics rendering and the `ThemeManager` for styling. |
+## 🛠 Developer Guide
 
-## Setup & Configuration
-The project relies on a `secrets.h` file for WiFi credentials, which is **excluded from git** for security.
+### 1. Registering Widgets
+The UI layout is managed automatically in `main.cpp`. Widgets are added in the order: **Top-Left (0), Bottom-Left (1), Top-Right (2), Bottom-Right (3)**.
 
-1.  Create a new file: `include/secrets.h`
-2.  Add your WiFi details:
-    ```c
-    #ifndef SECRETS_H
-    #define SECRETS_H
+```cpp
+ScreenLayout* layout = shotDisplay.getLayout();
+layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0
+layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1
+layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2
+layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3
+```
 
-    #define WIFI_SSID "YourWiFiName"
-    #define WIFI_PASSWORD "YourWiFiPassword"
+### 2. Adding a New Sensor
+Create a class that implements the `ISensor` interface:
+```cpp
+class MyNewSensor : public ISensor {
+    Reading getReading() override {
+        return Reading(value, "UNIT", "LABEL", precision, isValid);
+    }
+};
+```
 
-    #endif
-    ```
+### 3. High-Level Messaging
+Use the `showMessage()` API to push transient system messages (e.g., WiFi status) without managing widget indices:
+```cpp
+shotDisplay.getLayout()->showMessage("WiFi CONNECTED");
+```
+*Note: Messages are automatically locked for 3 seconds to prevent sensor overwrites.*
 
-## Quick Start
-1.  **Check Wiring**: Ensure the pressure sensor is connected via the voltage divider to **GPIO 34**.
-2.  **Build**: Run `pio run` or use the PlatformIO Build button.
-3.  **Upload**: Connect ESP32 and upload.
-4.  **Verify**: Screen should show ~0.0 Bar / 25°C when cold/empty, and rise to ~1.2 Bar / 123°C when at operating pressure.
+## 🔌 Hardware Pins (TTGO T-Display)
+| Pin | Function | Hardware Required |
+| :--- | :--- | :--- |
+| **GPIO 34** | Pressure Sensor | 4.7kΩ + 10kΩ Voltage Divider |
+| **GPIO 21** | Pump Signal | AC Optocoupler Isolation |
+| **GPIO 35** | Theme Button | Built-in (Right button) |
+| **GPIO 4** | LCD Backlight | Built-in |
 
 ---
 *Generated by [Antigravity](https://deepmind.google/)*

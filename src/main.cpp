@@ -1,3 +1,4 @@
+#include <lvgl.h>
 #include "ThemeManager.h"
 #include "../lib/Themes/DefaultTheme.h"
 #include "../lib/Themes/CandyTheme.h"
@@ -12,6 +13,9 @@
 #include <WiFi.h>
 #include <vector>
 #include "secrets.h"
+#include "ScreenLayout.h"
+#include "SensorWidget.h"
+#include "StatusWidget.h"
 
 // --- Credentials ---
 const char *ssid = WIFI_SSID;
@@ -35,8 +39,6 @@ BoilerPressure boilerPressure(&pressureADC);
 BoilerTemperature boilerTemp(&boilerPressure);
 ShotTimer shotTimer(&pumpInput, DEBOUNCE_MS, MIN_SHOT_SECONDS);
 
-std::vector<ISensor*> sensors;
-
 DefaultTheme defaultTheme;
 CandyTheme candyTheme;
 ChristmasTheme christmasTheme;
@@ -52,16 +54,19 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
   digitalWrite(backlightPin, HIGH);
 
-  
-  sensors.push_back(&boilerPressure);
-  sensors.push_back(&boilerTemp);
-  sensors.push_back(&shotTimer);
-
   themeManager.addTheme(&defaultTheme);
   themeManager.addTheme(&candyTheme);
   themeManager.addTheme(&christmasTheme);
 
   shotDisplay.init();
+  
+  // Register Widgets (Late-Parenting: 0=TL, 1=BL, 2=TR, 3=BR)
+  ScreenLayout* layout = shotDisplay.getLayout();
+  layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0 (TL)
+  layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1 (BL)
+  layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2 (TR)
+  layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3 (BR)
+
   shotDisplay.showInfo("CONNECTING...", ssid);
 
   // WiFi Setup
@@ -92,12 +97,11 @@ void setup() {
 
 void loop() {
   ArduinoOTA.handle();
+  lv_timer_handler();
+  delay(5);
 
-  // 1. Update Display & Sample Sensors generically for all measurements
-  for (auto* sensor : sensors) {
-    shotDisplay.update(sensor->getReading());
-  }
+  // All widgets pull their own data from their assigned sensors
+  shotDisplay.update();
 
-  // 2. Encapsulated Theme Switching Logic
   themeManager.update();
 }
