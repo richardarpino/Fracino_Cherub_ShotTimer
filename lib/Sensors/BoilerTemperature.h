@@ -14,12 +14,12 @@ public:
 
 
     Reading getReading() override {
-        if (!_pressureSensor) return Reading(25.0f, "C", "TEMP", false);
+        if (!_pressureSensor) return Reading(25.0f, "C", "TEMP", 0, true);
         
         float pressureBar = _pressureSensor->getReading().value;
         float temp = calculateTemperature(pressureBar);
         
-        return Reading(temp, "C", "TEMP", 0, true);
+        return Reading(temp, "C", "TEMP", 0, false);
     }
 
 private:

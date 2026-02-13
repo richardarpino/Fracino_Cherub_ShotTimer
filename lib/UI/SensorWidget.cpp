@@ -38,7 +38,7 @@ void SensorWidget::refresh() {
 }
 
 void SensorWidget::update(const Reading& reading) {
-    if (!reading.isValid) return;
+    // We no longer block updates! Sensors decide what to show (e.g. Last Known Good).
 
     // Update Value with precision from reading
     char buf[16];
@@ -51,6 +51,15 @@ void SensorWidget::update(const Reading& reading) {
 
     // Update Unit from reading
     lv_label_set_text(_unit_label, reading.unit.c_str());
+
+    // Semantic Error Styling: Change color if in error state
+    if (reading.isError) {
+        lv_obj_set_style_text_color(_value_label, lv_palette_main(LV_PALETTE_RED), 0);
+        lv_obj_set_style_text_color(_unit_label, lv_palette_main(LV_PALETTE_RED), 0);
+    } else {
+        lv_obj_set_style_text_color(_value_label, _textColor, 0);
+        lv_obj_set_style_text_color(_unit_label, _labelColor, 0);
+    }
 }
 
 void SensorWidget::applyTheme(ITheme* theme) {
@@ -66,13 +75,13 @@ void SensorWidget::applyTheme(ITheme* theme) {
         return lv_color_make(r, g, b);
     };
 
+    _textColor = toLvColor(theme->getTextColor());
+    _labelColor = toLvColor(theme->getLabelColor());
     lv_color_t bg = toLvColor(theme->getBackgroundColor());
-    lv_color_t text = toLvColor(theme->getTextColor());
-    lv_color_t label = toLvColor(theme->getLabelColor());
 
     // Apply
     lv_obj_set_style_bg_color(_container, bg, 0);
-    lv_obj_set_style_text_color(_value_label, text, 0);
-    lv_obj_set_style_text_color(_unit_label, label, 0);
+    lv_obj_set_style_text_color(_value_label, _textColor, 0);
+    lv_obj_set_style_text_color(_unit_label, _labelColor, 0);
 }
 

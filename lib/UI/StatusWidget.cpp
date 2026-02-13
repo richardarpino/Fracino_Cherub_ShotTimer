@@ -30,18 +30,31 @@ void StatusWidget::refresh() {
     // Only pull from sensor if no manual message is currently "locked"
     if (_sensor && millis() > _messageTimeout) {
         Reading r = _sensor->getReading();
-        if (r.isValid) {
-            setText(r.value > 0.1 ? "SHOT RUNNING" : "READY");
+        setText(r.label.c_str());
+        
+        // Semantic Styling: Turn red if in error state
+        if (r.isError) {
+            lv_obj_set_style_text_color(_label, lv_palette_main(LV_PALETTE_RED), 0);
+        } else {
+            lv_obj_set_style_text_color(_label, _textColor, 0);
         }
     }
 }
 
 void StatusWidget::update(const Reading& reading) {
-    if (!reading.isValid) return;
+    // No more update guards. Seniors choose what to display.
     
     // Manual push (usually from ScreenLayout::showMessage or showInfo)
     if (reading.label.length() > 0) {
         setText(reading.label.c_str());
+        
+        // Also handle styling for manual pushes (usually not errors, but let's be consistent)
+        if (reading.isError) {
+            lv_obj_set_style_text_color(_label, lv_palette_main(LV_PALETTE_RED), 0);
+        } else {
+            lv_obj_set_style_text_color(_label, _textColor, 0);
+        }
+
         // Lock the display for 3 seconds to prevent immediate overwrite by refresh()
         _messageTimeout = millis() + 3000;
     }
@@ -57,9 +70,9 @@ void StatusWidget::applyTheme(ITheme* theme) {
     };
 
     lv_color_t bg = toLvColor(theme->getBackgroundColor());
-    lv_color_t text = toLvColor(theme->getLabelColor()); // Use label color for status text
+    _textColor = toLvColor(theme->getLabelColor()); // Use label color for status text
 
     lv_obj_set_style_bg_color(_container, bg, 0);
-    lv_obj_set_style_text_color(_label, text, 0);
+    lv_obj_set_style_text_color(_label, _textColor, 0);
 }
 

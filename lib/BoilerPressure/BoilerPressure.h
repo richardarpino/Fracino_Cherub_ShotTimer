@@ -26,7 +26,7 @@ public:
             _lastSampleTime = now;
         }
 
-        return Reading(_pressure, "BAR", "BOILER", 1, true);
+        return Reading(_pressure, "BAR", "BOILER", 1, false);
     }
 
     /**

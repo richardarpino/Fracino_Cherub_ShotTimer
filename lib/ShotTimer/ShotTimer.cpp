@@ -39,5 +39,6 @@ Reading ShotTimer::getReading() {
     }
 
     float time = (_state == TIMER_RUNNING) ? (millis() - _startTime) / 1000.0 : _finalTime;
-    return Reading(time, "SECS", "TIMER", 1, true);
+    String status = (_state == TIMER_RUNNING) ? "SHOT RUNNING" : "READY";
+    return Reading(time, "SECS", status, 1, false);
 }

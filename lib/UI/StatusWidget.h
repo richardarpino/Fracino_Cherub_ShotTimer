@@ -25,6 +25,9 @@ private:
     lv_obj_t* _label;
     ISensor* _sensor;
     unsigned long _messageTimeout;
+    
+    // Store theme color for error state reversal
+    lv_color_t _textColor;
 };
 
 #endif

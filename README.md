@@ -39,7 +39,7 @@ Create a class that implements the `ISensor` interface:
 ```cpp
 class MyNewSensor : public ISensor {
     Reading getReading() override {
-        return Reading(value, "UNIT", "LABEL", precision, isValid);
+        return Reading(value, "UNIT", "LABEL", precision, isError);
     }
 };
 ```
