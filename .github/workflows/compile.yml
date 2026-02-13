@@ -34,5 +34,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pio-
 
+      - name: Prepare Secrets
+        run: cp include/secrets.h.example include/secrets.h
+
       - name: Run PlatformIO Build
         run: pio run -e lilygo-t-display
