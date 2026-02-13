@@ -1,5 +1,7 @@
 # Fracino Cherub Shot Timer & Boiler Monitor
 
+![Compile Check](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/actions/workflows/compile.yml/badge.svg)
+
 Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
 
 ## 🚀 Quick Start
