@@ -22,10 +22,10 @@ const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASSWORD;
 
 // --- Pins ---
-const int pumpPin = 21;
+const int pumpPin = 25;
 const int backlightPin = 4;
 const int buttonPin = 35; // Button 1 on T-Display
-const int pressurePin = 34; // ADC1 Input Only
+const int pressurePin = 32; // ADC1 Input
 
 const float MIN_SHOT_SECONDS = 10.0;
 const unsigned long DEBOUNCE_MS = 150;
