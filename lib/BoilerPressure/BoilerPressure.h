@@ -53,7 +53,7 @@ private:
     const float MAX_PRESSURE_BAR = 5.0f;
     const float MIN_VOLTAGE = 0.5f;
     const float MAX_VOLTAGE = 4.5f;
-    const float R1 = 4700.0f;
+    const float R1 = 10000.0f;
     const float R2 = 10000.0f;
 };
 

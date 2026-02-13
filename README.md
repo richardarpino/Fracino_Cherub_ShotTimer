@@ -56,7 +56,7 @@ shotDisplay.getLayout()->showMessage("WiFi CONNECTED");
 ## 🔌 Hardware Pins (TTGO T-Display)
 | Pin | Function | Hardware Required |
 | :--- | :--- | :--- |
-| **GPIO 34** | Pressure Sensor | 4.7kΩ + 10kΩ Voltage Divider |
+| **GPIO 34** | Pressure Sensor | 10kΩ + 10kΩ Voltage Divider |
 | **GPIO 21** | Pump Signal | AC Optocoupler Isolation |
 | **GPIO 35** | Theme Button | Built-in (Right button) |
 | **GPIO 4** | LCD Backlight | Built-in |
