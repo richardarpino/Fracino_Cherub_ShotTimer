@@ -4,6 +4,8 @@
 
 Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
 
+For detailed developer notes, methods, and tool documentation, visit the [Project Wiki](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/wiki).
+
 ## 🚀 Quick Start
 1. **Hardware**: Connect your sensor and signals according to the mappings in `include/pins.h`.
 2. **Configuration**: 
@@ -55,7 +57,10 @@ shotDisplay.getLayout()->showMessage("WiFi CONNECTED");
 ```
 *Note: Messages are automatically locked for 3 seconds to prevent sensor overwrites.*
 
-## 🔌 Hardware Pins (TTGO T-Display)
+## 🔌 Hardware Pins
+
+Example board used for development: [TENSTAR T-Display ESP32 Development Board with 1.14 Inch LCD](https://www.aliexpress.com/item/1005062610762446.html). PlatformIO environment: `lilygo-t-display` is compatible.
+
 | Pin | Function | Hardware Required |
 | :--- | :--- | :--- |
 | **GPIO 32** | Pressure Sensor | 10kΩ + 10kΩ Voltage Divider |
