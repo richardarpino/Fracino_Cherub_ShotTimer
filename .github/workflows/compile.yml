@@ -35,7 +35,9 @@ jobs:
             ${{ runner.os }}-pio-
 
       - name: Prepare Secrets
-        run: cp include/secrets.h.example include/secrets.h
+        run: |
+          cp include/secrets.h.example include/secrets.h
+          cp include/pins.h.example include/pins.h
 
       - name: Run PlatformIO Build
         run: pio run -e lilygo-t-display

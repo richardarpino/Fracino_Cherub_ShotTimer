@@ -11,3 +11,4 @@ include/secrets.h
 
 # Build Artifacts
 compile_commands.json
+include/pins.h

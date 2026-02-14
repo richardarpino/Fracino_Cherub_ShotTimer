@@ -1,0 +1,21 @@
+#ifndef PINS_H
+#define PINS_H
+
+// --- Hardware Pin Configuration ---
+// This file defines the physical IO pins for your specific board.
+// If you are using a Tenstar Robot T-Display clone, use these values.
+
+// Pump Signal (Digital Input)
+// Circuit: AC Optocoupler Output
+const int pumpPin = 25; 
+
+// Pressure Sensor (Analog Input)
+// Circuit: 10k/10k Voltage Divider
+// Note: Use an ADC1-capable pin (32-39)
+const int pressurePin = 32;
+
+// Built-in Hardware
+const int backlightPin = 4;
+const int buttonPin = 35; // Built-in "Right" button
+
+#endif // PINS_H

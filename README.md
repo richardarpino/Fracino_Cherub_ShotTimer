@@ -5,8 +5,10 @@
 Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
 
 ## 🚀 Quick Start
-1. **Hardware**: Connect Pressure Transducer to **GPIO 34** (via divider) and Pump AC signal to **GPIO 21** (via Optocoupler).
-2. **Secrets**: Create `include/secrets.h` with your WiFi credentials.
+1. **Hardware**: Connect your sensor and signals according to the mappings in `include/pins.h`.
+2. **Configuration**: 
+    - Copy `include/secrets.h.example` to `include/secrets.h` and add your WiFi credentials.
+    - Copy `include/pins.h.example` to `include/pins.h` and verify the pin mappings for your board.
 3. **Build**: Use PlatformIO to build and upload to your ESP32 (e.g., TTGO T-Display).
 
 ## 🏗 Modular Architecture
