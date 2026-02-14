@@ -31,7 +31,7 @@ ADCRawSource pressureADC(pressurePin);
 DigitalRawSource pumpInput(pumpPin);
 DigitalRawSource buttonInput(buttonPin);
 
-BoilerPressure boilerPressure(&pressureADC);
+BoilerPressure boilerPressure(&pressureADC, pressureScalar);
 BoilerTemperature boilerTemp(&boilerPressure);
 ShotTimer shotTimer(&pumpInput, DEBOUNCE_MS, MIN_SHOT_SECONDS);
 

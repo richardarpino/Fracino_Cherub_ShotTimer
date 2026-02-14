@@ -14,6 +14,9 @@ const int pumpPin = 25;
 // Note: Use an ADC1-capable pin (32-39)
 const int pressurePin = 32;
 
+// Calibration
+const float pressureScalar = 1.0f; // Fine-tune to match mechanical dial
+
 // Built-in Hardware
 const int backlightPin = 4;
 const int buttonPin = 35; // Built-in "Right" button

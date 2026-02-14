@@ -6,7 +6,8 @@
 
 class BoilerPressure : public ISensor {
 public:
-    BoilerPressure(IRawSource* source) : _source(source), _pressure(0.0f), _lastSampleTime(0) {}
+    BoilerPressure(IRawSource* source, float scalar = 1.0f) 
+        : _source(source), _pressure(0.0f), _lastSampleTime(0), _scalar(scalar) {}
 
 
     // ISensor Implementation
@@ -42,13 +43,14 @@ public:
         // Convert Voltage to Pressure
         float pressure = (sensorVoltage - MIN_VOLTAGE) * (MAX_PRESSURE_BAR / (MAX_VOLTAGE - MIN_VOLTAGE));
         
-        return pressure;
+        return pressure * _scalar;
     }
 
 private:
     IRawSource* _source;
     float _pressure;
     unsigned long _lastSampleTime;
+    float _scalar;
 
     const float MAX_PRESSURE_BAR = 5.0f;
     const float MIN_VOLTAGE = 0.5f;
