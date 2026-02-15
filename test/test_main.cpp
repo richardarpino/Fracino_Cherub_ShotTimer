@@ -108,12 +108,67 @@ void test_shot_timer_logic() {
     TEST_ASSERT_EQUAL_STRING("READY", r.label.c_str());
 }
 
+// --- Hysteresis Tests ---
+
+void test_hysteresis_logic() {
+    MockRawSource mock;
+    // Hysteresis threshold = 0.05 units
+    // We'll use BoilerPressure (0.02 Bar threshold)
+    BoilerPressure sensor(&mock);
+
+    // 1. Establish steady state
+    mock.setRawValue(806); // ~1.0 Bar
+    for(int i=0; i<100; i++) {
+        setMillis(i);
+        sensor.getReading();
+    }
+    float baseline = sensor.getReading().value;
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, baseline);
+
+    // 2. Small oscillation (below 0.02 Bar threshold)
+    mock.setRawValue(812); 
+    for(int i=100; i<200; i++) {
+        setMillis(i);
+        sensor.getReading();
+    }
+    // Should still show EXACTLY the baseline
+    TEST_ASSERT_EQUAL_FLOAT(baseline, sensor.getReading().value);
+
+    // 3. Large move (above threshold)
+    // 1.05 Bar -> Sensor 1.34V -> Divider 0.67V -> ADC: 831
+    mock.setRawValue(831);
+    for(int i=200; i<300; i++) {
+        setMillis(i);
+        sensor.getReading();
+    }
+    // Should update now!
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.05f, sensor.getReading().value);
+}
+
+void test_pressure_floor() {
+    MockRawSource mock;
+    BoilerPressure sensor(&mock);
+
+    // Test a value below the 0.5V threshold (e.g. 0.4V)
+    // 0.4V sensor -> 0.2V at divider -> ADC: (0.2 / 3.3) * 4095 = 248
+    mock.setRawValue(248);
+    for(int i=0; i<100; i++) {
+        setMillis(i);
+        sensor.getReading();
+    }
+    
+    // Result should be exactly 0.0, not negative
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, sensor.getReading().value);
+}
+
 #ifdef NATIVE
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_pressure_calculation);
     RUN_TEST(test_temperature_calculation);
     RUN_TEST(test_shot_timer_logic);
+    RUN_TEST(test_hysteresis_logic);
+    RUN_TEST(test_pressure_floor);
     return UNITY_END();
 }
 #else
@@ -123,6 +178,8 @@ void setup() {
     RUN_TEST(test_pressure_calculation);
     RUN_TEST(test_temperature_calculation);
     RUN_TEST(test_shot_timer_logic);
+    RUN_TEST(test_hysteresis_logic);
+    RUN_TEST(test_pressure_floor);
     UNITY_END();
 }
 void loop() {}

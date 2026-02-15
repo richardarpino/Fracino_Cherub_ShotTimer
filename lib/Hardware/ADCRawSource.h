@@ -16,7 +16,13 @@ public:
 
     RawReading read() override {
         if (_pin == -1) return RawReading(0, millis());
-        return RawReading(analogRead(_pin), millis());
+        
+        // 64-sample oversampling to reduce noise and increase bit-depth precision
+        long sum = 0;
+        for(int i = 0; i < 64; i++) {
+            sum += analogRead(_pin);
+        }
+        return RawReading((int)(sum / 64), millis());
     }
 
 private:
