@@ -1,10 +1,10 @@
 #include <unity.h>
 #include "BoilerPressure.h"
 #include "BoilerTemperature.h"
-#include "ShotTimer.cpp" // Include implementation for native build
+#include "../lib/ShotTimer/ShotTimer.cpp" 
 #include "MockRawSource.h"
-#include "Arduino.h"
-#include "Arduino.cpp"
+#include "stubs/Arduino.h"
+#include "stubs/Arduino.cpp"
 
 // --- Boiler Logic Tests ---
 

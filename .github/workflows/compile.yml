@@ -1,4 +1,4 @@
-name: Compile Check
+name: Compile and Test Native
 
 on:
   push:
@@ -38,6 +38,9 @@ jobs:
         run: |
           cp include/secrets.h.example include/secrets.h
           cp include/pins.h.example include/pins.h
+
+      - name: Run PlatformIO Native Tests
+        run: pio test -e native
 
       - name: Run PlatformIO Build
         run: pio run -e lilygo-t-display
