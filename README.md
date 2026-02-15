@@ -1,6 +1,6 @@
 # Fracino Cherub Shot Timer & Boiler Monitor
 
-![Compile Check](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/actions/workflows/compile.yml/badge.svg)
+![Compile and Test Native](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/actions/workflows/compile.yml/badge.svg)
 
 Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
 
@@ -11,16 +11,23 @@ For detailed developer notes, methods, and tool documentation, visit the [Projec
 2. **Configuration**: 
     - Copy `include/secrets.h.example` to `include/secrets.h` and add your WiFi credentials.
     - Copy `include/pins.h.example` to `include/pins.h` and verify the pin mappings for your board.
-3. **Build**: Use PlatformIO to build and upload to your ESP32 (e.g., TTGO T-Display).
+3. **Build & Test**: 
+    - Build: `pio run -e lilygo-t-display`
+    - Test: `pio test -e native` (Run logic tests instantly on your PC)
 
 ## 🏗 Modular Architecture
 The project uses a **Pull Model** to decouple data sources from the UI.
 
 ### 📡 Sensors (`lib/Interfaces`, `lib/BoilerPressure`, `lib/ShotTimer`)
 Everything providing data implements `ISensor`.
-- `BoilerPressure`: Raw ADC -> Bar.
+- `BoilerPressure`: Raw ADC -> Bar (Inherits from `FilteredSensor`).
 - `BoilerTemperature`: Bar -> Celsius (Antoine Equation).
-- `ShotTimer`: GPIO -> Seconds (Timing State Machine).
+- `ShotTimer`: GPIO -> Seconds (Timing State Machine with debounce).
+
+### 🛡️ Sensor Stability & Smoothing
+To handle noisy ADC signals (especially on ESP32), we use a two-tiered approach:
+1. **Hardware Oversampling**: `ADCRawSource` averages 64 consecutive ADC samples to floor electronic noise.
+2. **`FilteredSensor` Base Class**: Provides centralized **EMA Smoothing** and **Display Hysteresis**. Hysteresis prevents "jitter" at decimal boundaries by requiring a minimum change (e.g., 0.02 Bar) before updating the UI.
 
 ### 🎨 UI & Widgets (`lib/UI`)
 Widgets implement `IWidget` and pull data from sensors independently.
@@ -29,7 +36,14 @@ Widgets implement `IWidget` and pull data from sensors independently.
 
 ## 🛠 Developer Guide
 
-### 1. Registering Widgets
+### 1. Unit Testing
+Logic-heavy components are tested in a `native` environment.
+```bash
+pio test -e native
+```
+Stubs for `Arduino.h` and `String` are provided in `test/stubs` to allow for rapid desktop-based verification.
+
+### 2. Registering Widgets
 The UI layout is managed automatically in `main.cpp`. Widgets are added in the order: **Top-Left (0), Bottom-Left (1), Top-Right (2), Bottom-Right (3)**.
 
 ```cpp
@@ -40,22 +54,17 @@ layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2
 layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3
 ```
 
-### 2. Adding a New Sensor
-Create a class that implements the `ISensor` interface:
+### 3. Adding a Filtered Sensor
+Inherit from `FilteredSensor` to get automatic smoothing:
 ```cpp
-class MyNewSensor : public ISensor {
+class MySensor : public FilteredSensor {
+    MySensor() : FilteredSensor(0.1f, 0.05f) {} // alpha, hysteresis
     Reading getReading() override {
-        return Reading(value, "UNIT", "LABEL", precision, isError);
+        updateFilter(newValue);
+        return Reading(getStableDisplayValue(), "UNIT", "LABEL");
     }
 };
 ```
-
-### 3. High-Level Messaging
-Use the `showMessage()` API to push transient system messages (e.g., WiFi status) without managing widget indices:
-```cpp
-shotDisplay.getLayout()->showMessage("WiFi CONNECTED");
-```
-*Note: Messages are automatically locked for 3 seconds to prevent sensor overwrites.*
 
 ## 🔌 Hardware Pins
 

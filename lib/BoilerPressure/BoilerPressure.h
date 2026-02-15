@@ -2,32 +2,30 @@
 #define BOILER_PRESSURE_H
 
 #include <Arduino.h>
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/FilteredSensor.h"
 
-class BoilerPressure : public ISensor {
+class BoilerPressure : public FilteredSensor {
 public:
     BoilerPressure(IRawSource* source, float scalar = 1.0f) 
-        : _source(source), _pressure(0.0f), _lastSampleTime(0), _scalar(scalar) {}
+        : FilteredSensor(0.1f, 0.02f), // alpha=0.1, hysteresis=0.02 Bar
+          _source(source), _lastSampleTime(0), _scalar(scalar) {}
 
 
     // ISensor Implementation
     Reading getReading() override {
         unsigned long now = millis();
         
-        // Only sample hardware once per millisecond to avoid redundant overhead
+        // Only sample hardware once per millisecond
         if (now != _lastSampleTime) {
             if (_source) {
                 RawReading raw = _source->read();
                 float currentReading = calculatePressureFromRaw(raw);
-                
-                // EMA Smoothing (alpha = 0.1)
-                _pressure = (_pressure * 0.9f) + (currentReading * 0.1f);
-                if (_pressure < 0.0f) _pressure = 0.0f;
+                updateFilter(currentReading);
             }
             _lastSampleTime = now;
         }
 
-        return Reading(_pressure, "BAR", "BOILER", 1, false);
+        return Reading(getStableDisplayValue(), "BAR", "BOILER", 1, false);
     }
 
     /**
@@ -43,12 +41,12 @@ public:
         // Convert Voltage to Pressure
         float pressure = (sensorVoltage - MIN_VOLTAGE) * (MAX_PRESSURE_BAR / (MAX_VOLTAGE - MIN_VOLTAGE));
         
-        return pressure * _scalar;
+        float finalPressure = pressure * _scalar;
+        return (finalPressure < 0.0f) ? 0.0f : finalPressure;
     }
 
 private:
     IRawSource* _source;
-    float _pressure;
     unsigned long _lastSampleTime;
     float _scalar;
 
