@@ -2,7 +2,7 @@
 #define SHOT_TIMER_H
 
 #include <Arduino.h>
-#include "../Interfaces/ISensor.h"
+#include "../../Interfaces/ISensor.h"
 
 class ShotTimer : public ISensor {
 public:

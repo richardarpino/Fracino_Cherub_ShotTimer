@@ -1,8 +1,8 @@
-#ifndef BOILER_TEMPERATURE_H
-#define BOILER_TEMPERATURE_H
+#ifndef VIRTUAL_BOILER_TEMPERATURE_H
+#define VIRTUAL_BOILER_TEMPERATURE_H
 
-#include "../Interfaces/ISensor.h"
-#include "../BoilerPressure/BoilerPressure.h"
+#include "../../Interfaces/ISensor.h"
+#include "../Hardware/BoilerPressure.h"
 
 /**
  * Virtual Sensor that derives Temperature from a Pressure Sensor reading.

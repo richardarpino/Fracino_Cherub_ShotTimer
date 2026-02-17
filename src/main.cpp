@@ -4,11 +4,11 @@
 #include "../lib/Themes/CandyTheme.h"
 #include "../lib/Themes/ChristmasTheme.h"
 #include "ShotDisplay.h"
-#include "ShotTimer.h"
-#include "BoilerPressure.h"
+#include "Hardware/ShotTimer.h"
+#include "Hardware/BoilerPressure.h"
 #include "ADCRawSource.h"
 #include "DigitalRawSource.h"
-#include "BoilerTemperature.h"
+#include "Virtual/BoilerTemperature.h"
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <vector>

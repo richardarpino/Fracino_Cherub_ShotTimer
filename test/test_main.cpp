@@ -1,7 +1,7 @@
 #include <unity.h>
-#include "BoilerPressure.h"
-#include "BoilerTemperature.h"
-#include "../lib/ShotTimer/ShotTimer.cpp" 
+#include "Hardware/BoilerPressure.h"
+#include "Virtual/BoilerTemperature.h"
+#include "Hardware/ShotTimer.cpp" 
 #include "MockRawSource.h"
 #include "stubs/Arduino.h"
 #include "stubs/Arduino.cpp"
@@ -161,6 +161,53 @@ void test_pressure_floor() {
     TEST_ASSERT_EQUAL_FLOAT(0.0f, sensor.getReading().value);
 }
 
+#include "Hardware/WeightSensor.h"
+#include "Virtual/TaredSensor.h"
+
+// ... (existing includes)
+
+void test_weight_conversion() {
+    MockRawSource weightMock;
+    WeightSensor weightSensor(&weightMock, 0.001f); // 1g per 1000 units
+
+    weightMock.setRawValue(5000); 
+    for(int i=0; i<100; i++) {
+        setMillis(i);
+        weightSensor.getReading();
+    }
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, weightSensor.getReading().value);
+}
+
+void test_tared_sensor() {
+    MockRawSource weightMock;
+    WeightSensor weightSensor(&weightMock, 0.001f);
+    TaredSensor taredSensor(&weightSensor);
+
+    // 1. Establish steady state at 10.0g
+    weightMock.setRawValue(10000); 
+    for(int i=0; i<100; i++) {
+        setMillis(i);
+        taredSensor.getReading();
+    }
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 10.0f, taredSensor.getReading().value);
+
+    // 2. Tare
+    taredSensor.tare();
+
+    // 3. Should now be 0.0g (fails on stub)
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, taredSensor.getReading().value);
+
+    // 4. Increase weight to 12.0g (+2.0g)
+    weightMock.setRawValue(12000); 
+    for(int i=100; i<200; i++) {
+        setMillis(i);
+        taredSensor.getReading();
+    }
+    
+    // 5. Should show 2.0g relative to tare (fails on stub)
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 2.0f, taredSensor.getReading().value);
+}
+
 #ifdef NATIVE
 int main() {
     UNITY_BEGIN();
@@ -169,6 +216,8 @@ int main() {
     RUN_TEST(test_shot_timer_logic);
     RUN_TEST(test_hysteresis_logic);
     RUN_TEST(test_pressure_floor);
+    RUN_TEST(test_weight_conversion);
+    RUN_TEST(test_tared_sensor);
     return UNITY_END();
 }
 #else
