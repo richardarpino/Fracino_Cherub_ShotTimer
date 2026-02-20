@@ -163,6 +163,9 @@ void test_pressure_floor() {
 
 #include "Hardware/WeightSensor.h"
 #include "Virtual/TaredSensor.h"
+#include "Interfaces/ISwitch.h"
+#include "Hardware/HardwareSwitch.h"
+#include "Virtual/DelayedSwitch.h"
 
 // ... (existing includes)
 
@@ -208,6 +211,67 @@ void test_tared_sensor() {
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 2.0f, taredSensor.getReading().value);
 }
 
+void test_switch_logic() {
+    MockRawSource mockPin;
+    HardwareSwitch sw(&mockPin, true); // Active LOW
+    
+    // 1. Initial State (OFF)
+    mockPin.setRawValue(HIGH);
+    sw.update();
+    TEST_ASSERT_FALSE(sw.isActive());
+    TEST_ASSERT_FALSE(sw.justStarted());
+    
+    // 2. Change to ON
+    mockPin.setRawValue(LOW);
+    sw.update();
+    TEST_ASSERT_TRUE(sw.isActive());
+    TEST_ASSERT_TRUE(sw.justStarted());
+    
+    // 3. Stay ON
+    sw.update();
+    TEST_ASSERT_TRUE(sw.isActive());
+    TEST_ASSERT_FALSE(sw.justStarted()); // Only true on first edge
+    
+    // 4. Change to OFF
+    mockPin.setRawValue(HIGH);
+    sw.update();
+    TEST_ASSERT_FALSE(sw.isActive());
+    TEST_ASSERT_TRUE(sw.justStopped());
+}
+
+void test_delayed_switch_persistence() {
+    setMillis(1500);
+    MockRawSource mockPin;
+    HardwareSwitch hwSw(&mockPin);
+    DelayedSwitch delSw(&hwSw, 1000); // 1s delay
+    
+    // 1. Initial
+    mockPin.setRawValue(HIGH);
+    hwSw.update();
+    delSw.update();
+    TEST_ASSERT_FALSE(delSw.isActive());
+    
+    // 2. Activate
+    mockPin.setRawValue(LOW);
+    hwSw.update();
+    delSw.update();
+    TEST_ASSERT_TRUE(delSw.isActive());
+    
+    // 3. Deactivate (Should stay active)
+    setMillis(2000);
+    mockPin.setRawValue(HIGH);
+    hwSw.update();
+    delSw.update();
+    TEST_ASSERT_FALSE(hwSw.isActive());
+    TEST_ASSERT_TRUE(delSw.isActive()); // Still active due to delay
+    
+    // 4. Wait for timeout
+    setMillis(3001);
+    delSw.update();
+    TEST_ASSERT_FALSE(delSw.isActive());
+    TEST_ASSERT_TRUE(delSw.justStopped());
+}
+
 #ifdef NATIVE
 int main() {
     UNITY_BEGIN();
@@ -218,6 +282,8 @@ int main() {
     RUN_TEST(test_pressure_floor);
     RUN_TEST(test_weight_conversion);
     RUN_TEST(test_tared_sensor);
+    RUN_TEST(test_switch_logic);
+    RUN_TEST(test_delayed_switch_persistence);
     return UNITY_END();
 }
 #else
