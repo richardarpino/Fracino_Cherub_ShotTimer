@@ -7,6 +7,8 @@
 #include "Interfaces/ISwitch.h"
 #include "Hardware/HardwareSwitch.h"
 #include "Virtual/DebouncedSwitch.h"
+#include "Logic/ScaleLogic.h"
+#include "Logic/ScaleLogic.cpp"
 #include "MockRawSource.h"
 #include "stubs/Arduino.h"
 #include "stubs/Arduino.cpp"
@@ -55,35 +57,39 @@ void test_shot_timer_logic() {
     MockRawSource mock;
     HardwareSwitch pumpHw(&mock, true);
     DebouncedSwitch pumpSw(&pumpHw, 150);
-    ShotTimer timer(&pumpSw, 10.0);
+    // 10s min duration
+    ShotTimer timer(10.0);
+    ScaleLogic logic(&pumpSw, &timer, nullptr);
     
     setMillis(0);
     mock.setRawValue(HIGH); // Pump OFF
-    timer.getReading();
+    logic.update();
     
     // 1. Start shot
     setMillis(1000);
     mock.setRawValue(LOW); // Pump ON
-    timer.getReading();
+    logic.update();
     
     // 2. Short duration (5s)
     setMillis(6000);
     mock.setRawValue(HIGH); // Pump OFF
+    logic.update();
     
-    setMillis(6200);
     Reading r = timer.getReading();
     TEST_ASSERT_EQUAL_FLOAT(0.0f, r.value);
     
     // 3. Valid duration (12s)
     setMillis(7000);
     mock.setRawValue(LOW); // Pump ON again
-    timer.getReading();
+    logic.update();
     
     setMillis(19000);
-    timer.getReading(); 
+    logic.update(); 
     
     mock.setRawValue(HIGH); // Pump OFF
-    setMillis(19200);
+    setMillis(19200); // Wait for debounce
+    logic.update();
+    
     r = timer.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.2f, 12.0f, r.value);
 }
@@ -143,13 +149,9 @@ void test_weight_conversion() {
 void test_tared_sensor() {
     MockRawSource weightMock;
     WeightSensor weightSensor(&weightMock, 0.001f);
-    
-    MockRawSource switchMock;
-    HardwareSwitch triggerSw(&switchMock, true); // Active LOW
-    TaredWeight taredSensor(&weightSensor, &triggerSw);
+    TaredWeight taredSensor(&weightSensor);
 
     setMillis(0);
-    switchMock.setRawValue(HIGH); // Switch OFF
     
     // 1. Establish steady state at 10.0g
     weightMock.setRawValue(10000); 
@@ -159,11 +161,8 @@ void test_tared_sensor() {
     }
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 10.0f, taredSensor.getReading().value);
 
-    // 2. Trigger auto-tare via switch
-    setMillis(1000);
-    switchMock.setRawValue(LOW); // Switch ON
-    
-    // First read triggers tare
+    // 2. Manual tare
+    taredSensor.tare();
     Reading r = taredSensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, r.value);
 
@@ -175,15 +174,6 @@ void test_tared_sensor() {
     }
     r = taredSensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 2.0f, r.value);
-
-    // 4. Manual tare cleanup
-    weightMock.setRawValue(15000);
-    for(int i=3000; i<3100; i++) {
-        setMillis(i);
-        taredSensor.getReading();
-    }
-    taredSensor.tare();
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, taredSensor.getReading().value);
 }
 
 void test_switch_idempotency() {
@@ -231,6 +221,51 @@ void test_switch_logic() {
     TEST_ASSERT_TRUE(sw.justStopped());
 }
 
+// --- Logic Tests ---
+
+void test_scale_logic() {
+    MockRawSource mockPin;
+    HardwareSwitch pumpHw(&mockPin, true); // Active LOW
+    DebouncedSwitch pumpSw(&pumpHw, 150);
+    
+    // We expect these classes to have explicit control methods soon
+    ShotTimer timer(0.5); // 0.5s min duration for test
+    
+    MockRawSource weightMock;
+    WeightSensor weightSensor(&weightMock, 0.001f);
+    TaredWeight taredWeight(&weightSensor); // Pure sensor, no internal switch coupling
+
+    // NEW Logic Module
+    ScaleLogic logic(&pumpSw, &timer, &taredWeight);
+
+    setMillis(0);
+    mockPin.setRawValue(HIGH); // Pump OFF
+    weightMock.setRawValue(5000); // 5g on scale
+    
+    // 1. Warm up weight sensor
+    for(int i=1; i<100; i++) {
+        setMillis(i);
+        taredWeight.getReading();
+    }
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, taredWeight.getReading().value);
+
+    // 2. Start Pump
+    setMillis(1000);
+    mockPin.setRawValue(LOW); // Pump ON
+    logic.update(); // Coordination happens here
+
+    // 3. Verify automatic tare triggered by Logic module
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, taredWeight.getReading().value);
+    
+    // 4. Stop Pump
+    setMillis(2000); // 1.0s duration
+    mockPin.setRawValue(HIGH); // Pump OFF
+    logic.update();
+
+    // Verify shot timer captured the duration (1.0s > 0.5s)
+    TEST_ASSERT_TRUE(timer.getReading().value > 0.9f); 
+}
+
 void test_debounced_switch_persistence() {
     setMillis(1500);
     MockRawSource mockPin;
@@ -274,6 +309,7 @@ int main() {
     RUN_TEST(test_switch_logic);
     RUN_TEST(test_debounced_switch_persistence);
     RUN_TEST(test_switch_idempotency);
+    RUN_TEST(test_scale_logic);
     return UNITY_END();
 }
 #else

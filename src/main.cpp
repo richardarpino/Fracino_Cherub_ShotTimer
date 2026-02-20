@@ -9,6 +9,7 @@
 #include "ADCRawSource.h"
 #include "DigitalRawSource.h"
 #include "Virtual/BoilerTemperature.h"
+#include "Logic/ScaleLogic.h"
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <vector>
@@ -36,7 +37,8 @@ DebouncedSwitch pumpSw(&pumpHw, DEBOUNCE_MS);
 
 BoilerPressure boilerPressure(&pressureADC, pressureScalar);
 BoilerTemperature boilerTemp(&boilerPressure);
-ShotTimer shotTimer(&pumpSw, MIN_SHOT_SECONDS);
+ShotTimer shotTimer(MIN_SHOT_SECONDS);
+ScaleLogic scaleLogic(&pumpSw, &shotTimer, nullptr); // Scale hardware coming soon
 
 DefaultTheme defaultTheme;
 CandyTheme candyTheme;

@@ -7,10 +7,14 @@
 
 class ShotTimer : public ISensor {
 public:
-    ShotTimer(ISwitch* pumpSwitch, float minShotDuration = 10.0);
+    ShotTimer(float minShotDuration = 10.0);
 
     // ISensor Implementation
     Reading getReading() override;
+
+    // External Control
+    void start();
+    void stop();
 
 private:
     enum TimerState {
@@ -19,7 +23,6 @@ private:
         TIMER_FINISHED
     };
     
-    ISwitch* _pump;
     unsigned long _startTime;
     
     TimerState _state;
