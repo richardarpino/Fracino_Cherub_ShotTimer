@@ -6,9 +6,13 @@
 class DebouncedSwitch : public ISwitch {
 public:
     DebouncedSwitch(ISwitch* base, unsigned long delayMs) 
-        : _base(base), _delayMs(delayMs), _lastActiveTime(0), _isActive(false), _lastIsActive(false) {}
+        : _base(base), _delayMs(delayMs), _lastActiveTime(0), _isActive(false), _lastIsActive(false), _lastUpdateMillis(0) {}
     
     void update() override {
+        unsigned long now = millis();
+        if (now == _lastUpdateMillis) return;
+        _lastUpdateMillis = now;
+
         _lastIsActive = _isActive;
         if (_base) {
             _base->update();
@@ -16,9 +20,9 @@ public:
             
             if (baseActive) {
                 _isActive = true;
-                _lastActiveTime = millis();
+                _lastActiveTime = now;
             } else {
-                if (_isActive && (millis() - _lastActiveTime >= _delayMs)) {
+                if (_isActive && (now - _lastActiveTime >= _delayMs)) {
                     _isActive = false;
                 }
             }
@@ -35,6 +39,7 @@ private:
     unsigned long _lastActiveTime;
     bool _isActive;
     bool _lastIsActive;
+    unsigned long _lastUpdateMillis;
 };
 
 #endif

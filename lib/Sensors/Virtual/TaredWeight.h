@@ -1,18 +1,27 @@
-#ifndef VIRTUAL_TARED_SENSOR_H
-#define VIRTUAL_TARED_SENSOR_H
+#ifndef VIRTUAL_TARED_WEIGHT_H
+#define VIRTUAL_TARED_WEIGHT_H
 
 #include "../../Interfaces/ISensor.h"
+#include "../../Interfaces/ISwitch.h"
 
 /**
  * Virtual Sensor: Decorator to add Taring functionality.
  * Wraps any ISensor and provides a zeroed reference.
  */
-class TaredSensor : public ISensor {
+class TaredWeight : public ISensor {
 public:
-    TaredSensor(ISensor* base) : _base(base), _offset(0.0f) {}
+    TaredWeight(ISensor* base, ISwitch* trigger = nullptr) 
+        : _base(base), _trigger(trigger), _offset(0.0f) {}
     
     Reading getReading() override {
         if (!_base) return Reading();
+
+        if (_trigger) {
+            _trigger->update();
+            if (_trigger->justStarted()) {
+                tare();
+            }
+        }
         
         Reading r = _base->getReading();
         r.value -= _offset;
@@ -27,6 +36,7 @@ public:
 
 private:
     ISensor* _base;
+    ISwitch* _trigger;
     float _offset;
 };
 

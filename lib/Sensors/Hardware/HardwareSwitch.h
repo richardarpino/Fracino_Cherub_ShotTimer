@@ -7,9 +7,13 @@
 class HardwareSwitch : public ISwitch {
 public:
     HardwareSwitch(IRawSource* source, bool activeLow = true) 
-        : _source(source), _activeLow(activeLow), _currentState(false), _lastState(false) {}
+        : _source(source), _activeLow(activeLow), _currentState(false), _lastState(false), _lastUpdateMillis(0) {}
     
     void update() override {
+        unsigned long now = millis();
+        if (now == _lastUpdateMillis) return;
+        _lastUpdateMillis = now;
+
         _lastState = _currentState;
         if (_source) {
             bool raw = _source->read().value == (_activeLow ? LOW : HIGH);
@@ -26,6 +30,7 @@ private:
     bool _activeLow;
     bool _currentState;
     bool _lastState;
+    unsigned long _lastUpdateMillis;
 };
 
 #endif
