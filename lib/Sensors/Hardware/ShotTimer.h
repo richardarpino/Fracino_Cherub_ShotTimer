@@ -3,10 +3,11 @@
 
 #include <Arduino.h>
 #include "../../Interfaces/ISensor.h"
+#include "../../Interfaces/ISwitch.h"
 
 class ShotTimer : public ISensor {
 public:
-    ShotTimer(IRawSource* pumpSource, unsigned long debounceMs = 150, float minShotDuration = 10.0);
+    ShotTimer(ISwitch* pumpSwitch, float minShotDuration = 10.0);
 
     // ISensor Implementation
     Reading getReading() override;
@@ -18,11 +19,8 @@ private:
         TIMER_FINISHED
     };
     
-    IRawSource* _pumpSource;
-    unsigned long _debounceTime;
+    ISwitch* _pump;
     unsigned long _startTime;
-    unsigned long _lastActiveTime; // Last time the pump was seen active
-    unsigned long _lastSampleTime;
     
     TimerState _state;
     float _finalTime;

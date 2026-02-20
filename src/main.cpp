@@ -31,9 +31,12 @@ ADCRawSource pressureADC(pressurePin);
 DigitalRawSource pumpInput(pumpPin);
 DigitalRawSource buttonInput(buttonPin);
 
+HardwareSwitch pumpHw(&pumpInput, true);
+DebouncedSwitch pumpSw(&pumpHw, DEBOUNCE_MS);
+
 BoilerPressure boilerPressure(&pressureADC, pressureScalar);
 BoilerTemperature boilerTemp(&boilerPressure);
-ShotTimer shotTimer(&pumpInput, DEBOUNCE_MS, MIN_SHOT_SECONDS);
+ShotTimer shotTimer(&pumpSw, MIN_SHOT_SECONDS);
 
 DefaultTheme defaultTheme;
 CandyTheme candyTheme;

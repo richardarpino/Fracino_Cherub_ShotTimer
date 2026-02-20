@@ -2,63 +2,66 @@
 
 ![Compile and Test Native](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/actions/workflows/compile.yml/badge.svg)
 
-Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
+Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular **data-pull architecture**.
 
-For detailed developer notes, methods, and tool documentation, visit the [Project Wiki](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/wiki).
+---
 
-## 🚀 Quick Start
-1. **Hardware**: Connect your sensor and signals according to the mappings in `include/pins.h`.
-2. **Configuration**: 
-    - Copy `include/secrets.h.example` to `include/secrets.h` and add your WiFi credentials.
-    - Copy `include/pins.h.example` to `include/pins.h` and verify the pin mappings for your board.
-3. **Build & Test**: 
-    - Build: `pio run -e lilygo-t-display`
-    - Test: `pio test -e native` (Run logic tests instantly on your PC)
+## 🚀 Quick Start (60 Seconds)
+
+1. **Hardware**: Connect sensors according to `include/pins.h`.
+2. **Environment**: Install [PlatformIO IDE](https://platformio.org/).
+3. **Configuration**:
+    - `cp include/secrets.h.example include/secrets.h` (Add WiFi)
+    - `cp include/pins.h.example include/pins.h` (Verify pins)
+4. **Development Workflow**:
+    - **Test (Native)**: `pio test -e native` (Run logic tests instantly on your PC)
+    - **Build (Hardware)**: `pio run -e lilygo-t-display`
+    - **Wait/Flash**: `pio run -e lilygo-t-display -t upload`
+
+---
 
 ## 🏗 Modular Architecture
-The project uses a **Pull Model** to decouple data sources from the UI.
 
-### 📡 Sensors (`lib/Interfaces`, `lib/BoilerPressure`, `lib/ShotTimer`)
-Everything providing data implements `ISensor`.
-- `BoilerPressure`: Raw ADC -> Bar (Inherits from `FilteredSensor`).
-- `BoilerTemperature`: Bar -> Celsius (Antoine Equation).
-- `ShotTimer`: GPIO -> Seconds (Timing State Machine with debounce).
+The project decouples hardware polling from application logic using a **Pull Model**.
 
-### 🛡️ Sensor Stability & Smoothing
-To handle noisy ADC signals (especially on ESP32), we use a two-tiered approach:
-1. **Hardware Oversampling**: `ADCRawSource` averages 64 consecutive ADC samples to floor electronic noise.
-2. **`FilteredSensor` Base Class**: Provides centralized **EMA Smoothing** and **Display Hysteresis**. Hysteresis prevents "jitter" at decimal boundaries by requiring a minimum change (e.g., 0.02 Bar) before updating the UI.
+### 📡 Data Sources (`lib/Interfaces`)
+Everything providing data implements `ISensor` or `ISwitch`.
+
+- **`ISensor`**: Provides continuous measurements (Pressure, Temperature, Weight).
+    - `BoilerPressure`: Raw ADC -> Bar (Filtered).
+    - `BoilerTemperature`: Bar -> Celsius conversion.
+- **`ISwitch`**: Provides binary state with edge detection (`justStarted`, `justStopped`).
+    - `HardwareSwitch`: Polled GPIO handler.
+    - `DebouncedSwitch`: Persistence layer for debounce and gap filtering.
+
+### 🛡️ Sensor Stability
+To handle noisy signals (especially ESP32 ADC):
+1. **Oversampling**: `ADCRawSource` averages 64 samples to floor noise.
+2. **`FilteredSensor` Base Class**: Provides centralized **EMA Smoothing** and **Display Hysteresis** (stops value jitter).
 
 ### 🎨 UI & Widgets (`lib/UI`)
 Widgets implement `IWidget` and pull data from sensors independently.
-- **Late-Parenting**: Widgets are created without parents and "adopted" by the layout manager.
-- **SRP Decoupling**: Widgets only manage their internal content; the layout manages all positioning.
+- **Late-Parenting**: Widgets are created abstractly and adopted by the layout manager.
+- **Auto-Layout**: Managed in `main.cpp`. Widgets occupy slots: Top-Left (0), Bottom-Left (1), Top-Right (2), Bottom-Right (3).
 
-## 🛠 Developer Guide
+---
 
-### 1. Unit Testing
-Logic-heavy components are tested in a `native` environment.
+## 🧪 Developer Guide
+
+### 1. The TDD Workflow
+We use a **Red-Green-Refactor** cycle. Logic-heavy components (like state machines) should be developed and verified in the `native` test suite before flashing to hardware.
+
 ```bash
+# Run all unit tests
 pio test -e native
 ```
-Stubs for `Arduino.h` and `String` are provided in `test/stubs` to allow for rapid desktop-based verification.
+Stubs for `Arduino.h` and hardware pins are provided in `test/stubs`.
 
-### 2. Registering Widgets
-The UI layout is managed automatically in `main.cpp`. Widgets are added in the order: **Top-Left (0), Bottom-Left (1), Top-Right (2), Bottom-Right (3)**.
-
-```cpp
-ScreenLayout* layout = shotDisplay.getLayout();
-layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0
-layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1
-layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2
-layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3
-```
-
-### 3. Adding a Filtered Sensor
-Inherit from `FilteredSensor` to get automatic smoothing:
+### 2. Adding a New Sensor
+Inherit from `FilteredSensor` to get automatic smoothing and hysteresis:
 ```cpp
 class MySensor : public FilteredSensor {
-    MySensor() : FilteredSensor(0.1f, 0.05f) {} // alpha, hysteresis
+    MySensor() : FilteredSensor(0.1f, 0.05f) {} // alpha, hysteresis threshold
     Reading getReading() override {
         updateFilter(newValue);
         return Reading(getStableDisplayValue(), "UNIT", "LABEL");
@@ -66,9 +69,18 @@ class MySensor : public FilteredSensor {
 };
 ```
 
+### 3. Using Logic Switches
+Use `ISwitch` to handle discrete events without boilerplate state tracking:
+```cpp
+if (pumpSw.justStarted()) { /* Trigger once on edge */ }
+if (pumpSw.isActive())    { /* True while active */ }
+```
+
+---
+
 ## 🔌 Hardware Pins
 
-Example board used for development: [TENSTAR T-Display ESP32 Development Board with 1.14 Inch LCD](https://www.aliexpress.com/item/1005062610762446.html). PlatformIO environment: `lilygo-t-display` is compatible.
+Compatible with **LilyGo T-Display (ESP32)**. See `include/pins.h` for full mapping.
 
 | Pin | Function | Hardware Required |
 | :--- | :--- | :--- |
@@ -78,4 +90,4 @@ Example board used for development: [TENSTAR T-Display ESP32 Development Board w
 | **GPIO 4** | LCD Backlight | Built-in |
 
 ---
-*Generated by [Antigravity](https://deepmind.google/)*
+*Maintained by the [Antigravity](https://deepmind.google/) Agentic AI.*

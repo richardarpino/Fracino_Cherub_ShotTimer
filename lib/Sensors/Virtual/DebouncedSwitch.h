@@ -1,11 +1,11 @@
-#ifndef DELAYED_SWITCH_H
-#define DELAYED_SWITCH_H
+#ifndef DEBOUNCED_SWITCH_H
+#define DEBOUNCED_SWITCH_H
 
 #include "../../Interfaces/ISwitch.h"
 
-class DelayedSwitch : public ISwitch {
+class DebouncedSwitch : public ISwitch {
 public:
-    DelayedSwitch(ISwitch* base, unsigned long delayMs) 
+    DebouncedSwitch(ISwitch* base, unsigned long delayMs) 
         : _base(base), _delayMs(delayMs), _lastActiveTime(0), _isActive(false), _lastIsActive(false) {}
     
     void update() override {

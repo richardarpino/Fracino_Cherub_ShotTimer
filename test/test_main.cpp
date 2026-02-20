@@ -2,6 +2,8 @@
 #include "Hardware/BoilerPressure.h"
 #include "Virtual/BoilerTemperature.h"
 #include "Hardware/ShotTimer.cpp" 
+#include "Hardware/HardwareSwitch.h"
+#include "Virtual/DebouncedSwitch.h"
 #include "MockRawSource.h"
 #include "stubs/Arduino.h"
 #include "stubs/Arduino.cpp"
@@ -57,8 +59,10 @@ void test_temperature_calculation() {
 
 void test_shot_timer_logic() {
     MockRawSource mock;
-    // 150ms debounce, 10s min duration
-    ShotTimer timer(&mock, 150, 10.0);
+    HardwareSwitch pumpHw(&mock, true);
+    DebouncedSwitch pumpSw(&pumpHw, 150);
+    // 10s min duration
+    ShotTimer timer(&pumpSw, 10.0);
     
     setMillis(0);
     mock.setRawValue(HIGH); // Pump OFF (Active Low)
@@ -165,7 +169,7 @@ void test_pressure_floor() {
 #include "Virtual/TaredSensor.h"
 #include "Interfaces/ISwitch.h"
 #include "Hardware/HardwareSwitch.h"
-#include "Virtual/DelayedSwitch.h"
+#include "Virtual/DebouncedSwitch.h"
 
 // ... (existing includes)
 
@@ -239,11 +243,11 @@ void test_switch_logic() {
     TEST_ASSERT_TRUE(sw.justStopped());
 }
 
-void test_delayed_switch_persistence() {
+void test_debounced_switch_persistence() {
     setMillis(1500);
     MockRawSource mockPin;
     HardwareSwitch hwSw(&mockPin);
-    DelayedSwitch delSw(&hwSw, 1000); // 1s delay
+    DebouncedSwitch delSw(&hwSw, 1000); // 1s delay
     
     // 1. Initial
     mockPin.setRawValue(HIGH);
@@ -283,7 +287,7 @@ int main() {
     RUN_TEST(test_weight_conversion);
     RUN_TEST(test_tared_sensor);
     RUN_TEST(test_switch_logic);
-    RUN_TEST(test_delayed_switch_persistence);
+    RUN_TEST(test_debounced_switch_persistence);
     return UNITY_END();
 }
 #else
