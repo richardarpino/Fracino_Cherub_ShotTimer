@@ -2,14 +2,19 @@
 #define SHOT_TIMER_H
 
 #include <Arduino.h>
-#include "../Interfaces/ISensor.h"
+#include "../../Interfaces/ISensor.h"
+#include "../../Interfaces/ISwitch.h"
 
 class ShotTimer : public ISensor {
 public:
-    ShotTimer(IRawSource* pumpSource, unsigned long debounceMs = 150, float minShotDuration = 10.0);
+    ShotTimer(float minShotDuration = 10.0);
 
     // ISensor Implementation
     Reading getReading() override;
+
+    // External Control
+    void start();
+    void stop();
 
 private:
     enum TimerState {
@@ -18,11 +23,7 @@ private:
         TIMER_FINISHED
     };
     
-    IRawSource* _pumpSource;
-    unsigned long _debounceTime;
     unsigned long _startTime;
-    unsigned long _lastActiveTime; // Last time the pump was seen active
-    unsigned long _lastSampleTime;
     
     TimerState _state;
     float _finalTime;

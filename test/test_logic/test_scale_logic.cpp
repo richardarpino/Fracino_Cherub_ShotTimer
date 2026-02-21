@@ -1,0 +1,87 @@
+#include <unity.h>
+#include "Hardware/ShotTimer.h"
+#include "Hardware/HardwareSwitch.h"
+#include "Virtual/DebouncedSwitch.h"
+#include "Virtual/TaredWeight.h"
+#include "Hardware/WeightSensor.h"
+#include "Logic/ScaleLogic.h"
+#include "Logic/ScaleLogic.cpp"
+#include "../_common/MockRawSource.h"
+#include "../_common/stubs/Arduino.h"
+#include "../_common/stubs/Arduino.cpp"
+
+void test_scale_logic() {
+    MockRawSource mockPin;
+    HardwareSwitch pumpHw(&mockPin, true); // Active LOW
+    DebouncedSwitch pumpSw(&pumpHw, 150);
+    
+    ShotTimer timer(0.5); // 0.5s min duration for test
+    
+    MockRawSource weightMock;
+    WeightSensor weightSensor(&weightMock, 0.001f);
+    TaredWeight taredWeight(&weightSensor);
+
+    ScaleLogic logic(&pumpSw, &timer, &taredWeight);
+
+    setMillis(0);
+    mockPin.setRawValue(HIGH); // Pump OFF
+    weightMock.setRawValue(5000); // 5g on scale
+    
+    for(int i=1; i<100; i++) {
+        setMillis(i);
+        taredWeight.getReading();
+    }
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, taredWeight.getReading().value);
+
+    setMillis(1000);
+    mockPin.setRawValue(LOW); // Pump ON
+    pumpSw.update();
+    logic.update();
+
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, taredWeight.getReading().value);
+    
+    setMillis(2000);
+    mockPin.setRawValue(HIGH); // Pump OFF
+    pumpSw.update();
+    logic.update();
+
+    TEST_ASSERT_TRUE(timer.getReading().value > 0.9f); 
+}
+
+void test_scale_logic_edge_consumption() {
+    MockRawSource mockPin;
+    HardwareSwitch pumpHw(&mockPin, true);
+    DebouncedSwitch pumpSw(&pumpHw, 150);
+    ShotTimer timer(0.5);
+    ScaleLogic logic(&pumpSw, &timer, nullptr);
+
+    setMillis(0);
+    mockPin.setRawValue(HIGH);
+    logic.update();
+
+    // 1. Pump starts
+    setMillis(1000);
+    mockPin.setRawValue(LOW);
+    
+    // 2. Something ELSE calls update() before ScaleLogic in a DIFFERENT millisecond
+    pumpSw.update();
+    TEST_ASSERT_TRUE(pumpSw.justStarted()); 
+
+    setMillis(1001); // Wait 1ms
+    
+    // 3. ScaleLogic updates (now without calling pumpSw.update())
+    // It will see the edge from the previous millisecond because update() wasn't called again
+    logic.update();
+
+    setMillis(2001); // Advance time
+    
+    // 4. ShotTimer should have started
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, timer.getReading().value); 
+}
+
+int main() {
+    UNITY_BEGIN();
+    RUN_TEST(test_scale_logic);
+    RUN_TEST(test_scale_logic_edge_consumption);
+    return UNITY_END();
+}

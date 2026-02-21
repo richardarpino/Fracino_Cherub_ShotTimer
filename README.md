@@ -2,80 +2,83 @@
 
 ![Compile and Test Native](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/actions/workflows/compile.yml/badge.svg)
 
-Custom ESP32 firmware for the Fracino Cherub espresso machine, providing real-time boiler diagnostics and an automated shot timer using a modular "Pull Model" architecture.
+A modular ESP32 firmware for the Fracino Cherub espresso machine. It provides real-time boiler diagnostics and an automated shot timer using a **Coordinator-based architecture**.
 
-For detailed developer notes, methods, and tool documentation, visit the [Project Wiki](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/wiki).
+---
 
-## 🚀 Quick Start
-1. **Hardware**: Connect your sensor and signals according to the mappings in `include/pins.h`.
-2. **Configuration**: 
-    - Copy `include/secrets.h.example` to `include/secrets.h` and add your WiFi credentials.
-    - Copy `include/pins.h.example` to `include/pins.h` and verify the pin mappings for your board.
-3. **Build & Test**: 
-    - Build: `pio run -e lilygo-t-display`
-    - Test: `pio test -e native` (Run logic tests instantly on your PC)
+## 🚀 Get Started in 60 Seconds
+
+### 1. Requirements
+- **Hardware**: ESP32 (LilyGo T-Display clones), generic pressure sensor, AC Optocoupler for pump signal.
+- **Environment**: [PlatformIO IDE](https://platformio.org/).
+
+### 2. Configuration
+```bash
+# Setup secrets and pin mappings
+cp include/secrets.h.example include/secrets.h  # Add your WiFi creds
+cp include/pins.h.example include/pins.h        # Define your pins
+```
+
+### 3. Workflow
+- **Test (Native)**: `pio test -e native` (Check logic instantly without hardware).
+- **Build/Upload**: `pio run -e lilygo-t-display -t upload`
+
+---
 
 ## 🏗 Modular Architecture
-The project uses a **Pull Model** to decouple data sources from the UI.
 
-### 📡 Sensors (`lib/Interfaces`, `lib/BoilerPressure`, `lib/ShotTimer`)
-Everything providing data implements `ISensor`.
-- `BoilerPressure`: Raw ADC -> Bar (Inherits from `FilteredSensor`).
-- `BoilerTemperature`: Bar -> Celsius (Antoine Equation).
-- `ShotTimer`: GPIO -> Seconds (Timing State Machine with debounce).
+The project is split into three distinct layers to make it maintainable and testable.
 
-### 🛡️ Sensor Stability & Smoothing
-To handle noisy ADC signals (especially on ESP32), we use a two-tiered approach:
-1. **Hardware Oversampling**: `ADCRawSource` averages 64 consecutive ADC samples to floor electronic noise.
-2. **`FilteredSensor` Base Class**: Provides centralized **EMA Smoothing** and **Display Hysteresis**. Hysteresis prevents "jitter" at decimal boundaries by requiring a minimum change (e.g., 0.02 Bar) before updating the UI.
+### 🔌 Layer 1: Data Sources (`lib/Interfaces`)
+Everything that measures or detects implements `ISensor` or `ISwitch`.
+- **Sensors**: Continuous values like `BoilerPressure` or `WeightSensor`.
+- **Switches**: Binary states with edge detection (`HardwareSwitch`, `DebouncedSwitch`).
+- **Decorators**: Virtual sensors like `TaredWeight` or `BoilerTemperature`.
 
-### 🎨 UI & Widgets (`lib/UI`)
-Widgets implement `IWidget` and pull data from sensors independently.
-- **Late-Parenting**: Widgets are created without parents and "adopted" by the layout manager.
-- **SRP Decoupling**: Widgets only manage their internal content; the layout manages all positioning.
+### 🧠 Layer 2: Logic Modules (`lib/Logic`)
+This is the **"Brain"** of the machine. It coordinates behavior between sensors.
+- **`ScaleLogic`**: Listens to the `pumpSw` and commands the `ShotTimer` and `Scale` (e.g., auto-taring when the pump starts).
+- **Separation of Concerns**: Sensors handle *measurement*; Logic handles *behavior*.
 
-## 🛠 Developer Guide
+### 🎨 Layer 3: UI & Widgets (`lib/UI`)
+The UI is built with **LVGL**.
+- **Widgets**: `SensorWidget`, `StatusWidget`. They pull data from sensors independently.
+- **Themes**: Support for dynamic themes (`CandyTheme`, `ChristmasTheme`).
 
-### 1. Unit Testing
-Logic-heavy components are tested in a `native` environment.
-```bash
-pio test -e native
-```
-Stubs for `Arduino.h` and `String` are provided in `test/stubs` to allow for rapid desktop-based verification.
+---
 
-### 2. Registering Widgets
-The UI layout is managed automatically in `main.cpp`. Widgets are added in the order: **Top-Left (0), Bottom-Left (1), Top-Right (2), Bottom-Right (3)**.
+## 🧪 Developer Guide
 
-```cpp
-ScreenLayout* layout = shotDisplay.getLayout();
-layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0
-layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1
-layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2
-layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3
-```
+### 1. Adding a New Feature (TDD)
+We follow a **Red-Green-Refactor** workflow using the `native` test suite.
+1. Add a test in `test/test_main.cpp`.
+2. Run `pio test -e native` (it should fail).
+3. Implement the logic in `lib/`.
+4. Run tests again (it should pass).
 
-### 3. Adding a Filtered Sensor
-Inherit from `FilteredSensor` to get automatic smoothing:
-```cpp
-class MySensor : public FilteredSensor {
-    MySensor() : FilteredSensor(0.1f, 0.05f) {} // alpha, hysteresis
-    Reading getReading() override {
-        updateFilter(newValue);
-        return Reading(getStableDisplayValue(), "UNIT", "LABEL");
-    }
-};
-```
+### 2. Implementing Logic
+If you want to add a new cross-component behavior (e.g., "Beep when pressure hits 2 bar"):
+1. Instantiate your components in `main.cpp`.
+2. Create or update a Logic module in `lib/Logic`.
+3. Dispatch commands to sensors/actuators inside the `Logic::update()` method.
 
-## 🔌 Hardware Pins
+### 3. Handling Noisy Hardware
+- **`ADCRawSource`**: Averages 64 samples at the hardware level.
+- **`FilteredSensor`**: A base class providing **EMA Smoothing** and **Display Hysteresis** to stop value "flicker".
+
+---
+
+## 🔌 Hardware Reference
 
 Example board used for development: [TENSTAR T-Display ESP32 Development Board with 1.14 Inch LCD](https://www.aliexpress.com/item/1005062610762446.html). PlatformIO environment: `lilygo-t-display` is compatible.
 
-| Pin | Function | Hardware Required |
+| Pin Mapping | Function | Notes |
 | :--- | :--- | :--- |
-| **GPIO 32** | Pressure Sensor | 10kΩ + 10kΩ Voltage Divider |
-| **GPIO 25** | Pump Signal | AC Optocoupler Isolation |
-| **GPIO 35** | Theme Button | Built-in (Right button) |
-| **GPIO 4** | LCD Backlight | Built-in |
+| **GPIO 32** | Pressure Sensor | Analog 0-3.3V (use voltage divider) |
+| **GPIO 25** | Pump Signal | AC Optocoupler (Active LOW/HIGH configurable) |
+| **GPIO 35** | Button | Right button on T-Display |
+| **GPIO 4** | Backlight | PWM controllable |
 
 ---
-*Generated by [Antigravity](https://deepmind.google/)*
+
+*Maintained by the [Antigravity](https://deepmind.google/) Agentic AI.*

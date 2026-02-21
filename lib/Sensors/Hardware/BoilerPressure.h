@@ -2,7 +2,7 @@
 #define BOILER_PRESSURE_H
 
 #include <Arduino.h>
-#include "../Interfaces/FilteredSensor.h"
+#include "../../Interfaces/FilteredSensor.h"
 
 class BoilerPressure : public FilteredSensor {
 public:
