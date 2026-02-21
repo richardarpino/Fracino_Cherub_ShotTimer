@@ -16,10 +16,10 @@ void test_startup_transition() {
     TEST_ASSERT_FALSE(logic.isComplete());
     
     WiFi.setStatus(WL_CONNECTED);
-    setMillis(100); logic.update();
+    setMillis(100); wifi.update(); logic.update();
     TEST_ASSERT_FALSE(logic.isComplete()); // Still in hold period
 
-    setMillis(3100); logic.update();
+    setMillis(3100); wifi.update(); logic.update();
     TEST_ASSERT_TRUE(logic.isComplete()); // Hold expired
 }
 
@@ -31,10 +31,10 @@ void test_startup_just_finished() {
     TEST_ASSERT_FALSE(logic.justFinished());
     
     WiFi.setStatus(WL_CONNECTED);
-    setMillis(100); logic.update();
+    setMillis(100); wifi.update(); logic.update();
     TEST_ASSERT_FALSE(logic.justFinished()); // Still in hold
 
-    setMillis(3100); logic.update();
+    setMillis(3100); wifi.update(); logic.update();
     TEST_ASSERT_TRUE(logic.justFinished());
     TEST_ASSERT_FALSE(logic.justFinished()); // Should clear after read
 }

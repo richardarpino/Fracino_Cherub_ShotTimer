@@ -1,6 +1,23 @@
 #include "WiFiSensor.h"
 
-WiFiSensor::WiFiSensor() {}
+WiFiSensor::WiFiSensor() 
+    : _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false) {}
+
+void WiFiSensor::begin(const char* ssid, const char* password) {
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_STA);
+    delay(100);
+    WiFi.begin(ssid, password);
+}
+
+void WiFiSensor::update() {
+    wl_status_t status = WiFi.status();
+    _isActive = (status == WL_CONNECTED);
+
+    _justStarted = _isActive && !_lastActive;
+    _justStopped = !_isActive && _lastActive;
+    _lastActive = _isActive;
+}
 
 Reading WiFiSensor::getReading() {
     wl_status_t status = WiFi.status();

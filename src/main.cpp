@@ -59,7 +59,7 @@ void setupMainDashboard() {
   layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0 (TL)
   layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1 (BL)
   layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2 (TR)
-  layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3 (BR)
+  layout->addWidget(new SensorWidget(&shotTimer));  // Slot 3 (BR)
 }
 
 void setup() {
@@ -78,13 +78,10 @@ void setup() {
   
   // Startup Layout (1x1)
   shotDisplay.resetLayout(1, 1);
-  shotDisplay.getLayout()->addWidget(new StatusWidget(&wifiSensor, true));
+  shotDisplay.getLayout()->addWidget(new StatusWidget(&wifiSensor));
 
   // WiFi Setup (Non-blocking)
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_STA);
-  delay(100);
-  WiFi.begin(ssid, password);
+  wifiSensor.begin(ssid, password);
 }
 
 void loop() {
@@ -101,6 +98,7 @@ void loop() {
 
   // Poll I/O once per logic frame
   pumpSw.update();
+  wifiSensor.update();
   startupLogic.update();
 
   // All widgets pull their own data from their assigned sensors

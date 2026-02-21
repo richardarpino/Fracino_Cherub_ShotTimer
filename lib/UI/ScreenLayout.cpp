@@ -44,7 +44,7 @@ void ScreenLayout::addWidget(IWidget* widget) {
     uint8_t row = _nextSlot % _rows;
 
     // Initialize the widget and get its root visual
-    lv_obj_t* root = widget->init(_grid);
+    lv_obj_t* root = widget->init(_grid, _cols, _rows);
     
     // Layout-specific placement logic stays here in the manager
     lv_obj_set_grid_cell(root, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, row, 1);
