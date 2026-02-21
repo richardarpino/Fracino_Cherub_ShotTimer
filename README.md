@@ -70,6 +70,8 @@ If you want to add a new cross-component behavior (e.g., "Beep when pressure hit
 
 ## 🔌 Hardware Reference
 
+Example board used for development: [TENSTAR T-Display ESP32 Development Board with 1.14 Inch LCD](https://www.aliexpress.com/item/1005062610762446.html). PlatformIO environment: `lilygo-t-display` is compatible.
+
 | Pin Mapping | Function | Notes |
 | :--- | :--- | :--- |
 | **GPIO 32** | Pressure Sensor | Analog 0-3.3V (use voltage divider) |
