@@ -103,8 +103,12 @@ void loop() {
   lv_timer_handler();
   delay(5);
 
+  // Poll I/O once per logic frame
+  pumpSw.update();
+
   // All widgets pull their own data from their assigned sensors
   shotDisplay.update();
 
   themeManager.update();
+  scaleLogic.update();
 }

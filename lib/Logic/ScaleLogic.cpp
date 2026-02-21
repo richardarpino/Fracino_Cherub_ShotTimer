@@ -6,9 +6,6 @@ ScaleLogic::ScaleLogic(ISwitch* pump, ShotTimer* timer, TaredWeight* weight)
 void ScaleLogic::update() {
     if (!_pump) return;
 
-    // Pump Polling (idempotent)
-    _pump->update();
-
     if (_pump->justStarted()) {
         if (_timer) _timer->start();
         if (_weight) _weight->tare();

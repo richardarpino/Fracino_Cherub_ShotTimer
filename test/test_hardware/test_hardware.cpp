@@ -3,7 +3,7 @@
 #include "Hardware/ShotTimer.h"
 #include "Hardware/WeightSensor.h"
 #include "Hardware/HardwareSwitch.h"
-#include "Logic/ScaleLogic.h"
+#include "ScaleLogic.h"
 #include "Logic/ScaleLogic.cpp"
 #include "Virtual/DebouncedSwitch.h"
 #include "../_common/MockRawSource.h"
@@ -46,19 +46,19 @@ void test_shot_timer_logic() {
     ScaleLogic logic(&pumpSw, &timer, nullptr);
     
     setMillis(0);
-    mock.setRawValue(HIGH); logic.update();
+    mock.setRawValue(HIGH); pumpSw.update(); logic.update();
     
     setMillis(1000);
-    mock.setRawValue(LOW); logic.update();
+    mock.setRawValue(LOW); pumpSw.update(); logic.update();
     
     setMillis(6000);
-    mock.setRawValue(HIGH); logic.update();
+    mock.setRawValue(HIGH); pumpSw.update(); logic.update();
     TEST_ASSERT_EQUAL_FLOAT(0.0f, timer.getReading().value);
     
     setMillis(7000);
-    mock.setRawValue(LOW); logic.update();
-    setMillis(19000); logic.update(); 
-    mock.setRawValue(HIGH); setMillis(19200); logic.update();
+    mock.setRawValue(LOW); pumpSw.update(); logic.update();
+    setMillis(19000); pumpSw.update(); logic.update(); 
+    mock.setRawValue(HIGH); setMillis(19200); pumpSw.update(); logic.update();
     
     TEST_ASSERT_FLOAT_WITHIN(0.2f, 12.0f, timer.getReading().value);
 }
