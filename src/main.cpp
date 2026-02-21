@@ -9,7 +9,9 @@
 #include "ADCRawSource.h"
 #include "DigitalRawSource.h"
 #include "Virtual/BoilerTemperature.h"
-#include "Logic/ScaleLogic.h"
+#include "Hardware/HardwareSwitch.h"
+#include "Virtual/DebouncedSwitch.h"
+#include "ScaleLogic.h"
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <vector>
