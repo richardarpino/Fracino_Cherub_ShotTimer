@@ -14,8 +14,7 @@
 #include "ScaleLogic.h"
 #include "Hardware/WiFiSensor.h"
 #include "StartupLogic.h"
-#include <ArduinoOTA.h>
-#include <WiFi.h>
+#include "OTAService.h"
 #include <vector>
 #include "pins.h"
 #include "secrets.h"
@@ -43,7 +42,8 @@ BoilerPressure boilerPressure(&pressureADC, pressureScalar);
 BoilerTemperature boilerTemp(&boilerPressure);
 ShotTimer shotTimer(MIN_SHOT_SECONDS);
 WiFiSensor wifiSensor;
-StartupLogic startupLogic(&wifiSensor);
+OTAService otaService;
+StartupLogic startupLogic(&wifiSensor, &otaService);
 ScaleLogic scaleLogic(&pumpSw, &shotTimer, nullptr); // Scale hardware coming soon
 
 DefaultTheme defaultTheme;
@@ -85,20 +85,20 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
   lv_timer_handler();
   delay(5);
 
   // Startup Transition
-  if (startupLogic.justFinished()) {
-    ArduinoOTA.setHostname(OTA_HOSTNAME);
-    ArduinoOTA.begin();
+  static bool dashboardReady = false;
+  if (!dashboardReady && startupLogic.getState() == StartupLogic::State::READY) {
     setupMainDashboard();
+    dashboardReady = true;
   }
 
   // Poll I/O once per logic frame
   pumpSw.update();
   wifiSensor.update();
+  otaService.update();
   startupLogic.update();
 
   // All widgets pull their own data from their assigned sensors
