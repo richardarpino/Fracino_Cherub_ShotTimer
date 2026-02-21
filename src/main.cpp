@@ -94,7 +94,7 @@ void loop() {
 
   // Startup Transition
   if (startupLogic.justFinished()) {
-    ArduinoOTA.setHostname("Cherub-Timer");
+    ArduinoOTA.setHostname(OTA_HOSTNAME);
     ArduinoOTA.begin();
     setupMainDashboard();
   }
