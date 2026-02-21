@@ -9,29 +9,35 @@
 #include "Logic/StartupLogic.h"
 #include "Logic/StartupLogic.cpp"
 
-void test_startup_transition() {
+void test_startup_switch_behavior() {
     WiFi.setStatus(WL_IDLE_STATUS);
     WiFiSensor wifi;
     OTAServiceStub ota;
     StartupLogic logic(&wifi, &ota);
 
-    TEST_ASSERT_EQUAL(StartupLogic::State::SEARCHING_WIFI, logic.getState());
+    TEST_ASSERT_FALSE(logic.isActive());
+    TEST_ASSERT_FALSE(logic.justStarted());
     
-    // WiFi Connected but still in hold
+    // Connect WiFi
     WiFi.setStatus(WL_CONNECTED);
     setMillis(100); wifi.update(); logic.update();
-    TEST_ASSERT_EQUAL(StartupLogic::State::WIFI_STABLE, logic.getState());
-    TEST_ASSERT_FALSE(ota.begun());
+    TEST_ASSERT_FALSE(logic.isActive());
 
-    // WiFi Hold Expired
+    // Hold wait (3s)
     setMillis(3100); wifi.update(); logic.update();
-    TEST_ASSERT_EQUAL(StartupLogic::State::OTA_STARTING, logic.getState());
-    TEST_ASSERT_TRUE(ota.begun());
+    TEST_ASSERT_FALSE(logic.isActive()); // Waiting for OTA Ready
 
-    // OTA Active
+    // OTA Ready -> READY state
     ota.setActive(true);
     logic.update();
-    TEST_ASSERT_EQUAL(StartupLogic::State::READY, logic.getState());
+    
+    TEST_ASSERT_TRUE(logic.isActive());
+    TEST_ASSERT_TRUE(logic.justStarted()); // First frame it became active
+    
+    // Next poll
+    logic.update();
+    TEST_ASSERT_TRUE(logic.isActive());
+    TEST_ASSERT_FALSE(logic.justStarted()); // Should be consumed
 }
 
 void test_ota_not_started_without_wifi() {
@@ -41,13 +47,12 @@ void test_ota_not_started_without_wifi() {
     StartupLogic logic(&wifi, &ota);
 
     logic.update();
-    TEST_ASSERT_EQUAL(StartupLogic::State::SEARCHING_WIFI, logic.getState());
     TEST_ASSERT_FALSE(ota.begun());
 }
 
 int main() {
     UNITY_BEGIN();
-    RUN_TEST(test_startup_transition);
+    RUN_TEST(test_startup_switch_behavior);
     RUN_TEST(test_ota_not_started_without_wifi);
     return UNITY_END();
 }

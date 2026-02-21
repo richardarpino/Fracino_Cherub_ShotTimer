@@ -5,8 +5,18 @@
 #include "../Interfaces/ISwitch.h"
 #include "../Interfaces/IOTAService.h"
 
-class StartupLogic {
+class StartupLogic : public ISwitch {
 public:
+    StartupLogic(ISwitch* wifi, IOTAService* ota, unsigned long holdDurationMs = 3000);
+    
+    void update() override;
+    
+    // ISwitch implementation
+    bool isActive() const override;
+    bool justStarted() const override;
+    bool justStopped() const override;
+
+private:
     enum class State {
         SEARCHING_WIFI,
         WIFI_STABLE,
@@ -14,17 +24,13 @@ public:
         READY
     };
 
-    StartupLogic(ISwitch* wifi, IOTAService* ota, unsigned long holdDurationMs = 3000);
-    
-    void update();
-    State getState() const { return _state; }
-
-private:
     ISwitch* _wifi;
     IOTAService* _ota;
     State _state;
-    bool _isComplete;
-    bool _lastComplete;
+    bool _isActive;
+    bool _justStarted;
+    bool _justStopped;
+    bool _lastActive;
     unsigned long _startTime;
     unsigned long _holdDurationMs;
 };

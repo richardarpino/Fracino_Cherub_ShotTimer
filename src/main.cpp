@@ -89,10 +89,8 @@ void loop() {
   delay(5);
 
   // Startup Transition
-  static bool dashboardReady = false;
-  if (!dashboardReady && startupLogic.getState() == StartupLogic::State::READY) {
+  if (startupLogic.justStarted()) {
     setupMainDashboard();
-    dashboardReady = true;
   }
 
   // Poll I/O once per logic frame
