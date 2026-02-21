@@ -20,7 +20,8 @@ public:
 
     // Screens (Status Widget)
     void showInfo(const String& topText, const String& bottomText);
-    void clearScreen(); // Replaced by theme refresh, but kept for compatibility
+    void clearScreen();
+    void resetLayout(uint8_t cols = 2, uint8_t rows = 2);
 
     // Updates
     void update(); // The main "Pull" update

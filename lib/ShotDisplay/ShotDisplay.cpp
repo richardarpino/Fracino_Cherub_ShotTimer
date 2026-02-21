@@ -67,3 +67,11 @@ void ShotDisplay::clearScreen() {
     // No-op or just refresh theme
     if (_layout) _layout->applyTheme(_currentTheme);
 }
+
+void ShotDisplay::resetLayout(uint8_t cols, uint8_t rows) {
+    if (_layout) {
+        _layout->reset();
+        _layout->init(lv_scr_act(), cols, rows);
+        _layout->applyTheme(_currentTheme);
+    }
+}

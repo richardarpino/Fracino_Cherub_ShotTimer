@@ -1,8 +1,8 @@
 #include "StatusWidget.h"
 #include <Arduino.h>
 
-StatusWidget::StatusWidget(ISensor* sensor) 
-    : _container(nullptr), _label(nullptr), _sensor(sensor), _messageTimeout(0) {}
+StatusWidget::StatusWidget(ISensor* sensor, bool largeFont) 
+    : _container(nullptr), _label(nullptr), _sensor(sensor), _messageTimeout(0), _largeFont(largeFont) {}
 
 lv_obj_t* StatusWidget::init(lv_obj_t* parent) {
     _container = lv_obj_create(parent);
@@ -18,7 +18,10 @@ lv_obj_t* StatusWidget::init(lv_obj_t* parent) {
     lv_label_set_text(_label, "READY");
     lv_label_set_long_mode(_label, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_align(_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_font(_label, &lv_font_montserrat_12, 0);
+    
+    const lv_font_t* font = _largeFont ? &lv_font_montserrat_20 : &lv_font_montserrat_12;
+    lv_obj_set_style_text_font(_label, font, 0);
+    
     return _container;
 }
 

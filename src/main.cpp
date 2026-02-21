@@ -12,6 +12,8 @@
 #include "Hardware/HardwareSwitch.h"
 #include "Virtual/DebouncedSwitch.h"
 #include "ScaleLogic.h"
+#include "Hardware/WiFiSensor.h"
+#include "StartupLogic.h"
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <vector>
@@ -40,6 +42,8 @@ DebouncedSwitch pumpSw(&pumpHw, DEBOUNCE_MS);
 BoilerPressure boilerPressure(&pressureADC, pressureScalar);
 BoilerTemperature boilerTemp(&boilerPressure);
 ShotTimer shotTimer(MIN_SHOT_SECONDS);
+WiFiSensor wifiSensor;
+StartupLogic startupLogic(&wifiSensor);
 ScaleLogic scaleLogic(&pumpSw, &shotTimer, nullptr); // Scale hardware coming soon
 
 DefaultTheme defaultTheme;
@@ -48,6 +52,15 @@ ChristmasTheme christmasTheme;
 
 ShotDisplay shotDisplay(&defaultTheme);
 ThemeManager themeManager(&shotDisplay, &buttonInput);
+
+void setupMainDashboard() {
+  shotDisplay.resetLayout(2, 2);
+  ScreenLayout* layout = shotDisplay.getLayout();
+  layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0 (TL)
+  layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1 (BL)
+  layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2 (TR)
+  layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3 (BR)
+}
 
 void setup() {
   Serial.begin(115200);
@@ -63,39 +76,15 @@ void setup() {
 
   shotDisplay.init();
   
-  // Register Widgets (Late-Parenting: 0=TL, 1=BL, 2=TR, 3=BR)
-  ScreenLayout* layout = shotDisplay.getLayout();
-  layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0 (TL)
-  layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1 (BL)
-  layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2 (TR)
-  layout->addWidget(new SensorWidget(&shotTimer, true));  // Slot 3 (BR)
+  // Startup Layout (1x1)
+  shotDisplay.resetLayout(1, 1);
+  shotDisplay.getLayout()->addWidget(new StatusWidget(&wifiSensor, true));
 
-  shotDisplay.showInfo("CONNECTING...", ssid);
-
-  // WiFi Setup
+  // WiFi Setup (Non-blocking)
   WiFi.disconnect(true);
   WiFi.mode(WIFI_STA);
-  delay(1000);
+  delay(100);
   WiFi.begin(ssid, password);
-
-  int timeout = 0;
-  while (WiFi.status() != WL_CONNECTED && timeout < 20) {
-    delay(500);
-    Serial.print(".");
-    timeout++;
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {
-    ArduinoOTA.setHostname("Cherub-Timer");
-    ArduinoOTA.begin();
-    shotDisplay.showInfo("CONNECTED", WiFi.localIP().toString());
-    delay(3000);
-  } else {
-    shotDisplay.showInfo("WIFI STATUS", "FAILED");
-    delay(2000);
-  }
-
-  shotDisplay.clearScreen();
 }
 
 void loop() {
@@ -103,8 +92,16 @@ void loop() {
   lv_timer_handler();
   delay(5);
 
+  // Startup Transition
+  if (startupLogic.justFinished()) {
+    ArduinoOTA.setHostname("Cherub-Timer");
+    ArduinoOTA.begin();
+    setupMainDashboard();
+  }
+
   // Poll I/O once per logic frame
   pumpSw.update();
+  startupLogic.update();
 
   // All widgets pull their own data from their assigned sensors
   shotDisplay.update();

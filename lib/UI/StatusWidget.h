@@ -8,7 +8,7 @@
 
 class StatusWidget : public IWidget {
 public:
-    StatusWidget(ISensor* sensor = nullptr);
+    StatusWidget(ISensor* sensor = nullptr, bool largeFont = false);
     
     lv_obj_t* init(lv_obj_t* parent) override;
     void update(const Reading& reading) override;
@@ -25,6 +25,7 @@ private:
     lv_obj_t* _label;
     ISensor* _sensor;
     unsigned long _messageTimeout;
+    bool _largeFont;
     
     // Store theme color for error state reversal
     lv_color_t _textColor;
