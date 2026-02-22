@@ -21,9 +21,11 @@ private:
     ISensor* _sensor;
     
     // Store theme colors for error state reversal
+    lv_color_t _bgColor;
     lv_color_t _textColor;
     lv_color_t _labelColor;
     lv_color_t _errorColor;
+    lv_color_t _alertBgColor;
 };
 
 #endif
