@@ -51,6 +51,25 @@ We use a **Pure Factory** pattern to manage hardware.
 
 ---
 
+## 🎨 UI Gallery & Automated Documentation
+
+The project includes an automated visual documentation system to ensure UI consistency across themes and sensors.
+
+### 📸 Sensor Gallery (TOC)
+A cross-product of all sensors, widgets, and themes is generated automatically:
+- [**BoilerPressure**](lib/Sensors/examples/BoilerPressure/README.md) - Visualizing BoilerPressure data.
+- [**ShotTimer**](lib/Sensors/examples/ShotTimer/README.md) - Visualizing ShotTimer data.
+- [**WeightSensor**](lib/Sensors/examples/WeightSensor/README.md) - Visualizing WeightSensor data.
+- [**WiFiSensor**](lib/Sensors/examples/WiFiSensor/README.md) - Visualizing WiFiSensor data.
+
+### ⚙️ How it works
+The UI is built using **LVGL**. To verify visual changes without physical hardware, we use a **Simulator Framework**:
+1. **Snapshots**: Running `pio test -e simulator` executes a specialized test suite (`test_main.cpp`) that uses the LVGL Snapshot extension.
+2. **Matrix Generation**: The test iterates through every sensor, applies every theme, and renders them in every widget type.
+3. **Markdown Sync**: The framework automatically updates the individual README files and BMP images in `lib/Sensors/examples/`, ensuring documentation stays in sync with code.
+
+---
+
 ## 🧪 Developer Guide
 
 ### 1. Adding a New Feature (TDD)
