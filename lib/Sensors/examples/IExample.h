@@ -24,4 +24,37 @@ public:
     virtual void applyTheme(ITheme* theme) = 0;
 };
 
+template <typename T>
+class BaseWidgetExample : public IExample {
+public:
+    BaseWidgetExample(const std::string& name) : _name(name) {}
+    virtual ~BaseWidgetExample() {
+        if (_widget) delete _widget;
+    }
+
+    std::string getWidgetName() const override { return _name; }
+
+    lv_obj_t* createWidget(lv_obj_t* parent) override {
+        _widget = new T();
+        return _widget->init(parent, 1, 1);
+    }
+
+    void updateWidget(const Reading& reading) override {
+        if (_widget) _widget->update(reading);
+    }
+
+    void applyTheme(ITheme* theme) override {
+        if (_widget) _widget->applyTheme(theme);
+    }
+
+protected:
+    T* _widget = nullptr;
+    std::string _name;
+};
+
+#define EXAMPLE_FOR(WidgetClass) \
+class WidgetClass##Example : public BaseWidgetExample<WidgetClass> { \
+public: \
+    WidgetClass##Example() : BaseWidgetExample(#WidgetClass) {}
+
 #endif
