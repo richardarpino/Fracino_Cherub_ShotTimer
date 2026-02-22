@@ -10,7 +10,7 @@ class StatusWidget : public IWidget {
 public:
     StatusWidget(ISensor* sensor = nullptr);
     
-    lv_obj_t* init(lv_obj_t* parent) override;
+    lv_obj_t* init(lv_obj_t* parent, uint8_t cols, uint8_t rows) override;
     void update(const Reading& reading) override;
     void refresh() override;
     void applyTheme(ITheme* theme) override;

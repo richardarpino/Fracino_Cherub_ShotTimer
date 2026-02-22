@@ -6,6 +6,9 @@ ScaleLogic::ScaleLogic(ISwitch* pump, ShotTimer* timer, TaredWeight* weight)
 void ScaleLogic::update() {
     if (!_pump) return;
 
+    // Logic Ownership: Orchestrator polls its constituents
+    _pump->update();
+
     if (_pump->justStarted()) {
         if (_timer) _timer->start();
         if (_weight) _weight->tare();

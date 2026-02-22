@@ -63,19 +63,14 @@ void test_scale_logic_edge_consumption() {
     setMillis(1000);
     mockPin.setRawValue(LOW);
     
-    // 2. Something ELSE calls update() before ScaleLogic in a DIFFERENT millisecond
-    pumpSw.update();
-    TEST_ASSERT_TRUE(pumpSw.justStarted()); 
-
-    setMillis(1001); // Wait 1ms
-    
-    // 3. ScaleLogic updates (now without calling pumpSw.update())
-    // It will see the edge from the previous millisecond because update() wasn't called again
+    // 2. ScaleLogic update will now internally call pumpSw.update()
+    // and should catch the edge even if time has advanced since the raw pin changed.
+    setMillis(1001); 
     logic.update();
 
     setMillis(2001); // Advance time
     
-    // 4. ShotTimer should have started
+    // 3. ShotTimer should have started
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, timer.getReading().value); 
 }
 

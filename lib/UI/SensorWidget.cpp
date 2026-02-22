@@ -6,10 +6,10 @@ LV_FONT_DECLARE(lv_font_roboto_mono_32)
 LV_FONT_DECLARE(lv_font_roboto_mono_28)
 }
 
-SensorWidget::SensorWidget(ISensor* sensor, bool largeFont) 
-    : _container(nullptr), _value_label(nullptr), _unit_label(nullptr), _sensor(sensor), _largeFont(largeFont) {}
+SensorWidget::SensorWidget(ISensor* sensor) 
+    : _container(nullptr), _value_label(nullptr), _unit_label(nullptr), _sensor(sensor) {}
 
-lv_obj_t* SensorWidget::init(lv_obj_t* parent) {
+lv_obj_t* SensorWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     // Container
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
@@ -25,7 +25,7 @@ lv_obj_t* SensorWidget::init(lv_obj_t* parent) {
     // Value (Middle)
     _value_label = lv_label_create(_container);
     lv_label_set_text(_value_label, "---");
-    const lv_font_t* font = _largeFont ? &lv_font_roboto_mono_32 : &lv_font_roboto_mono_28;
+    const lv_font_t* font = (cols == 1) ? &lv_font_roboto_mono_32 : &lv_font_roboto_mono_28;
     lv_obj_set_style_text_font(_value_label, font, 0);
 
     // Unit (Bottom)

@@ -1,13 +1,18 @@
 #include "ShotDisplay.h"
 
-ShotDisplay::ShotDisplay(ITheme* initialTheme) 
-    : _tft(TFT_eSPI()), _currentTheme(initialTheme), _layout(nullptr) {}
+ShotDisplay::ShotDisplay() 
+    : _tft(TFT_eSPI()), _currentTheme(nullptr), _layout(nullptr) {}
 
 void ShotDisplay::init() {
     _tft.init();
     _tft.setRotation(1); // Landscape
     _tft.setSwapBytes(false); // LVGL handles byte swapping via LV_COLOR_16_SWAP
-    _tft.fillScreen(_currentTheme->getBackgroundColor());
+    
+    if (_currentTheme) {
+        _tft.fillScreen(_currentTheme->getBackgroundColor());
+    } else {
+        _tft.fillScreen(TFT_BLACK);
+    }
 
     // LVGL Initialization
     lv_init();
@@ -66,4 +71,12 @@ void ShotDisplay::showInfo(const String& topText, const String& bottomText) {
 void ShotDisplay::clearScreen() {
     // No-op or just refresh theme
     if (_layout) _layout->applyTheme(_currentTheme);
+}
+
+void ShotDisplay::resetLayout(uint8_t cols, uint8_t rows) {
+    if (_layout) {
+        _layout->reset();
+        _layout->init(lv_scr_act(), cols, rows);
+        _layout->applyTheme(_currentTheme);
+    }
 }

@@ -4,7 +4,7 @@
 StatusWidget::StatusWidget(ISensor* sensor) 
     : _container(nullptr), _label(nullptr), _sensor(sensor), _messageTimeout(0) {}
 
-lv_obj_t* StatusWidget::init(lv_obj_t* parent) {
+lv_obj_t* StatusWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_pad_all(_container, 2, 0);
@@ -18,7 +18,11 @@ lv_obj_t* StatusWidget::init(lv_obj_t* parent) {
     lv_label_set_text(_label, "READY");
     lv_label_set_long_mode(_label, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_align(_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_style_text_font(_label, &lv_font_montserrat_12, 0);
+    
+    // Auto-detect font size based on grid columns
+    const lv_font_t* font = (cols == 1) ? &lv_font_montserrat_20 : &lv_font_montserrat_12;
+    lv_obj_set_style_text_font(_label, font, 0);
+    
     return _container;
 }
 

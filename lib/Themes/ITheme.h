@@ -1,7 +1,7 @@
 #ifndef ITHEME_H
 #define ITHEME_H
 
-#include <TFT_eSPI.h>
+#include <stdint.h>
 
 class ITheme {
 public:
