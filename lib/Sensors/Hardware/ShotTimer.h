@@ -11,6 +11,7 @@ public:
 
     // ISensor Implementation
     Reading getReading() override;
+    SensorMetadata getMetadata() override;
 
     // External Control
     void start();

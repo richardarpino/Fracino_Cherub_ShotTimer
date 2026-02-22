@@ -20,6 +20,15 @@ public:
     
     Reading getReading() override { return { _progress, "%" }; }
     
+    SensorMetadata getMetadata() override {
+        return SensorMetadata(
+            Reading(0.0f, "%", "OTA", 0, false),
+            Reading(100.0f, "%", "OTA", 0, false),
+            Reading(0.0f, "%", "OTA", 0, false),
+            Reading(0.0f, "%", "OTA ERR", 0, true)
+        );
+    }
+    
     bool isActive() const override { return _active; }
     bool justStarted() const override { return _justStarted; }
     bool justStopped() const override { return _justStopped; }

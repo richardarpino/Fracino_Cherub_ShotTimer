@@ -12,10 +12,11 @@
 
 class WiFiSensor : public ISensor, public ISwitch {
 public:
-    WiFiSensor(const char* ssid, const char* password);
+    WiFiSensor(const char* ssid = nullptr, const char* password = nullptr);
     
     // ISensor Implementation
     Reading getReading() override;
+    SensorMetadata getMetadata() override;
 
     // ISwitch Implementation
     void update() override;

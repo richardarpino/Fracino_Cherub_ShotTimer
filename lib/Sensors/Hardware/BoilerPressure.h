@@ -28,6 +28,15 @@ public:
         return Reading(getStableDisplayValue(), "BAR", "BOILER", 1, false);
     }
 
+    SensorMetadata getMetadata() override {
+        return SensorMetadata(
+            Reading(0.0f, "BAR", "BOILER", 1, false),
+            Reading(1.5f, "BAR", "BOILER", 1, false),
+            Reading(0.0f, "BAR", "BOILER", 1, false),
+            Reading(0.0f, "BAR", "BOILER ERR", 1, true)
+        );
+    }
+
     /**
      * Pure logic for pressure calculation - Testable!
      */

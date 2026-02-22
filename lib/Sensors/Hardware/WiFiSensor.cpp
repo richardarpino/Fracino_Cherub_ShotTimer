@@ -1,11 +1,13 @@
 #include "WiFiSensor.h"
 
 WiFiSensor::WiFiSensor(const char* ssid, const char* password) 
-    : _ssid(ssid), _password(password), _isBegun(true), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false) {
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_STA);
-    delay(100);
-    WiFi.begin(ssid, password);
+    : _ssid(ssid), _password(password), _isBegun(ssid != nullptr), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false) {
+    if (_isBegun) {
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_STA);
+        delay(100);
+        WiFi.begin(ssid, password);
+    }
 }
 
 void WiFiSensor::update() {
@@ -42,4 +44,13 @@ Reading WiFiSensor::getReading() {
     }
 
     return Reading(value, "", label, 0, isError);
+}
+
+SensorMetadata WiFiSensor::getMetadata() {
+    return SensorMetadata(
+        Reading(0.0f, "", "DISCONNECTED", 0, false),
+        Reading(1.0f, "", "CONNECTED", 0, false),
+        Reading(0.0f, "", "SEARCHING", 0, false),
+        Reading(0.0f, "", "WIFI ERR", 0, true)
+    );
 }

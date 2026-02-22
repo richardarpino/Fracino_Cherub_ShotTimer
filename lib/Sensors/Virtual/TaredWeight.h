@@ -21,6 +21,11 @@ public:
         r.value -= _offset;
         return r;
     }
+
+    SensorMetadata getMetadata() override {
+        if (_base) return _base->getMetadata();
+        return SensorMetadata(Reading(), Reading(), Reading(), Reading());
+    }
     
     void tare() {
         if (_base) {
