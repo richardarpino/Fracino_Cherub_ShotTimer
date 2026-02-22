@@ -3,6 +3,7 @@
 
 #include <TFT_eSPI.h>
 #include "../Themes/ITheme.h"
+#include "../Themes/IThemeable.h"
 #include "../Interfaces/ISensor.h"
 
 #include <lvgl.h>
@@ -10,13 +11,13 @@
 
 #include "../UI/ScreenLayout.h"
 
-class ShotDisplay {
+class ShotDisplay : public IThemeable {
 public:
-    ShotDisplay(ITheme* initialTheme);
+    ShotDisplay();
     void init();
     
-    // Theme Management
-    void setTheme(ITheme* newTheme);
+    // IThemeable implementation
+    void setTheme(ITheme* newTheme) override;
 
     // Screens (Status Widget)
     void showInfo(const String& topText, const String& bottomText);

@@ -6,7 +6,7 @@
 
 void test_wifi_sensor_reporting() {
     WiFi.setStatus(WL_IDLE_STATUS);
-    WiFiSensor sensor;
+    WiFiSensor sensor("dummy", "dummy");
     
     Reading r = sensor.getReading();
     TEST_ASSERT_EQUAL_STRING("CONNECTING...", r.label.c_str());
@@ -21,7 +21,7 @@ void test_wifi_sensor_reporting() {
 }
 
 void test_wifi_sensor_error() {
-    WiFiSensor sensor;
+    WiFiSensor sensor("dummy", "dummy");
     WiFi.setStatus(WL_CONNECT_FAILED);
     
     Reading r = sensor.getReading();
@@ -29,9 +29,8 @@ void test_wifi_sensor_error() {
     TEST_ASSERT_TRUE(r.isError);
 }
 
-void test_wifi_sensor_begin() {
-    WiFiSensor sensor;
-    sensor.begin("TestSSID", "TestPass");
+void test_wifi_sensor_construction_starts_wifi() {
+    WiFiSensor sensor("TestSSID", "TestPass");
 
     TEST_ASSERT_TRUE(WiFi.wasBeginCalled());
     TEST_ASSERT_EQUAL_STRING("TestSSID", WiFi.getSsid());
@@ -39,7 +38,7 @@ void test_wifi_sensor_begin() {
 }
 
 void test_wifi_switch_behavior() {
-    WiFiSensor sensor;
+    WiFiSensor sensor("dummy", "dummy");
     ISwitch* sw = (ISwitch*)&sensor;
 
     WiFi.setStatus(WL_DISCONNECTED);
@@ -59,7 +58,7 @@ int main() {
     UNITY_BEGIN();
     RUN_TEST(test_wifi_sensor_reporting);
     RUN_TEST(test_wifi_sensor_error);
-    RUN_TEST(test_wifi_sensor_begin);
+    RUN_TEST(test_wifi_sensor_construction_starts_wifi);
     RUN_TEST(test_wifi_switch_behavior);
     return UNITY_END();
 }

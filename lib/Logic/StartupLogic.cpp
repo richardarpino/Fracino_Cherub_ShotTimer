@@ -1,16 +1,29 @@
 #include "StartupLogic.h"
+#include "../Interfaces/IMachineProvider.h"
 
-StartupLogic::StartupLogic(ISwitch* wifi, IOTAService* ota, unsigned long holdDurationMs) 
-    : _wifi(wifi), _ota(ota), _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
+StartupLogic::StartupLogic(ISwitchProvider* provider, unsigned long holdDurationMs) 
+    : _wifi(nullptr), _provider(provider), _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
 
 void StartupLogic::update() {
-    if (!_wifi || !_ota) return;
+    if (!_provider) return;
+
+    // Lazily obtain WiFi on first update (triggers instantiation/hardware start)
+    if (!_wifi) {
+        _wifi = _provider->getWiFiSwitch();
+    }
+    if (!_wifi) return;
+
+    // Logic Ownership: Orchestrator polls its constituents
+    _wifi->update();
+    ISwitch* ota = _provider->getOTASwitch();
+    if (ota) ota->update();
 
     // Preserve previous active state for edge detection
     _lastActive = _isActive;
 
     switch (_state) {
         case State::SEARCHING_WIFI:
+
             if (_wifi->isActive()) {
                 _startTime = millis();
                 _state = State::WIFI_STABLE;
@@ -22,7 +35,7 @@ void StartupLogic::update() {
                 _state = State::SEARCHING_WIFI;
                 _startTime = 0;
             } else if (millis() - _startTime >= _holdDurationMs) {
-                _ota->begin(OTA_HOSTNAME);
+                _provider->createOTA(); // Factory returns configured/started OTA
                 _state = State::OTA_STARTING;
             }
             break;
@@ -30,9 +43,12 @@ void StartupLogic::update() {
         case State::OTA_STARTING:
             if (!_wifi->isActive()) {
                 _state = State::SEARCHING_WIFI;
-            } else if (_ota->isReady()) {
-                _state = State::READY;
-                _isActive = true;
+            } else {
+                ISwitch* ota = _provider->getOTASwitch();
+                if (ota && ota->isActive()) {
+                    _state = State::READY;
+                    _isActive = true;
+                }
             }
             break;
 

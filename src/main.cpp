@@ -1,20 +1,9 @@
 #include <lvgl.h>
 #include "ThemeManager.h"
-#include "../lib/Themes/DefaultTheme.h"
-#include "../lib/Themes/CandyTheme.h"
-#include "../lib/Themes/ChristmasTheme.h"
 #include "ShotDisplay.h"
-#include "Hardware/ShotTimer.h"
-#include "Hardware/BoilerPressure.h"
-#include "ADCRawSource.h"
-#include "DigitalRawSource.h"
-#include "Virtual/BoilerTemperature.h"
-#include "Hardware/HardwareSwitch.h"
-#include "Virtual/DebouncedSwitch.h"
 #include "ScaleLogic.h"
-#include "Hardware/WiFiSensor.h"
 #include "StartupLogic.h"
-#include "OTAService.h"
+#include "MachineFactory.h"
 #include <vector>
 #include "pins.h"
 #include "secrets.h"
@@ -22,44 +11,31 @@
 #include "SensorWidget.h"
 #include "StatusWidget.h"
  
- // --- Credentials ---
- const char *ssid = WIFI_SSID;
- const char *password = WIFI_PASSWORD;
- 
- // --- Configuration ---
- const float MIN_SHOT_SECONDS = 10.0;
- const unsigned long DEBOUNCE_MS = 150;
+// --- Factory & Configuration ---
+MachineConfig config = {
+  .otaHostname = OTA_HOSTNAME,
+  .wifiSsid = WIFI_SSID,
+  .wifiPassword = WIFI_PASSWORD,
+  .debounceMs = 150,
+  .minShotDuration = 10.0
+};
 
-// --- Objects ---
-ADCRawSource pressureADC(pressurePin);
-DigitalRawSource pumpInput(pumpPin);
-DigitalRawSource buttonInput(buttonPin);
+MachineFactory factory(config);
 
-HardwareSwitch pumpHw(&pumpInput, true);
-DebouncedSwitch pumpSw(&pumpHw, DEBOUNCE_MS);
+// --- Coordination & Logic ---
+StartupLogic startupLogic(&factory);
+ScaleLogic scaleLogic(factory.getPump(), factory.getShotTimer(), nullptr); 
 
-BoilerPressure boilerPressure(&pressureADC, pressureScalar);
-BoilerTemperature boilerTemp(&boilerPressure);
-ShotTimer shotTimer(MIN_SHOT_SECONDS);
-WiFiSensor wifiSensor;
-OTAService otaService;
-StartupLogic startupLogic(&wifiSensor, &otaService);
-ScaleLogic scaleLogic(&pumpSw, &shotTimer, nullptr); // Scale hardware coming soon
-
-DefaultTheme defaultTheme;
-CandyTheme candyTheme;
-ChristmasTheme christmasTheme;
-
-ShotDisplay shotDisplay(&defaultTheme);
-ThemeManager themeManager(&shotDisplay, &buttonInput);
+ShotDisplay shotDisplay;
+ThemeManager themeManager(&shotDisplay, factory.getButtonInput());
 
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
   ScreenLayout* layout = shotDisplay.getLayout();
-  layout->addWidget(new SensorWidget(&boilerPressure));   // Slot 0 (TL)
-  layout->addWidget(new SensorWidget(&boilerTemp));       // Slot 1 (BL)
-  layout->addWidget(new StatusWidget(&shotTimer));        // Slot 2 (TR)
-  layout->addWidget(new SensorWidget(&shotTimer));  // Slot 3 (BR)
+  layout->addWidget(new SensorWidget(factory.getBoilerPressure()));   // Slot 0 (TL)
+  layout->addWidget(new SensorWidget(factory.getBoilerTemp()));       // Slot 1 (BL)
+  layout->addWidget(new StatusWidget(factory.getShotTimer()));        // Slot 2 (TR)
+  layout->addWidget(new SensorWidget(factory.getShotTimer()));        // Slot 3 (BR)
 }
 
 void setup() {
@@ -69,19 +45,16 @@ void setup() {
   pinMode(backlightPin, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
   digitalWrite(backlightPin, HIGH);
-
-  themeManager.addTheme(&defaultTheme);
-  themeManager.addTheme(&candyTheme);
-  themeManager.addTheme(&christmasTheme);
-
+ 
+  for (ITheme* theme : factory.getThemes()) {
+      themeManager.addTheme(theme);
+  }
+ 
   shotDisplay.init();
   
   // Startup Layout (1x1)
   shotDisplay.resetLayout(1, 1);
-  shotDisplay.getLayout()->addWidget(new StatusWidget(&wifiSensor));
-
-  // WiFi Setup (Non-blocking)
-  wifiSensor.begin(ssid, password);
+  shotDisplay.getLayout()->addWidget(new StatusWidget(factory.getWiFiSensor()));
 }
 
 void loop() {
@@ -93,10 +66,7 @@ void loop() {
     setupMainDashboard();
   }
 
-  // Poll I/O once per logic frame
-  pumpSw.update();
-  wifiSensor.update();
-  otaService.update();
+  // Orchestrators handle their own constituent polling
   startupLogic.update();
 
   // All widgets pull their own data from their assigned sensors

@@ -1,7 +1,8 @@
 #ifndef OTA_SERVICE_H
 #define OTA_SERVICE_H
 
-#include "../Interfaces/IOTAService.h"
+#include "../Interfaces/ISensor.h"
+#include "../Interfaces/ISwitch.h"
 
 #ifdef ARDUINO
 #include <ArduinoOTA.h>
@@ -9,21 +10,25 @@
 // No-op for native
 #endif
 
-class OTAService : public IOTAService {
+class OTAService : public ISensor, public ISwitch {
 public:
-    OTAService();
+    OTAService(const char* hostname);
     
-    void begin(const char* hostname) override;
     void update() override;
     
     Reading getReading() override { return { _progress, "%" }; }
+    
+    // ISwitch implementation
     bool isActive() const override { return _isActive; }
-    bool isReady() const override { return _isReady; }
-    bool isError() const override { return _isError; }
+    bool justStarted() const override { return _justStarted; }
+    bool justStopped() const override { return _justStopped; }
 
 private:
-    bool _isReady = false;
+    const char* _hostname;
     bool _isActive = false;
+    bool _lastActive = false;
+    bool _justStarted = false;
+    bool _justStopped = false;
     bool _isError = false;
     float _progress = 0;
 };

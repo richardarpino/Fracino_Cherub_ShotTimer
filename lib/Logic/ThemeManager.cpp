@@ -1,9 +1,12 @@
 #include "ThemeManager.h"
 
-ThemeManager::ThemeManager(ShotDisplay* display, IRawSource* buttonSource, unsigned long debounceMs)
+ThemeManager::ThemeManager(IThemeable* display, IRawSource* buttonSource, unsigned long debounceMs)
     : _display(display), _buttonSource(buttonSource), _currentIndex(0), _lastPressTime(0), _debounceTime(debounceMs) {}
 
 void ThemeManager::addTheme(ITheme* theme) {
+    if (_themes.empty() && _display) {
+        _display->setTheme(theme);
+    }
     _themes.push_back(theme);
 }
 

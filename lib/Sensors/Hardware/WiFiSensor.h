@@ -12,10 +12,7 @@
 
 class WiFiSensor : public ISensor, public ISwitch {
 public:
-    WiFiSensor();
-    
-    // Active Management
-    void begin(const char* ssid, const char* password);
+    WiFiSensor(const char* ssid, const char* password);
     
     // ISensor Implementation
     Reading getReading() override;
@@ -27,6 +24,9 @@ public:
     bool justStopped() const override { return _justStopped; }
 
 private:
+   const char* _ssid;
+   const char* _password;
+   bool _isBegun;
    bool _isActive;
    bool _justStarted;
    bool _justStopped;

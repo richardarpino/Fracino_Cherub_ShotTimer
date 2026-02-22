@@ -3,11 +3,12 @@
 
 #include "../Interfaces/ISensor.h"
 #include "../Interfaces/ISwitch.h"
-#include "../Interfaces/IOTAService.h"
+
+class ISwitchProvider;
 
 class StartupLogic : public ISwitch {
 public:
-    StartupLogic(ISwitch* wifi, IOTAService* ota, unsigned long holdDurationMs = 3000);
+    StartupLogic(ISwitchProvider* provider, unsigned long holdDurationMs = 3000);
     
     void update() override;
     
@@ -25,7 +26,7 @@ private:
     };
 
     ISwitch* _wifi;
-    IOTAService* _ota;
+    ISwitchProvider* _provider;
     State _state;
     bool _isActive;
     bool _justStarted;

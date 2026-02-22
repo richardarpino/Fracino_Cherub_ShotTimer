@@ -1,12 +1,9 @@
 #include "OTAService.h"
 
-OTAService::OTAService() : _isActive(false), _isError(false), _progress(0) {}
-
-void OTAService::begin(const char* hostname) {
+OTAService::OTAService(const char* hostname) 
+    : _hostname(hostname), _isActive(false), _isError(false), _progress(0) {
 #ifdef ARDUINO
-    if (_isReady) return;
-    
-    ArduinoOTA.setHostname(hostname);
+    ArduinoOTA.setHostname(_hostname);
     
     ArduinoOTA.onStart([this]() {
         _isActive = true;
@@ -26,17 +23,20 @@ void OTAService::begin(const char* hostname) {
     });
     
     ArduinoOTA.begin();
-    _isReady = true;
+    _isActive = true;
 #else
     // Native mock: just mark as immediately active for simplicity in smoke tests
-    // although we usually use the stub for real tests.
-    _isReady = true; 
+    _isActive = true; 
 #endif
 }
 
 void OTAService::update() {
+    _justStarted = _isActive && !_lastActive;
+    _justStopped = !_isActive && _lastActive;
+    _lastActive = _isActive;
+
 #ifdef ARDUINO
-    if (_isReady) {
+    if (_isActive) {
         ArduinoOTA.handle();
     }
 #endif

@@ -1,9 +1,7 @@
 #include "WiFiSensor.h"
 
-WiFiSensor::WiFiSensor() 
-    : _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false) {}
-
-void WiFiSensor::begin(const char* ssid, const char* password) {
+WiFiSensor::WiFiSensor(const char* ssid, const char* password) 
+    : _ssid(ssid), _password(password), _isBegun(true), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false) {
     WiFi.disconnect(true);
     WiFi.mode(WIFI_STA);
     delay(100);
