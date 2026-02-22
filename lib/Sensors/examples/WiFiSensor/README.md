@@ -16,3 +16,10 @@ Visualizing WiFiSensor data.
 | Candy | ![zero](SensorWidget/candy-zero.bmp) | ![max](SensorWidget/candy-max.bmp) | ![error](SensorWidget/candy-error.bmp) |
 | Christmas | ![zero](SensorWidget/christmas-zero.bmp) | ![max](SensorWidget/christmas-max.bmp) | ![error](SensorWidget/christmas-error.bmp) |
 
+## GaugeWidget
+| Theme | Zero (0) | Max (1) | Error |
+| :--- | :---: | :---: | :---: |
+| Default | ![zero](GaugeWidget/default-zero.bmp) | ![max](GaugeWidget/default-max.bmp) | ![error](GaugeWidget/default-error.bmp) |
+| Candy | ![zero](GaugeWidget/candy-zero.bmp) | ![max](GaugeWidget/candy-max.bmp) | ![error](GaugeWidget/candy-error.bmp) |
+| Christmas | ![zero](GaugeWidget/christmas-zero.bmp) | ![max](GaugeWidget/christmas-max.bmp) | ![error](GaugeWidget/christmas-error.bmp) |
+

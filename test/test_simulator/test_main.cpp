@@ -16,6 +16,7 @@
 #include "../../lib/Sensors/Hardware/WiFiSensor.cpp"
 #include "../../lib/UI/StatusWidget.cpp"
 #include "../../lib/UI/SensorWidget.cpp"
+#include "../../lib/UI/GaugeWidget.cpp"
 
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
@@ -79,7 +80,8 @@ void test_generate_examples() {
 
     std::vector<WidgetInfo> widgets = {
         {"StatusWidget", [](ISensor* s) { return new StatusWidget(s); }},
-        {"SensorWidget", [](ISensor* s) { return new SensorWidget(s); }}
+        {"SensorWidget", [](ISensor* s) { return new SensorWidget(s); }},
+        {"GaugeWidget", [](ISensor* s) { return new GaugeWidget(s); }}
     };
 
     ensure_dir("lib/Sensors/examples");
