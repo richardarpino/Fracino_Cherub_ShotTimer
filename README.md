@@ -72,6 +72,18 @@ To add new cross-component behavior:
 
 ---
 
+---
+
+## 📖 Documentation & Community
+
+For more in-depth information, please refer to the following resources:
+
+- **[Internal Library Map](lib/README.md)**: A detailed guide to the project's file structure and the role of each directory.
+- **[GitHub Wiki](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/wiki)**: Technical deep-dives, hardware schematics, and setup guides.
+- **[Issue Tracker](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/issues)**: Found a bug or have a feature request? Please open an issue here!
+
+---
+
 ## 🔌 Hardware Reference
 
 Example board used for development: [TENSTAR T-Display ESP32 Development Board with 1.14 Inch LCD](https://www.aliexpress.com/item/1005062610762446.html). PlatformIO environment: `lilygo-t-display` is compatible.
