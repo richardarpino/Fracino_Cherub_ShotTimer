@@ -6,20 +6,19 @@
 /*====================
    COLOR SETTINGS
  *====================*/
-/*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+/*Color depth: 1, 8, 16 or 32*/
+#ifndef LV_COLOR_DEPTH
 #define LV_COLOR_DEPTH 16
+#endif
 
 /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
+#ifndef LV_COLOR_16_SWAP
 #define LV_COLOR_16_SWAP 1
+#endif
 
-/*=========================
-   MEMORY SETTINGS
- *=========================*/
-/*1: use custom malloc/free, 0: use the built-in `lv_mem_alloc`/`lv_mem_free`*/
-#define LV_MEM_CUSTOM 0
-
-/*Size of the memory available for `lv_mem_alloc` in bytes (>= 2kB)*/
+#ifndef LV_MEM_SIZE
 #define LV_MEM_SIZE (48U * 1024U)          /*[bytes]*/
+#endif
 #define LV_MEM_ADR 0     /*0: unused*/
 
 /*=========================

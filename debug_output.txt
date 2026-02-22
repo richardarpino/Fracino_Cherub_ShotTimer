@@ -1,0 +1,43 @@
+Collected 7 tests (test_hardware, test_logic, test_simulator, test_startup_logic, test_themes, test_virtual, test_wifi)
+
+Processing test_simulator in simulator environment
+--------------------------------------------------------------------------------
+Building...
+
+
+Testing...
+Processing StatusWidget...
+Processing SensorWidget...
+test/test_simulator/test_main.cpp:74:test_generate_examples:PASS
+
+-----------------------
+1 Tests 0 Failures 0 Ignored 
+OK
+
+------------- simulator:test_simulator [PASSED] Took 2.66 seconds -------------
+
+=================================== SUMMARY ===================================
+Environment       Test                Status    Duration
+----------------  ------------------  --------  ------------
+lilygo-t-display  test_virtual        SKIPPED
+lilygo-t-display  test_startup_logic  SKIPPED
+lilygo-t-display  test_wifi           SKIPPED
+lilygo-t-display  test_logic          SKIPPED
+lilygo-t-display  test_simulator      SKIPPED
+lilygo-t-display  test_hardware       SKIPPED
+lilygo-t-display  test_themes         SKIPPED
+native            test_virtual        SKIPPED
+native            test_startup_logic  SKIPPED
+native            test_wifi           SKIPPED
+native            test_logic          SKIPPED
+native            test_simulator      SKIPPED
+native            test_hardware       SKIPPED
+native            test_themes         SKIPPED
+simulator         test_virtual        SKIPPED
+simulator         test_startup_logic  SKIPPED
+simulator         test_wifi           SKIPPED
+simulator         test_logic          SKIPPED
+simulator         test_simulator      PASSED    00:00:02.659
+simulator         test_hardware       SKIPPED
+simulator         test_themes         SKIPPED
+================== 1 test cases: 1 succeeded in 00:00:02.659 ==================
