@@ -23,6 +23,7 @@ private:
     // Store theme colors for error state reversal
     lv_color_t _textColor;
     lv_color_t _labelColor;
+    lv_color_t _errorColor;
 };
 
 #endif

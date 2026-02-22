@@ -26,8 +26,9 @@ private:
     ISensor* _sensor;
     unsigned long _messageTimeout;
     
-    // Store theme color for error state reversal
+    // Store theme colors for error state reversal
     lv_color_t _textColor;
+    lv_color_t _errorColor;
 };
 
 #endif

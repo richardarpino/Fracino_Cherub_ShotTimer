@@ -38,7 +38,7 @@ void StatusWidget::refresh() {
         
         // Semantic Styling: Turn red if in error state
         if (r.isError) {
-            lv_obj_set_style_text_color(_label, lv_palette_main(LV_PALETTE_RED), 0);
+            lv_obj_set_style_text_color(_label, _errorColor, 0);
         } else {
             lv_obj_set_style_text_color(_label, _textColor, 0);
         }
@@ -54,7 +54,7 @@ void StatusWidget::update(const Reading& reading) {
         
         // Also handle styling for manual pushes (usually not errors, but let's be consistent)
         if (reading.isError) {
-            lv_obj_set_style_text_color(_label, lv_palette_main(LV_PALETTE_RED), 0);
+            lv_obj_set_style_text_color(_label, _errorColor, 0);
         } else {
             lv_obj_set_style_text_color(_label, _textColor, 0);
         }
@@ -75,8 +75,8 @@ void StatusWidget::applyTheme(ITheme* theme) {
 
     lv_color_t bg = toLvColor(theme->getBackgroundColor());
     _textColor = toLvColor(theme->getLabelColor()); // Use label color for status text
+    _errorColor = toLvColor(theme->getAlertTextColor());
 
     lv_obj_set_style_bg_color(_container, bg, 0);
     lv_obj_set_style_text_color(_label, _textColor, 0);
 }
-

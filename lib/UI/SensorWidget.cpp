@@ -59,8 +59,8 @@ void SensorWidget::update(const Reading& reading) {
 
     // Semantic Error Styling: Change color if in error state
     if (reading.isError) {
-        lv_obj_set_style_text_color(_value_label, lv_palette_main(LV_PALETTE_RED), 0);
-        lv_obj_set_style_text_color(_unit_label, lv_palette_main(LV_PALETTE_RED), 0);
+        lv_obj_set_style_text_color(_value_label, _errorColor, 0);
+        lv_obj_set_style_text_color(_unit_label, _errorColor, 0);
     } else {
         lv_obj_set_style_text_color(_value_label, _textColor, 0);
         lv_obj_set_style_text_color(_unit_label, _labelColor, 0);
@@ -82,6 +82,7 @@ void SensorWidget::applyTheme(ITheme* theme) {
 
     _textColor = toLvColor(theme->getTextColor());
     _labelColor = toLvColor(theme->getLabelColor());
+    _errorColor = toLvColor(theme->getAlertTextColor()); // Store theme colors for error state reversal
     lv_color_t bg = toLvColor(theme->getBackgroundColor());
 
     // Apply
@@ -89,4 +90,3 @@ void SensorWidget::applyTheme(ITheme* theme) {
     lv_obj_set_style_text_color(_value_label, _textColor, 0);
     lv_obj_set_style_text_color(_unit_label, _labelColor, 0);
 }
-
