@@ -25,25 +25,29 @@ cp include/pins.h.example include/pins.h        # Define your pins
 
 ---
 
+---
+
 ## 🏗 Modular Architecture
 
 The project is split into three distinct layers to make it maintainable and testable.
 
-### 🔌 Layer 1: Data Sources (`lib/Interfaces`)
+### 🔌 Layer 1: Data Sources & Interfaces (`lib/Interfaces`)
 Everything that measures or detects implements `ISensor` or `ISwitch`.
 - **Sensors**: Continuous values like `BoilerPressure` or `WeightSensor`.
 - **Switches**: Binary states with edge detection (`HardwareSwitch`, `DebouncedSwitch`).
 - **Decorators**: Virtual sensors like `TaredWeight` or `BoilerTemperature`.
 
 ### 🧠 Layer 2: Logic Modules (`lib/Logic`)
-This is the **"Brain"** of the machine. It coordinates behavior between sensors.
-- **`ScaleLogic`**: Listens to the `pumpSw` and commands the `ShotTimer` and `Scale` (e.g., auto-taring when the pump starts).
-- **Separation of Concerns**: Sensors handle *measurement*; Logic handles *behavior*.
+This is the **"Brain"** of the machine. It coordinates behavior between sensors using **Orchestrators**.
+- **`ScaleLogic`**: Coordinates the shot timer and scale auto-taring.
+- **`StartupLogic`**: Manages the boot sequence (WiFi/OTA).
+- **Polling**: Orchestrators are responsible for polling their required switches/sensors.
 
-### 🎨 Layer 3: UI & Widgets (`lib/UI`)
-The UI is built with **LVGL**.
-- **Widgets**: `SensorWidget`, `StatusWidget`. They pull data from sensors independently.
-- **Themes**: Support for dynamic themes (`CandyTheme`, `ChristmasTheme`).
+### 🏭 Layer 3: Providers & Factories (`lib/Factories`)
+We use a **Pure Factory** pattern to manage hardware.
+- **`MachineFactory`**: The single point of instantiation for all hardware.
+- **`IMachineProvider`**: Segregated interfaces (`ISensorProvider`, `ISwitchProvider`, `IThemeProvider`) used by logic modules to access hardware without knowing implementation details.
+- **Lazy Initialization**: Hardware services (like WiFi/OTA) are instantiated only when first requested. Instantiation *is* the activation signal.
 
 ---
 
@@ -51,16 +55,16 @@ The UI is built with **LVGL**.
 
 ### 1. Adding a New Feature (TDD)
 We follow a **Red-Green-Refactor** workflow using the `native` test suite.
-1. Add a test in `test/test_main.cpp`.
+1. Add a test in `test/`.
 2. Run `pio test -e native` (it should fail).
 3. Implement the logic in `lib/`.
 4. Run tests again (it should pass).
 
 ### 2. Implementing Logic
-If you want to add a new cross-component behavior (e.g., "Beep when pressure hits 2 bar"):
-1. Instantiate your components in `main.cpp`.
-2. Create or update a Logic module in `lib/Logic`.
-3. Dispatch commands to sensors/actuators inside the `Logic::update()` method.
+To add new cross-component behavior:
+1. Define the logic in a new `Logic` class in `lib/Logic`.
+2. In `main.cpp`, instantiate the logic and pass the required providers from the `MachineFactory`.
+3. Dispatch commands inside the `Logic::update()` method.
 
 ### 3. Handling Noisy Hardware
 - **`ADCRawSource`**: Averages 64 samples at the hardware level.
