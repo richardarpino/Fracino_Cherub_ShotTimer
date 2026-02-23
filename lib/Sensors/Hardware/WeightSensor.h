@@ -26,7 +26,7 @@ public:
     SensorMetadata getMetadata() override {
         return SensorMetadata(
             Reading(0.0f, "g", "WEIGHT", 1, false),
-            Reading(250.0f, "g", "WEIGHT", 1, false),
+            Reading(2000.0f, "g", "WEIGHT", 1, false),
             Reading(0.0f, "g", "WEIGHT", 1, false),
             Reading(0.0f, "g", "WEIGHT ERR", 1, true)
         );

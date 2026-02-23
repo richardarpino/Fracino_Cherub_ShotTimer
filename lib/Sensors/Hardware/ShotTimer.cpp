@@ -12,7 +12,7 @@ Reading ShotTimer::getReading() {
 SensorMetadata ShotTimer::getMetadata() {
     return SensorMetadata(
         Reading(0.0f, "SECS", "READY", 1, false),
-        Reading(25.5f, "SECS", "SHOT RUNNING", 1, false),
+        Reading(60.0f, "SECS", "SHOT RUNNING", 1, false),
         Reading(0.0f, "SECS", "READY", 1, false),
         Reading(0.0f, "SECS", "TIMER ERR", 1, true)
     );

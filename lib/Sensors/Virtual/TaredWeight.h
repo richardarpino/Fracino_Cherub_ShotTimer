@@ -23,7 +23,15 @@ public:
     }
 
     SensorMetadata getMetadata() override {
-        if (_base) return _base->getMetadata();
+        if (_base) {
+            SensorMetadata baseMeta = _base->getMetadata();
+            return SensorMetadata(
+                Reading(-2000.0f, "g", "WEIGHT", 1, false), 
+                baseMeta.high, 
+                baseMeta.init, 
+                baseMeta.error
+            );
+        }
         return SensorMetadata(Reading(), Reading(), Reading(), Reading());
     }
     

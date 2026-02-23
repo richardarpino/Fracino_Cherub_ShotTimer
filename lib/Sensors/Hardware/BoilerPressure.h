@@ -31,7 +31,7 @@ public:
     SensorMetadata getMetadata() override {
         return SensorMetadata(
             Reading(0.0f, "BAR", "BOILER", 1, false),
-            Reading(1.5f, "BAR", "BOILER", 1, false),
+            Reading(3.0f, "BAR", "BOILER", 1, false),
             Reading(0.0f, "BAR", "BOILER", 1, false),
             Reading(0.0f, "BAR", "BOILER ERR", 1, true)
         );
