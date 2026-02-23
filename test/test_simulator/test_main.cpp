@@ -110,7 +110,7 @@ void test_generate_examples() {
 
     std::vector<DisplaySize> sizes = {
         {"1x1", (uint32_t)TFT_HEIGHT, (uint32_t)TFT_WIDTH, 1, 1},
-        {"1x2", (uint32_t)TFT_HEIGHT / 2, (uint32_t)TFT_WIDTH, 2, 1},
+        {"1x2", (uint32_t)TFT_HEIGHT, (uint32_t)TFT_WIDTH / 2, 1, 2},
         {"2x2", (uint32_t)TFT_HEIGHT / 2, (uint32_t)TFT_WIDTH / 2, 2, 2}
     };
 
