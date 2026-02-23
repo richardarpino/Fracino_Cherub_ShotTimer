@@ -111,15 +111,16 @@ void test_generate_examples() {
             std::cout << "Generating " << sInfo.name << " in " << wInfo.name << "..." << std::endl;
 
             sensorReadme << "## " << wInfo.name << "\n";
-            sensorReadme << "| Theme | Zero (" << meta.low.value << ") | Max (" << meta.high.value << ") | Error |" << "\n";
-            sensorReadme << "| :--- | :---: | :---: | :---: |" << "\n";
+            sensorReadme << "| Theme | Low (" << meta.low.value << ") | Init (" << meta.init.value << ") | High (" << meta.high.value << ") | Error |" << "\n";
+            sensorReadme << "| :--- | :---: | :---: | :---: | :---: |" << "\n";
 
             for (auto& themeInfo : themes) {
                 sensorReadme << "| " << themeInfo.name << " ";
                 
                 std::vector<std::pair<std::string, Reading>> states = {
-                    {"zero", meta.low},
-                    {"max", meta.high},
+                    {"low", meta.low},
+                    {"init", meta.init},
+                    {"high", meta.high},
                     {"error", meta.error}
                 };
 

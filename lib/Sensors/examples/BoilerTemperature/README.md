@@ -3,23 +3,23 @@
 Visualizing BoilerTemperature data.
 
 ## StatusWidget
-| Theme | Zero (25) | Max (125) | Error |
-| :--- | :---: | :---: | :---: |
-| Default | ![zero](../boilertemperature-statuswidget-default-zero.bmp) | ![max](../boilertemperature-statuswidget-default-max.bmp) | ![error](../boilertemperature-statuswidget-default-error.bmp) |
-| Candy | ![zero](../boilertemperature-statuswidget-candy-zero.bmp) | ![max](../boilertemperature-statuswidget-candy-max.bmp) | ![error](../boilertemperature-statuswidget-candy-error.bmp) |
-| Christmas | ![zero](../boilertemperature-statuswidget-christmas-zero.bmp) | ![max](../boilertemperature-statuswidget-christmas-max.bmp) | ![error](../boilertemperature-statuswidget-christmas-error.bmp) |
+| Theme | Low (25) | Init (25) | High (125) | Error |
+| :--- | :---: | :---: | :---: | :---: |
+| Default | ![low](../boilertemperature-statuswidget-default-low.bmp) | ![init](../boilertemperature-statuswidget-default-init.bmp) | ![high](../boilertemperature-statuswidget-default-high.bmp) | ![error](../boilertemperature-statuswidget-default-error.bmp) |
+| Candy | ![low](../boilertemperature-statuswidget-candy-low.bmp) | ![init](../boilertemperature-statuswidget-candy-init.bmp) | ![high](../boilertemperature-statuswidget-candy-high.bmp) | ![error](../boilertemperature-statuswidget-candy-error.bmp) |
+| Christmas | ![low](../boilertemperature-statuswidget-christmas-low.bmp) | ![init](../boilertemperature-statuswidget-christmas-init.bmp) | ![high](../boilertemperature-statuswidget-christmas-high.bmp) | ![error](../boilertemperature-statuswidget-christmas-error.bmp) |
 
 ## SensorWidget
-| Theme | Zero (25) | Max (125) | Error |
-| :--- | :---: | :---: | :---: |
-| Default | ![zero](../boilertemperature-sensorwidget-default-zero.bmp) | ![max](../boilertemperature-sensorwidget-default-max.bmp) | ![error](../boilertemperature-sensorwidget-default-error.bmp) |
-| Candy | ![zero](../boilertemperature-sensorwidget-candy-zero.bmp) | ![max](../boilertemperature-sensorwidget-candy-max.bmp) | ![error](../boilertemperature-sensorwidget-candy-error.bmp) |
-| Christmas | ![zero](../boilertemperature-sensorwidget-christmas-zero.bmp) | ![max](../boilertemperature-sensorwidget-christmas-max.bmp) | ![error](../boilertemperature-sensorwidget-christmas-error.bmp) |
+| Theme | Low (25) | Init (25) | High (125) | Error |
+| :--- | :---: | :---: | :---: | :---: |
+| Default | ![low](../boilertemperature-sensorwidget-default-low.bmp) | ![init](../boilertemperature-sensorwidget-default-init.bmp) | ![high](../boilertemperature-sensorwidget-default-high.bmp) | ![error](../boilertemperature-sensorwidget-default-error.bmp) |
+| Candy | ![low](../boilertemperature-sensorwidget-candy-low.bmp) | ![init](../boilertemperature-sensorwidget-candy-init.bmp) | ![high](../boilertemperature-sensorwidget-candy-high.bmp) | ![error](../boilertemperature-sensorwidget-candy-error.bmp) |
+| Christmas | ![low](../boilertemperature-sensorwidget-christmas-low.bmp) | ![init](../boilertemperature-sensorwidget-christmas-init.bmp) | ![high](../boilertemperature-sensorwidget-christmas-high.bmp) | ![error](../boilertemperature-sensorwidget-christmas-error.bmp) |
 
 ## GaugeWidget
-| Theme | Zero (25) | Max (125) | Error |
-| :--- | :---: | :---: | :---: |
-| Default | ![zero](../boilertemperature-gaugewidget-default-zero.bmp) | ![max](../boilertemperature-gaugewidget-default-max.bmp) | ![error](../boilertemperature-gaugewidget-default-error.bmp) |
-| Candy | ![zero](../boilertemperature-gaugewidget-candy-zero.bmp) | ![max](../boilertemperature-gaugewidget-candy-max.bmp) | ![error](../boilertemperature-gaugewidget-candy-error.bmp) |
-| Christmas | ![zero](../boilertemperature-gaugewidget-christmas-zero.bmp) | ![max](../boilertemperature-gaugewidget-christmas-max.bmp) | ![error](../boilertemperature-gaugewidget-christmas-error.bmp) |
+| Theme | Low (25) | Init (25) | High (125) | Error |
+| :--- | :---: | :---: | :---: | :---: |
+| Default | ![low](../boilertemperature-gaugewidget-default-low.bmp) | ![init](../boilertemperature-gaugewidget-default-init.bmp) | ![high](../boilertemperature-gaugewidget-default-high.bmp) | ![error](../boilertemperature-gaugewidget-default-error.bmp) |
+| Candy | ![low](../boilertemperature-gaugewidget-candy-low.bmp) | ![init](../boilertemperature-gaugewidget-candy-init.bmp) | ![high](../boilertemperature-gaugewidget-candy-high.bmp) | ![error](../boilertemperature-gaugewidget-candy-error.bmp) |
+| Christmas | ![low](../boilertemperature-gaugewidget-christmas-low.bmp) | ![init](../boilertemperature-gaugewidget-christmas-init.bmp) | ![high](../boilertemperature-gaugewidget-christmas-high.bmp) | ![error](../boilertemperature-gaugewidget-christmas-error.bmp) |
 
