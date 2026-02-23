@@ -109,9 +109,9 @@ void test_generate_examples() {
     };
 
     std::vector<DisplaySize> sizes = {
-        {"1x1", 240, 135, 1, 1},
-        {"1x2", 240, 67, 1, 2},
-        {"2x2", 120, 67, 2, 2}
+        {"1x1", (uint32_t)TFT_HEIGHT, (uint32_t)TFT_WIDTH, 1, 1},
+        {"1x2", (uint32_t)TFT_HEIGHT / 2, (uint32_t)TFT_WIDTH, 2, 1},
+        {"2x2", (uint32_t)TFT_HEIGHT / 2, (uint32_t)TFT_WIDTH / 2, 2, 2}
     };
 
     HeadlessDriver::init(320, 320);
