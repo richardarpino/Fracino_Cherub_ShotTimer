@@ -18,6 +18,7 @@ private:
     lv_obj_t* _meter;
     lv_meter_scale_t* _scale;
     lv_meter_indicator_t* _indic;
+    lv_obj_t* _unit_label;
     ISensor* _sensor;
     
     lv_color_t _bgColor;
@@ -25,6 +26,8 @@ private:
     lv_color_t _errorColor;
     lv_color_t _labelColor;
     lv_color_t _alertBgColor;
+
+    static void meter_event_cb(lv_event_t* e);
 };
 
 #endif

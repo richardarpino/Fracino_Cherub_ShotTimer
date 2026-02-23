@@ -156,7 +156,7 @@ void test_generate_examples() {
                     lv_obj_set_style_radius(parent, 0, 0);
 
                     IWidget* widget = wInfo.create(sInfo.sensor);
-                    lv_obj_t* widgetObj = widget->init(parent, 1, 1);
+                    lv_obj_t* widgetObj = widget->init(parent, sizes[0].cols, sizes[0].rows); // Changed to use sizes[0] for 1x1
                     widget->applyTheme(themeInfo.theme);
                     widget->update(state.second);
                     
