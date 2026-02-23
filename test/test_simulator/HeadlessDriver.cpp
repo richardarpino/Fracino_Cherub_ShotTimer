@@ -8,6 +8,9 @@ uint32_t HeadlessDriver::_width = 0;
 uint32_t HeadlessDriver::_height = 0;
 
 void HeadlessDriver::init(uint32_t width, uint32_t height) {
+    static bool is_init = false;
+    if (is_init) return;
+
     _width = width;
     _height = height;
     
@@ -15,16 +18,18 @@ void HeadlessDriver::init(uint32_t width, uint32_t height) {
 
     // Allocate draw buffer
     static lv_disp_draw_buf_t disp_buf;
-    static lv_color_t buf1[240 * 320]; 
-    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, width * height);
+    static lv_color_t buf1[320 * 320]; 
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, 320 * 320);
 
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.draw_buf = &disp_buf;
     disp_drv.flush_cb = flush_cb;
-    disp_drv.hor_res = width;
-    disp_drv.ver_res = height;
+    disp_drv.hor_res = 320;
+    disp_drv.ver_res = 320;
     lv_disp_drv_register(&disp_drv);
+    
+    is_init = true;
 }
 
 void HeadlessDriver::flush_cb(lv_disp_drv_t* disp_drv, const lv_area_t* area, lv_color_t* color_p) {

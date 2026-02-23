@@ -114,6 +114,8 @@ void test_generate_examples() {
         {"2x2", 120, 67, 2, 2}
     };
 
+    HeadlessDriver::init(320, 320);
+
     for (auto& sInfo : sensors) {
         std::string sensorDir = "lib/Sensors/examples/" + sInfo.name;
         ensure_dir(sensorDir);
@@ -144,17 +146,23 @@ void test_generate_examples() {
                 };
 
                 for (const auto& state : states) {
-                    HeadlessDriver::init(240, 135);
                     lv_obj_clean(lv_scr_act());
                     
+                    // Create parent of target size to force widget scaling
+                    lv_obj_t* parent = lv_obj_create(lv_scr_act());
+                    lv_obj_set_size(parent, 240, 135);
+                    lv_obj_set_style_pad_all(parent, 0, 0);
+                    lv_obj_set_style_border_width(parent, 0, 0);
+                    lv_obj_set_style_radius(parent, 0, 0);
+
                     IWidget* widget = wInfo.create(sInfo.sensor);
-                    lv_obj_t* widgetObj = widget->init(lv_scr_act(), 1, 1);
+                    lv_obj_t* widgetObj = widget->init(parent, 1, 1);
                     widget->applyTheme(themeInfo.theme);
                     widget->update(state.second);
                     
                     std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-" + state.first + ".bmp");
                     std::string fullPath = "lib/Sensors/examples/1x1/" + imgName;
-                    HeadlessDriver::saveSnapshot(widgetObj, fullPath);
+                    HeadlessDriver::saveSnapshot(parent, fullPath);
                     
                     sensorReadme << "| ![" << state.first << "](../1x1/" << imgName << ") ";
                     delete widget;
@@ -164,17 +172,23 @@ void test_generate_examples() {
                 sensorReadme << "| ";
                 for (size_t i = 1; i < sizes.size(); ++i) {
                     const auto& size = sizes[i];
-                    HeadlessDriver::init(size.w, size.h);
                     lv_obj_clean(lv_scr_act());
 
+                    // Create parent of target size to force widget scaling
+                    lv_obj_t* parent = lv_obj_create(lv_scr_act());
+                    lv_obj_set_size(parent, size.w, size.h);
+                    lv_obj_set_style_pad_all(parent, 0, 0);
+                    lv_obj_set_style_border_width(parent, 0, 0);
+                    lv_obj_set_style_radius(parent, 0, 0);
+
                     IWidget* widget = wInfo.create(sInfo.sensor);
-                    lv_obj_t* widgetObj = widget->init(lv_scr_act(), size.cols, size.rows);
+                    lv_obj_t* widgetObj = widget->init(parent, size.cols, size.rows);
                     widget->applyTheme(themeInfo.theme);
                     widget->update(meta.init);
 
                     std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-init.bmp");
                     std::string fullPath = "lib/Sensors/examples/" + size.name + "/" + imgName;
-                    HeadlessDriver::saveSnapshot(widgetObj, fullPath);
+                    HeadlessDriver::saveSnapshot(parent, fullPath);
 
                     sensorReadme << "![" << size.name << "](../" << size.name << "/" << imgName << ") ";
                     delete widget;
