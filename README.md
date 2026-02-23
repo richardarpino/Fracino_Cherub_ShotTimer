@@ -57,10 +57,7 @@ The project includes an automated visual documentation system to ensure UI consi
 
 ### 📸 Sensor Gallery (TOC)
 A cross-product of all sensors, widgets, and themes is generated automatically:
-- [**BoilerPressure**](lib/Sensors/examples/BoilerPressure/README.md) - Visualizing BoilerPressure data.
-- [**ShotTimer**](lib/Sensors/examples/ShotTimer/README.md) - Visualizing ShotTimer data.
-- [**WeightSensor**](lib/Sensors/examples/WeightSensor/README.md) - Visualizing WeightSensor data.
-- [**WiFiSensor**](lib/Sensors/examples/WiFiSensor/README.md) - Visualizing WiFiSensor data.
+- [**View Documentation Gallery**](lib/Sensors/examples/README.md) - Automated visual documentation for all sensors (Real and Virtual).
 
 ### ⚙️ How it works
 The UI is built using **LVGL**. To verify visual changes without physical hardware, we use a **Simulator Framework**:
