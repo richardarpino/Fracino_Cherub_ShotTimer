@@ -94,7 +94,25 @@ void test_generate_examples() {
     };
 
     ensure_dir("lib/Sensors/examples");
+    ensure_dir("lib/Sensors/examples/1x1");
+    ensure_dir("lib/Sensors/examples/1x2");
+    ensure_dir("lib/Sensors/examples/2x2");
+    
     std::vector<SensorDocs> docs;
+
+    struct DisplaySize {
+        std::string name;
+        uint32_t w;
+        uint32_t h;
+        uint8_t cols;
+        uint8_t rows;
+    };
+
+    std::vector<DisplaySize> sizes = {
+        {"1x1", 240, 135, 1, 1},
+        {"1x2", 240, 67, 1, 2},
+        {"2x2", 120, 67, 2, 2}
+    };
 
     for (auto& sInfo : sensors) {
         std::string sensorDir = "lib/Sensors/examples/" + sInfo.name;
@@ -111,12 +129,13 @@ void test_generate_examples() {
             std::cout << "Generating " << sInfo.name << " in " << wInfo.name << "..." << std::endl;
 
             sensorReadme << "## " << wInfo.name << "\n";
-            sensorReadme << "| Theme | Low (" << meta.low.value << ") | Init (" << meta.init.value << ") | High (" << meta.high.value << ") | Error |" << "\n";
-            sensorReadme << "| :--- | :---: | :---: | :---: | :---: |" << "\n";
+            sensorReadme << "| Theme | Low (" << meta.low.value << ") | Init (" << meta.init.value << ") | High (" << meta.high.value << ") | Error | Scaled (Init) |" << "\n";
+            sensorReadme << "| :--- | :---: | :---: | :---: | :---: | :---: |" << "\n";
 
             for (auto& themeInfo : themes) {
                 sensorReadme << "| " << themeInfo.name << " ";
                 
+                // 1x1 States (Full set)
                 std::vector<std::pair<std::string, Reading>> states = {
                     {"low", meta.low},
                     {"init", meta.init},
@@ -125,6 +144,7 @@ void test_generate_examples() {
                 };
 
                 for (const auto& state : states) {
+                    HeadlessDriver::init(240, 135);
                     lv_obj_clean(lv_scr_act());
                     
                     IWidget* widget = wInfo.create(sInfo.sensor);
@@ -132,15 +152,34 @@ void test_generate_examples() {
                     widget->applyTheme(themeInfo.theme);
                     widget->update(state.second);
                     
-                    // {sensor}-{widget}-{theme}-{state}.bmp
                     std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-" + state.first + ".bmp");
-                    std::string fullPath = "lib/Sensors/examples/" + imgName;
+                    std::string fullPath = "lib/Sensors/examples/1x1/" + imgName;
                     HeadlessDriver::saveSnapshot(widgetObj, fullPath);
                     
-                    sensorReadme << "| ![" << state.first << "](../" << imgName << ") ";
-                    
+                    sensorReadme << "| ![" << state.first << "](../1x1/" << imgName << ") ";
                     delete widget;
                 }
+
+                // Scaled Previews (Init state only)
+                sensorReadme << "| ";
+                for (size_t i = 1; i < sizes.size(); ++i) {
+                    const auto& size = sizes[i];
+                    HeadlessDriver::init(size.w, size.h);
+                    lv_obj_clean(lv_scr_act());
+
+                    IWidget* widget = wInfo.create(sInfo.sensor);
+                    lv_obj_t* widgetObj = widget->init(lv_scr_act(), size.cols, size.rows);
+                    widget->applyTheme(themeInfo.theme);
+                    widget->update(meta.init);
+
+                    std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-init.bmp");
+                    std::string fullPath = "lib/Sensors/examples/" + size.name + "/" + imgName;
+                    HeadlessDriver::saveSnapshot(widgetObj, fullPath);
+
+                    sensorReadme << "![" << size.name << "](../" << size.name << "/" << imgName << ") ";
+                    delete widget;
+                }
+                
                 sensorReadme << "|" << "\n";
             }
             sensorReadme << "\n";

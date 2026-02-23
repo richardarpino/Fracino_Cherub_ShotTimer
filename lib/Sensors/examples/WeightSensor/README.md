@@ -3,23 +3,23 @@
 Visualizing WeightSensor data.
 
 ## StatusWidget
-| Theme | Low (0) | Init (0) | High (2000) | Error |
-| :--- | :---: | :---: | :---: | :---: |
-| Default | ![low](../weightsensor-statuswidget-default-low.bmp) | ![init](../weightsensor-statuswidget-default-init.bmp) | ![high](../weightsensor-statuswidget-default-high.bmp) | ![error](../weightsensor-statuswidget-default-error.bmp) |
-| Candy | ![low](../weightsensor-statuswidget-candy-low.bmp) | ![init](../weightsensor-statuswidget-candy-init.bmp) | ![high](../weightsensor-statuswidget-candy-high.bmp) | ![error](../weightsensor-statuswidget-candy-error.bmp) |
-| Christmas | ![low](../weightsensor-statuswidget-christmas-low.bmp) | ![init](../weightsensor-statuswidget-christmas-init.bmp) | ![high](../weightsensor-statuswidget-christmas-high.bmp) | ![error](../weightsensor-statuswidget-christmas-error.bmp) |
+| Theme | Low (0) | Init (0) | High (2000) | Error | Scaled (Init) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Default | ![low](../1x1/weightsensor-statuswidget-default-low.bmp) | ![init](../1x1/weightsensor-statuswidget-default-init.bmp) | ![high](../1x1/weightsensor-statuswidget-default-high.bmp) | ![error](../1x1/weightsensor-statuswidget-default-error.bmp) | ![1x2](../1x2/weightsensor-statuswidget-default-init.bmp) ![2x2](../2x2/weightsensor-statuswidget-default-init.bmp) |
+| Candy | ![low](../1x1/weightsensor-statuswidget-candy-low.bmp) | ![init](../1x1/weightsensor-statuswidget-candy-init.bmp) | ![high](../1x1/weightsensor-statuswidget-candy-high.bmp) | ![error](../1x1/weightsensor-statuswidget-candy-error.bmp) | ![1x2](../1x2/weightsensor-statuswidget-candy-init.bmp) ![2x2](../2x2/weightsensor-statuswidget-candy-init.bmp) |
+| Christmas | ![low](../1x1/weightsensor-statuswidget-christmas-low.bmp) | ![init](../1x1/weightsensor-statuswidget-christmas-init.bmp) | ![high](../1x1/weightsensor-statuswidget-christmas-high.bmp) | ![error](../1x1/weightsensor-statuswidget-christmas-error.bmp) | ![1x2](../1x2/weightsensor-statuswidget-christmas-init.bmp) ![2x2](../2x2/weightsensor-statuswidget-christmas-init.bmp) |
 
 ## SensorWidget
-| Theme | Low (0) | Init (0) | High (2000) | Error |
-| :--- | :---: | :---: | :---: | :---: |
-| Default | ![low](../weightsensor-sensorwidget-default-low.bmp) | ![init](../weightsensor-sensorwidget-default-init.bmp) | ![high](../weightsensor-sensorwidget-default-high.bmp) | ![error](../weightsensor-sensorwidget-default-error.bmp) |
-| Candy | ![low](../weightsensor-sensorwidget-candy-low.bmp) | ![init](../weightsensor-sensorwidget-candy-init.bmp) | ![high](../weightsensor-sensorwidget-candy-high.bmp) | ![error](../weightsensor-sensorwidget-candy-error.bmp) |
-| Christmas | ![low](../weightsensor-sensorwidget-christmas-low.bmp) | ![init](../weightsensor-sensorwidget-christmas-init.bmp) | ![high](../weightsensor-sensorwidget-christmas-high.bmp) | ![error](../weightsensor-sensorwidget-christmas-error.bmp) |
+| Theme | Low (0) | Init (0) | High (2000) | Error | Scaled (Init) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Default | ![low](../1x1/weightsensor-sensorwidget-default-low.bmp) | ![init](../1x1/weightsensor-sensorwidget-default-init.bmp) | ![high](../1x1/weightsensor-sensorwidget-default-high.bmp) | ![error](../1x1/weightsensor-sensorwidget-default-error.bmp) | ![1x2](../1x2/weightsensor-sensorwidget-default-init.bmp) ![2x2](../2x2/weightsensor-sensorwidget-default-init.bmp) |
+| Candy | ![low](../1x1/weightsensor-sensorwidget-candy-low.bmp) | ![init](../1x1/weightsensor-sensorwidget-candy-init.bmp) | ![high](../1x1/weightsensor-sensorwidget-candy-high.bmp) | ![error](../1x1/weightsensor-sensorwidget-candy-error.bmp) | ![1x2](../1x2/weightsensor-sensorwidget-candy-init.bmp) ![2x2](../2x2/weightsensor-sensorwidget-candy-init.bmp) |
+| Christmas | ![low](../1x1/weightsensor-sensorwidget-christmas-low.bmp) | ![init](../1x1/weightsensor-sensorwidget-christmas-init.bmp) | ![high](../1x1/weightsensor-sensorwidget-christmas-high.bmp) | ![error](../1x1/weightsensor-sensorwidget-christmas-error.bmp) | ![1x2](../1x2/weightsensor-sensorwidget-christmas-init.bmp) ![2x2](../2x2/weightsensor-sensorwidget-christmas-init.bmp) |
 
 ## GaugeWidget
-| Theme | Low (0) | Init (0) | High (2000) | Error |
-| :--- | :---: | :---: | :---: | :---: |
-| Default | ![low](../weightsensor-gaugewidget-default-low.bmp) | ![init](../weightsensor-gaugewidget-default-init.bmp) | ![high](../weightsensor-gaugewidget-default-high.bmp) | ![error](../weightsensor-gaugewidget-default-error.bmp) |
-| Candy | ![low](../weightsensor-gaugewidget-candy-low.bmp) | ![init](../weightsensor-gaugewidget-candy-init.bmp) | ![high](../weightsensor-gaugewidget-candy-high.bmp) | ![error](../weightsensor-gaugewidget-candy-error.bmp) |
-| Christmas | ![low](../weightsensor-gaugewidget-christmas-low.bmp) | ![init](../weightsensor-gaugewidget-christmas-init.bmp) | ![high](../weightsensor-gaugewidget-christmas-high.bmp) | ![error](../weightsensor-gaugewidget-christmas-error.bmp) |
+| Theme | Low (0) | Init (0) | High (2000) | Error | Scaled (Init) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Default | ![low](../1x1/weightsensor-gaugewidget-default-low.bmp) | ![init](../1x1/weightsensor-gaugewidget-default-init.bmp) | ![high](../1x1/weightsensor-gaugewidget-default-high.bmp) | ![error](../1x1/weightsensor-gaugewidget-default-error.bmp) | ![1x2](../1x2/weightsensor-gaugewidget-default-init.bmp) ![2x2](../2x2/weightsensor-gaugewidget-default-init.bmp) |
+| Candy | ![low](../1x1/weightsensor-gaugewidget-candy-low.bmp) | ![init](../1x1/weightsensor-gaugewidget-candy-init.bmp) | ![high](../1x1/weightsensor-gaugewidget-candy-high.bmp) | ![error](../1x1/weightsensor-gaugewidget-candy-error.bmp) | ![1x2](../1x2/weightsensor-gaugewidget-candy-init.bmp) ![2x2](../2x2/weightsensor-gaugewidget-candy-init.bmp) |
+| Christmas | ![low](../1x1/weightsensor-gaugewidget-christmas-low.bmp) | ![init](../1x1/weightsensor-gaugewidget-christmas-init.bmp) | ![high](../1x1/weightsensor-gaugewidget-christmas-high.bmp) | ![error](../1x1/weightsensor-gaugewidget-christmas-error.bmp) | ![1x2](../1x2/weightsensor-gaugewidget-christmas-init.bmp) ![2x2](../2x2/weightsensor-gaugewidget-christmas-init.bmp) |
 
