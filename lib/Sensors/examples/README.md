@@ -5,8 +5,10 @@ This directory contains automated visual documentation for all sensors in the sy
 ## Available Sensors
 
 - [**BoilerPressure**](BoilerPressure/README.md) - Visualizing BoilerPressure data.
+- [**BoilerTemperature**](BoilerTemperature/README.md) - Visualizing BoilerTemperature data.
 - [**ShotTimer**](ShotTimer/README.md) - Visualizing ShotTimer data.
 - [**WeightSensor**](WeightSensor/README.md) - Visualizing WeightSensor data.
+- [**TaredWeight**](TaredWeight/README.md) - Visualizing TaredWeight data.
 - [**WiFiSensor**](WiFiSensor/README.md) - Visualizing WiFiSensor data.
 
 ---

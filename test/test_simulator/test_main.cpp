@@ -28,6 +28,10 @@
 #include <sstream>
 #include <iomanip>
 
+// Headers for virtual sensors
+#include "../../lib/Sensors/Virtual/BoilerTemperature.h"
+#include "../../lib/Sensors/Virtual/TaredWeight.h"
+
 void setUp(void) {}
 void tearDown(void) {}
 
@@ -71,10 +75,15 @@ void test_generate_examples() {
         {"Christmas", new ChristmasTheme()}
     };
 
+    BoilerPressure* bp = new BoilerPressure(nullptr);
+    WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
+
     std::vector<SensorInfo> sensors = {
-        {"BoilerPressure", new BoilerPressure(nullptr)},
+        {"BoilerPressure", bp},
+        {"BoilerTemperature", new BoilerTemperature(bp)},
         {"ShotTimer", new ShotTimer(10.0)},
-        {"WeightSensor", new WeightSensor(nullptr, 0.001f)},
+        {"WeightSensor", ws},
+        {"TaredWeight", new TaredWeight(ws)},
         {"WiFiSensor", new WiFiSensor()}
     };
 
@@ -99,9 +108,6 @@ void test_generate_examples() {
         sensorReadme << "Visualizing " << sInfo.name << " data." << "\n\n";
 
         for (auto& wInfo : widgets) {
-            std::string widgetDir = sensorDir + "/" + wInfo.name;
-            ensure_dir(widgetDir);
-
             std::cout << "Generating " << sInfo.name << " in " << wInfo.name << "..." << std::endl;
 
             sensorReadme << "## " << wInfo.name << "\n";
@@ -109,7 +115,6 @@ void test_generate_examples() {
             sensorReadme << "| :--- | :---: | :---: | :---: |" << "\n";
 
             for (auto& themeInfo : themes) {
-                std::string themePrefix = to_lower(themeInfo.name);
                 sensorReadme << "| " << themeInfo.name << " ";
                 
                 std::vector<std::pair<std::string, Reading>> states = {
@@ -126,10 +131,12 @@ void test_generate_examples() {
                     widget->applyTheme(themeInfo.theme);
                     widget->update(state.second);
                     
-                    std::string filename = widgetDir + "/" + themePrefix + "-" + state.first + ".bmp";
-                    HeadlessDriver::saveSnapshot(widgetObj, filename);
+                    // {sensor}-{widget}-{theme}-{state}.bmp
+                    std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-" + state.first + ".bmp");
+                    std::string fullPath = "lib/Sensors/examples/" + imgName;
+                    HeadlessDriver::saveSnapshot(widgetObj, fullPath);
                     
-                    sensorReadme << "| ![" << state.first << "](" << wInfo.name << "/" << themePrefix << "-" << state.first << ".bmp) ";
+                    sensorReadme << "| ![" << state.first << "](../" << imgName << ") ";
                     
                     delete widget;
                 }

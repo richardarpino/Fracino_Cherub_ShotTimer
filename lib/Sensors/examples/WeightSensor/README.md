@@ -5,21 +5,21 @@ Visualizing WeightSensor data.
 ## StatusWidget
 | Theme | Zero (0) | Max (250) | Error |
 | :--- | :---: | :---: | :---: |
-| Default | ![zero](StatusWidget/default-zero.bmp) | ![max](StatusWidget/default-max.bmp) | ![error](StatusWidget/default-error.bmp) |
-| Candy | ![zero](StatusWidget/candy-zero.bmp) | ![max](StatusWidget/candy-max.bmp) | ![error](StatusWidget/candy-error.bmp) |
-| Christmas | ![zero](StatusWidget/christmas-zero.bmp) | ![max](StatusWidget/christmas-max.bmp) | ![error](StatusWidget/christmas-error.bmp) |
+| Default | ![zero](../weightsensor-statuswidget-default-zero.bmp) | ![max](../weightsensor-statuswidget-default-max.bmp) | ![error](../weightsensor-statuswidget-default-error.bmp) |
+| Candy | ![zero](../weightsensor-statuswidget-candy-zero.bmp) | ![max](../weightsensor-statuswidget-candy-max.bmp) | ![error](../weightsensor-statuswidget-candy-error.bmp) |
+| Christmas | ![zero](../weightsensor-statuswidget-christmas-zero.bmp) | ![max](../weightsensor-statuswidget-christmas-max.bmp) | ![error](../weightsensor-statuswidget-christmas-error.bmp) |
 
 ## SensorWidget
 | Theme | Zero (0) | Max (250) | Error |
 | :--- | :---: | :---: | :---: |
-| Default | ![zero](SensorWidget/default-zero.bmp) | ![max](SensorWidget/default-max.bmp) | ![error](SensorWidget/default-error.bmp) |
-| Candy | ![zero](SensorWidget/candy-zero.bmp) | ![max](SensorWidget/candy-max.bmp) | ![error](SensorWidget/candy-error.bmp) |
-| Christmas | ![zero](SensorWidget/christmas-zero.bmp) | ![max](SensorWidget/christmas-max.bmp) | ![error](SensorWidget/christmas-error.bmp) |
+| Default | ![zero](../weightsensor-sensorwidget-default-zero.bmp) | ![max](../weightsensor-sensorwidget-default-max.bmp) | ![error](../weightsensor-sensorwidget-default-error.bmp) |
+| Candy | ![zero](../weightsensor-sensorwidget-candy-zero.bmp) | ![max](../weightsensor-sensorwidget-candy-max.bmp) | ![error](../weightsensor-sensorwidget-candy-error.bmp) |
+| Christmas | ![zero](../weightsensor-sensorwidget-christmas-zero.bmp) | ![max](../weightsensor-sensorwidget-christmas-max.bmp) | ![error](../weightsensor-sensorwidget-christmas-error.bmp) |
 
 ## GaugeWidget
 | Theme | Zero (0) | Max (250) | Error |
 | :--- | :---: | :---: | :---: |
-| Default | ![zero](GaugeWidget/default-zero.bmp) | ![max](GaugeWidget/default-max.bmp) | ![error](GaugeWidget/default-error.bmp) |
-| Candy | ![zero](GaugeWidget/candy-zero.bmp) | ![max](GaugeWidget/candy-max.bmp) | ![error](GaugeWidget/candy-error.bmp) |
-| Christmas | ![zero](GaugeWidget/christmas-zero.bmp) | ![max](GaugeWidget/christmas-max.bmp) | ![error](GaugeWidget/christmas-error.bmp) |
+| Default | ![zero](../weightsensor-gaugewidget-default-zero.bmp) | ![max](../weightsensor-gaugewidget-default-max.bmp) | ![error](../weightsensor-gaugewidget-default-error.bmp) |
+| Candy | ![zero](../weightsensor-gaugewidget-candy-zero.bmp) | ![max](../weightsensor-gaugewidget-candy-max.bmp) | ![error](../weightsensor-gaugewidget-candy-error.bmp) |
+| Christmas | ![zero](../weightsensor-gaugewidget-christmas-zero.bmp) | ![max](../weightsensor-gaugewidget-christmas-max.bmp) | ![error](../weightsensor-gaugewidget-christmas-error.bmp) |
 

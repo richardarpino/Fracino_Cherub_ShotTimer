@@ -5,21 +5,21 @@ Visualizing WiFiSensor data.
 ## StatusWidget
 | Theme | Zero (0) | Max (1) | Error |
 | :--- | :---: | :---: | :---: |
-| Default | ![zero](StatusWidget/default-zero.bmp) | ![max](StatusWidget/default-max.bmp) | ![error](StatusWidget/default-error.bmp) |
-| Candy | ![zero](StatusWidget/candy-zero.bmp) | ![max](StatusWidget/candy-max.bmp) | ![error](StatusWidget/candy-error.bmp) |
-| Christmas | ![zero](StatusWidget/christmas-zero.bmp) | ![max](StatusWidget/christmas-max.bmp) | ![error](StatusWidget/christmas-error.bmp) |
+| Default | ![zero](../wifisensor-statuswidget-default-zero.bmp) | ![max](../wifisensor-statuswidget-default-max.bmp) | ![error](../wifisensor-statuswidget-default-error.bmp) |
+| Candy | ![zero](../wifisensor-statuswidget-candy-zero.bmp) | ![max](../wifisensor-statuswidget-candy-max.bmp) | ![error](../wifisensor-statuswidget-candy-error.bmp) |
+| Christmas | ![zero](../wifisensor-statuswidget-christmas-zero.bmp) | ![max](../wifisensor-statuswidget-christmas-max.bmp) | ![error](../wifisensor-statuswidget-christmas-error.bmp) |
 
 ## SensorWidget
 | Theme | Zero (0) | Max (1) | Error |
 | :--- | :---: | :---: | :---: |
-| Default | ![zero](SensorWidget/default-zero.bmp) | ![max](SensorWidget/default-max.bmp) | ![error](SensorWidget/default-error.bmp) |
-| Candy | ![zero](SensorWidget/candy-zero.bmp) | ![max](SensorWidget/candy-max.bmp) | ![error](SensorWidget/candy-error.bmp) |
-| Christmas | ![zero](SensorWidget/christmas-zero.bmp) | ![max](SensorWidget/christmas-max.bmp) | ![error](SensorWidget/christmas-error.bmp) |
+| Default | ![zero](../wifisensor-sensorwidget-default-zero.bmp) | ![max](../wifisensor-sensorwidget-default-max.bmp) | ![error](../wifisensor-sensorwidget-default-error.bmp) |
+| Candy | ![zero](../wifisensor-sensorwidget-candy-zero.bmp) | ![max](../wifisensor-sensorwidget-candy-max.bmp) | ![error](../wifisensor-sensorwidget-candy-error.bmp) |
+| Christmas | ![zero](../wifisensor-sensorwidget-christmas-zero.bmp) | ![max](../wifisensor-sensorwidget-christmas-max.bmp) | ![error](../wifisensor-sensorwidget-christmas-error.bmp) |
 
 ## GaugeWidget
 | Theme | Zero (0) | Max (1) | Error |
 | :--- | :---: | :---: | :---: |
-| Default | ![zero](GaugeWidget/default-zero.bmp) | ![max](GaugeWidget/default-max.bmp) | ![error](GaugeWidget/default-error.bmp) |
-| Candy | ![zero](GaugeWidget/candy-zero.bmp) | ![max](GaugeWidget/candy-max.bmp) | ![error](GaugeWidget/candy-error.bmp) |
-| Christmas | ![zero](GaugeWidget/christmas-zero.bmp) | ![max](GaugeWidget/christmas-max.bmp) | ![error](GaugeWidget/christmas-error.bmp) |
+| Default | ![zero](../wifisensor-gaugewidget-default-zero.bmp) | ![max](../wifisensor-gaugewidget-default-max.bmp) | ![error](../wifisensor-gaugewidget-default-error.bmp) |
+| Candy | ![zero](../wifisensor-gaugewidget-candy-zero.bmp) | ![max](../wifisensor-gaugewidget-candy-max.bmp) | ![error](../wifisensor-gaugewidget-candy-error.bmp) |
+| Christmas | ![zero](../wifisensor-gaugewidget-christmas-zero.bmp) | ![max](../wifisensor-gaugewidget-christmas-max.bmp) | ![error](../wifisensor-gaugewidget-christmas-error.bmp) |
 
