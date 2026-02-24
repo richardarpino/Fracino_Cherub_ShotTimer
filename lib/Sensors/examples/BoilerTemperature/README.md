@@ -2,13 +2,6 @@
 
 Visualizing BoilerTemperature data.
 
-## StatusWidget
-| Theme | Low (25) | Init (25) | High (150) | Error | Scaled (Init) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Default | ![low](../1x1/boilertemperature-statuswidget-default-low.bmp) | ![init](../1x1/boilertemperature-statuswidget-default-init.bmp) | ![high](../1x1/boilertemperature-statuswidget-default-high.bmp) | ![error](../1x1/boilertemperature-statuswidget-default-error.bmp) | ![1x2](../1x2/boilertemperature-statuswidget-default-init.bmp) ![2x2](../2x2/boilertemperature-statuswidget-default-init.bmp) |
-| Candy | ![low](../1x1/boilertemperature-statuswidget-candy-low.bmp) | ![init](../1x1/boilertemperature-statuswidget-candy-init.bmp) | ![high](../1x1/boilertemperature-statuswidget-candy-high.bmp) | ![error](../1x1/boilertemperature-statuswidget-candy-error.bmp) | ![1x2](../1x2/boilertemperature-statuswidget-candy-init.bmp) ![2x2](../2x2/boilertemperature-statuswidget-candy-init.bmp) |
-| Christmas | ![low](../1x1/boilertemperature-statuswidget-christmas-low.bmp) | ![init](../1x1/boilertemperature-statuswidget-christmas-init.bmp) | ![high](../1x1/boilertemperature-statuswidget-christmas-high.bmp) | ![error](../1x1/boilertemperature-statuswidget-christmas-error.bmp) | ![1x2](../1x2/boilertemperature-statuswidget-christmas-init.bmp) ![2x2](../2x2/boilertemperature-statuswidget-christmas-init.bmp) |
-
 ## SensorWidget
 | Theme | Low (25) | Init (25) | High (150) | Error | Scaled (Init) |
 | :--- | :---: | :---: | :---: | :---: | :---: |

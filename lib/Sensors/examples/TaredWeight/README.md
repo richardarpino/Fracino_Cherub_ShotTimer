@@ -2,13 +2,6 @@
 
 Visualizing TaredWeight data.
 
-## StatusWidget
-| Theme | Low (-2000) | Init (0) | High (2000) | Error | Scaled (Init) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Default | ![low](../1x1/taredweight-statuswidget-default-low.bmp) | ![init](../1x1/taredweight-statuswidget-default-init.bmp) | ![high](../1x1/taredweight-statuswidget-default-high.bmp) | ![error](../1x1/taredweight-statuswidget-default-error.bmp) | ![1x2](../1x2/taredweight-statuswidget-default-init.bmp) ![2x2](../2x2/taredweight-statuswidget-default-init.bmp) |
-| Candy | ![low](../1x1/taredweight-statuswidget-candy-low.bmp) | ![init](../1x1/taredweight-statuswidget-candy-init.bmp) | ![high](../1x1/taredweight-statuswidget-candy-high.bmp) | ![error](../1x1/taredweight-statuswidget-candy-error.bmp) | ![1x2](../1x2/taredweight-statuswidget-candy-init.bmp) ![2x2](../2x2/taredweight-statuswidget-candy-init.bmp) |
-| Christmas | ![low](../1x1/taredweight-statuswidget-christmas-low.bmp) | ![init](../1x1/taredweight-statuswidget-christmas-init.bmp) | ![high](../1x1/taredweight-statuswidget-christmas-high.bmp) | ![error](../1x1/taredweight-statuswidget-christmas-error.bmp) | ![1x2](../1x2/taredweight-statuswidget-christmas-init.bmp) ![2x2](../2x2/taredweight-statuswidget-christmas-init.bmp) |
-
 ## SensorWidget
 | Theme | Low (-2000) | Init (0) | High (2000) | Error | Scaled (Init) |
 | :--- | :---: | :---: | :---: | :---: | :---: |

@@ -2,13 +2,6 @@
 
 Visualizing ShotTimer data.
 
-## StatusWidget
-| Theme | Low (0) | Init (0) | High (60) | Error | Scaled (Init) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Default | ![low](../1x1/shottimer-statuswidget-default-low.bmp) | ![init](../1x1/shottimer-statuswidget-default-init.bmp) | ![high](../1x1/shottimer-statuswidget-default-high.bmp) | ![error](../1x1/shottimer-statuswidget-default-error.bmp) | ![1x2](../1x2/shottimer-statuswidget-default-init.bmp) ![2x2](../2x2/shottimer-statuswidget-default-init.bmp) |
-| Candy | ![low](../1x1/shottimer-statuswidget-candy-low.bmp) | ![init](../1x1/shottimer-statuswidget-candy-init.bmp) | ![high](../1x1/shottimer-statuswidget-candy-high.bmp) | ![error](../1x1/shottimer-statuswidget-candy-error.bmp) | ![1x2](../1x2/shottimer-statuswidget-candy-init.bmp) ![2x2](../2x2/shottimer-statuswidget-candy-init.bmp) |
-| Christmas | ![low](../1x1/shottimer-statuswidget-christmas-low.bmp) | ![init](../1x1/shottimer-statuswidget-christmas-init.bmp) | ![high](../1x1/shottimer-statuswidget-christmas-high.bmp) | ![error](../1x1/shottimer-statuswidget-christmas-error.bmp) | ![1x2](../1x2/shottimer-statuswidget-christmas-init.bmp) ![2x2](../2x2/shottimer-statuswidget-christmas-init.bmp) |
-
 ## SensorWidget
 | Theme | Low (0) | Init (0) | High (60) | Error | Scaled (Init) |
 | :--- | :---: | :---: | :---: | :---: | :---: |

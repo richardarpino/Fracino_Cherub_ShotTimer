@@ -2,13 +2,6 @@
 
 Visualizing WeightSensor data.
 
-## StatusWidget
-| Theme | Low (0) | Init (0) | High (2000) | Error | Scaled (Init) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Default | ![low](../1x1/weightsensor-statuswidget-default-low.bmp) | ![init](../1x1/weightsensor-statuswidget-default-init.bmp) | ![high](../1x1/weightsensor-statuswidget-default-high.bmp) | ![error](../1x1/weightsensor-statuswidget-default-error.bmp) | ![1x2](../1x2/weightsensor-statuswidget-default-init.bmp) ![2x2](../2x2/weightsensor-statuswidget-default-init.bmp) |
-| Candy | ![low](../1x1/weightsensor-statuswidget-candy-low.bmp) | ![init](../1x1/weightsensor-statuswidget-candy-init.bmp) | ![high](../1x1/weightsensor-statuswidget-candy-high.bmp) | ![error](../1x1/weightsensor-statuswidget-candy-error.bmp) | ![1x2](../1x2/weightsensor-statuswidget-candy-init.bmp) ![2x2](../2x2/weightsensor-statuswidget-candy-init.bmp) |
-| Christmas | ![low](../1x1/weightsensor-statuswidget-christmas-low.bmp) | ![init](../1x1/weightsensor-statuswidget-christmas-init.bmp) | ![high](../1x1/weightsensor-statuswidget-christmas-high.bmp) | ![error](../1x1/weightsensor-statuswidget-christmas-error.bmp) | ![1x2](../1x2/weightsensor-statuswidget-christmas-init.bmp) ![2x2](../2x2/weightsensor-statuswidget-christmas-init.bmp) |
-
 ## SensorWidget
 | Theme | Low (0) | Init (0) | High (2000) | Error | Scaled (Init) |
 | :--- | :---: | :---: | :---: | :---: | :---: |

@@ -101,7 +101,6 @@ void test_generate_examples() {
     };
 
     std::vector<WidgetInfo> widgets = {
-        {"StatusWidget", [](ISensor* s) { return new StatusWidget(s); }},
         {"SensorWidget", [](ISensor* s) { return new SensorWidget(s); }},
         {"GaugeWidget", [](ISensor* s) { return new GaugeWidget(s); }}
     };
