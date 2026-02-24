@@ -1,5 +1,6 @@
 #include "StartupLogic.h"
 #include "../Interfaces/IMachineProvider.h"
+#include "../Interfaces/IBlocker.h"
 
 StartupLogic::StartupLogic(ISwitchProvider* provider, unsigned long holdDurationMs) 
     : _wifi(nullptr), _provider(provider), _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
@@ -15,7 +16,7 @@ void StartupLogic::update() {
 
     // Logic Ownership: Orchestrator polls its constituents
     _wifi->update();
-    ISwitch* ota = _provider->getOTASwitch();
+    IBlocker* ota = _provider->getOTASwitch();
     if (ota) ota->update();
 
     // Preserve previous active state for edge detection
@@ -44,7 +45,7 @@ void StartupLogic::update() {
             if (!_wifi->isActive()) {
                 _state = State::SEARCHING_WIFI;
             } else {
-                ISwitch* ota = _provider->getOTASwitch();
+                IBlocker* ota = _provider->getOTASwitch();
                 if (ota && ota->isActive()) {
                     _state = State::READY;
                     _isActive = true;

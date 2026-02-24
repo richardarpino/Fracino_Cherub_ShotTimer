@@ -30,6 +30,7 @@ class String : public std::string {
 public:
     String(const char* s = "") : std::string(s) {}
     String(const std::string& s) : std::string(s) {}
+    String(int value) : std::string(std::to_string(value)) {}
     const char* c_str() const { return std::string::c_str(); }
 };
 #endif

@@ -9,7 +9,7 @@
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Virtual/BoilerTemperature.h"
 #include "../Sensors/Hardware/ShotTimer.h"
-#include "../Sensors/Hardware/WiFiSensor.h"
+#include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Themes/DefaultTheme.h"
 #include "../Themes/CandyTheme.h"
@@ -33,12 +33,10 @@ public:
     BoilerPressure* getBoilerPressure() override { return &_boilerPressure; }
     BoilerTemperature* getBoilerTemp() override { return &_boilerTemp; }
     ShotTimer* getShotTimer() override { return &_shotTimer; }
-    OTAService* getOTASensor() override { return _ota; }
-    WiFiSensor* getWiFiSensor() override;
 
     // ISwitchProvider
     DebouncedSwitch* getPump() override { return &_pumpSw; }
-    WiFiSensor* getWiFiSwitch() override;
+    WiFiService* getWiFiSwitch() override;
     OTAService* getOTASwitch() override { return _ota; }
     OTAService* createOTA() override;
 
@@ -59,7 +57,7 @@ private:
     BoilerPressure _boilerPressure;
     BoilerTemperature _boilerTemp;
     ShotTimer _shotTimer;
-    WiFiSensor* _wifi;
+    WiFiService* _wifi;
     OTAService* _ota;
 
     // Configuration

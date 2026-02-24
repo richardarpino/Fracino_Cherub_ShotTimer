@@ -4,6 +4,7 @@
 #include <vector>
 #include "ISensor.h"
 #include "ISwitch.h"
+#include "IBlocker.h"
 
 /**
  * Global Configuration for the Machine.
@@ -28,8 +29,6 @@ public:
     virtual ISensor* getBoilerPressure() = 0;
     virtual ISensor* getBoilerTemp() = 0;
     virtual ISensor* getShotTimer() = 0;
-    virtual ISensor* getOTASensor() = 0;
-    virtual ISensor* getWiFiSensor() = 0;
 };
 
 /**
@@ -39,9 +38,9 @@ class ISwitchProvider {
 public:
     virtual ~ISwitchProvider() = default;
     virtual ISwitch* getPump() = 0;
-    virtual ISwitch* getWiFiSwitch() = 0;
-    virtual ISwitch* getOTASwitch() = 0;
-    virtual ISwitch* createOTA() = 0;
+    virtual IBlocker* getWiFiSwitch() = 0;
+    virtual IBlocker* getOTASwitch() = 0;
+    virtual IBlocker* createOTA() = 0;
 };
 
 /**

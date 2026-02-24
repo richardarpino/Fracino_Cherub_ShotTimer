@@ -17,15 +17,11 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _themes.push_back(&_christmasTheme);
 }
 
-WiFiSensor* MachineFactory::getWiFiSensor() {
+WiFiService* MachineFactory::getWiFiSwitch() {
     if (!_wifi) {
-        _wifi = new WiFiSensor(_config.wifiSsid, _config.wifiPassword);
+        _wifi = new WiFiService(_config.wifiSsid, _config.wifiPassword);
     }
     return _wifi;
-}
-
-WiFiSensor* MachineFactory::getWiFiSwitch() {
-    return getWiFiSensor();
 }
 
 MachineFactory::~MachineFactory() {

@@ -13,10 +13,12 @@
 
 // Implementation files
 #include "../../lib/Sensors/Hardware/ShotTimer.cpp"
-#include "../../lib/Sensors/Hardware/WiFiSensor.cpp"
+#include "../../lib/Services/WiFiService.cpp"
+#include "../../lib/Services/OTAService.cpp"
 #include "../../lib/UI/StatusWidget.cpp"
 #include "../../lib/UI/SensorWidget.cpp"
 #include "../../lib/UI/GaugeWidget.cpp"
+#include "../../lib/UI/BlockerWidget.cpp"
 
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
@@ -43,6 +45,18 @@ struct ThemeInfo {
 struct SensorInfo {
     std::string name;
     ISensor* sensor;
+};
+
+struct BlockerInfo {
+    std::string name;
+    IBlocker* blocker;
+    struct State {
+        std::string name;
+        std::string status;
+        float progress;
+        bool failed;
+    };
+    std::vector<State> states;
 };
 
 struct WidgetInfo {
@@ -83,14 +97,34 @@ void test_generate_examples() {
         {"BoilerTemperature", new BoilerTemperature(bp)},
         {"ShotTimer", new ShotTimer(10.0)},
         {"WeightSensor", ws},
-        {"TaredWeight", new TaredWeight(ws)},
-        {"WiFiSensor", new WiFiSensor()}
+        {"TaredWeight", new TaredWeight(ws)}
     };
 
     std::vector<WidgetInfo> widgets = {
         {"StatusWidget", [](ISensor* s) { return new StatusWidget(s); }},
         {"SensorWidget", [](ISensor* s) { return new SensorWidget(s); }},
         {"GaugeWidget", [](ISensor* s) { return new GaugeWidget(s); }}
+    };
+
+    std::vector<BlockerInfo> blockers = {
+        {
+            "WiFiService", 
+            new WiFiService(),
+            {
+                {"Connecting", "CONNECTING...", -1.0f, false},
+                {"Connected", "CONNECTED\n192.168.1.50", 100.0f, false},
+                {"Failed", "FAILED", -1.0f, true}
+            }
+        },
+        {
+            "OTAService",
+            new OTAService("test"),
+            {
+                {"Ready", "OTA READY", 0.0f, false},
+                {"Updating", "UPDATING: 42%", 42.0f, false},
+                {"Error", "OTA ERROR", 0.0f, true}
+            }
+        }
     };
 
     ensure_dir("lib/Sensors/examples");
@@ -208,17 +242,75 @@ void test_generate_examples() {
 
     // Top-level Gallery README
     std::ofstream galleryReadme("lib/Sensors/examples/README.md");
-    galleryReadme << "# Sensor Documentation Gallery" << "\n\n";
-    galleryReadme << "This directory contains automated visual documentation for all sensors in the system. Each sensor defines its own representative states (Zero, Max, Error), which are then rendered across all compatible UI widgets and themes." << "\n\n";
-    galleryReadme << "## Available Sensors" << "\n\n";
+    galleryReadme << "# Documentation Gallery" << "\n\n";
+    galleryReadme << "This directory contains automated visual documentation for all UI components in the system." << "\n\n";
+    
+    galleryReadme << "## Performance Dashboard (Sensors)" << "\n";
+    galleryReadme << "Continuous data streams visualized across different widgets and themes." << "\n\n";
     for (const auto& doc : docs) {
         galleryReadme << "- [**" << doc.name << "**](" << doc.name << "/README.md) - " << doc.description << "\n";
     }
+
+    galleryReadme << "\n## System Services (Blockers)" << "\n";
+    galleryReadme << "Procedural services that manage system state and connectivity." << "\n\n";
+
+    for (auto& bInfo : blockers) {
+        std::string blockerDir = "lib/Sensors/examples/" + bInfo.name;
+        ensure_dir(blockerDir);
+        galleryReadme << "- [**" << bInfo.name << "**](" << bInfo.name << "/README.md)\n";
+
+        std::ofstream blockerReadme(blockerDir + "/README.md");
+        blockerReadme << "# " << bInfo.name << " Documentation" << "\n\n";
+        
+        blockerReadme << "## BlockerWidget" << "\n";
+        blockerReadme << "| Theme | " << bInfo.states[0].name << " | " << bInfo.states[1].name << " | " << bInfo.states[2].name << " |" << "\n";
+        blockerReadme << "| :--- | :---: | :---: | :---: |" << "\n";
+
+        for (auto& themeInfo : themes) {
+            blockerReadme << "| " << themeInfo.name << " ";
+            for (const auto& state : bInfo.states) {
+                lv_obj_clean(lv_scr_act());
+                lv_obj_t* parent = lv_obj_create(lv_scr_act());
+                lv_obj_set_size(parent, 240, 135);
+                
+                // We use a mock here since we can't easily drive the real hardware state in simulator loop for these specific labels
+                BlockerWidget* widget = new BlockerWidget(nullptr); 
+                lv_obj_t* root = widget->init(parent, 1, 1);
+                widget->applyTheme(themeInfo.theme);
+                
+                // Manual drive for gallery purposes
+                lv_obj_t* label = lv_obj_get_child(root, 0);
+                lv_obj_t* bar = lv_obj_get_child(root, 1);
+                lv_label_set_text(label, state.status.c_str());
+                if (state.progress >= 0) {
+                    lv_obj_clear_flag(bar, LV_OBJ_FLAG_HIDDEN);
+                    lv_bar_set_value(bar, (int32_t)state.progress, LV_ANIM_OFF);
+                } else {
+                    lv_obj_add_flag(bar, LV_OBJ_FLAG_HIDDEN);
+                }
+
+                if (state.failed) {
+                    // Force alert style (manually mimicking BlockerWidget::refresh logic)
+                    lv_obj_set_style_bg_color(root, lv_palette_main(LV_PALETTE_RED), 0);
+                }
+
+                std::string imgName = to_lower(bInfo.name + "-blocker-" + themeInfo.name + "-" + state.name + ".bmp");
+                std::string fullPath = "lib/Sensors/examples/1x1/" + imgName;
+                HeadlessDriver::saveSnapshot(root, fullPath);
+                
+                blockerReadme << "| ![" << state.name << "](../1x1/" << imgName << ") ";
+                delete widget;
+            }
+            blockerReadme << "|" << "\n";
+        }
+    }
+
     galleryReadme << "\n---\n*Generated by the Sensor Simulator Framework.*\n";
     
     // Cleanup
     for(auto& t : themes) delete t.theme;
     for(auto& s : sensors) delete s.sensor;
+    for(auto& b : blockers) delete b.blocker;
 }
 
 int main() {

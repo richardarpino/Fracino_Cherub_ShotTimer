@@ -1,36 +1,42 @@
 #include <unity.h>
 #include "../_common/stubs/WiFi.h"
 #include "../_common/stubs/WiFi.cpp"
-#include "Hardware/WiFiSensor.h"
-#include "Hardware/WiFiSensor.cpp"
+#include "../../lib/Services/WiFiService.h"
+#include "../../lib/Services/WiFiService.cpp"
+#include "../../lib/Interfaces/IBlocker.h"
 
-void test_wifi_sensor_reporting() {
+void test_wifi_blocker_reporting() {
     WiFi.setStatus(WL_IDLE_STATUS);
-    WiFiSensor sensor("dummy", "dummy");
+    WiFiService service("dummy", "dummy");
+    IBlocker* blocker = (IBlocker*)&service;
     
-    Reading r = sensor.getReading();
-    TEST_ASSERT_EQUAL_STRING("CONNECTING...", r.label.c_str());
-    TEST_ASSERT_EQUAL_FLOAT(0.0f, r.value);
-    TEST_ASSERT_FALSE(r.isError);
+    // Process should be indeterminate/connecting
+    TEST_ASSERT_EQUAL_STRING("CONNECTING...", blocker->getStatusMessage().c_str());
+    TEST_ASSERT_EQUAL_FLOAT(-1.0f, blocker->getProgress());
+    TEST_ASSERT_FALSE(blocker->isFailed());
 
+    // Connected state
     WiFi.setStatus(WL_CONNECTED);
     WiFi.setIP("192.168.1.50");
-    r = sensor.getReading();
-    TEST_ASSERT_EQUAL_STRING("CONNECTED\n192.168.1.50", r.label.c_str());
-    TEST_ASSERT_EQUAL_FLOAT(1.0f, r.value);
+    blocker->update();
+    TEST_ASSERT_EQUAL_STRING("CONNECTED\n192.168.1.50", blocker->getStatusMessage().c_str());
+    TEST_ASSERT_TRUE(blocker->isActive());
+    TEST_ASSERT_EQUAL_FLOAT(100.0f, blocker->getProgress());
 }
 
-void test_wifi_sensor_error() {
-    WiFiSensor sensor("dummy", "dummy");
+void test_wifi_blocker_failure() {
+    WiFiService service("dummy", "dummy");
+    IBlocker* blocker = (IBlocker*)&service;
     WiFi.setStatus(WL_CONNECT_FAILED);
     
-    Reading r = sensor.getReading();
-    TEST_ASSERT_EQUAL_STRING("FAILED", r.label.c_str());
-    TEST_ASSERT_TRUE(r.isError);
+    blocker->update();
+    TEST_ASSERT_EQUAL_STRING("FAILED", blocker->getStatusMessage().c_str());
+    TEST_ASSERT_TRUE(blocker->isFailed());
+    TEST_ASSERT_FALSE(blocker->isActive());
 }
 
-void test_wifi_sensor_construction_starts_wifi() {
-    WiFiSensor sensor("TestSSID", "TestPass");
+void test_wifi_construction_starts_wifi() {
+    WiFiService service("TestSSID", "TestPass");
 
     TEST_ASSERT_TRUE(WiFi.wasBeginCalled());
     TEST_ASSERT_EQUAL_STRING("TestSSID", WiFi.getSsid());
@@ -38,8 +44,8 @@ void test_wifi_sensor_construction_starts_wifi() {
 }
 
 void test_wifi_switch_behavior() {
-    WiFiSensor sensor("dummy", "dummy");
-    ISwitch* sw = (ISwitch*)&sensor;
+    WiFiService service("dummy", "dummy");
+    ISwitch* sw = (ISwitch*)&service;
 
     WiFi.setStatus(WL_DISCONNECTED);
     sw->update();
@@ -56,9 +62,9 @@ void test_wifi_switch_behavior() {
 
 int main() {
     UNITY_BEGIN();
-    RUN_TEST(test_wifi_sensor_reporting);
-    RUN_TEST(test_wifi_sensor_error);
-    RUN_TEST(test_wifi_sensor_construction_starts_wifi);
+    RUN_TEST(test_wifi_blocker_reporting);
+    RUN_TEST(test_wifi_blocker_failure);
+    RUN_TEST(test_wifi_construction_starts_wifi);
     RUN_TEST(test_wifi_switch_behavior);
     return UNITY_END();
 }

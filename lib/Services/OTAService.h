@@ -1,8 +1,7 @@
 #ifndef OTA_SERVICE_H
 #define OTA_SERVICE_H
 
-#include "../Interfaces/ISensor.h"
-#include "../Interfaces/ISwitch.h"
+#include "../Interfaces/IBlocker.h"
 
 #ifdef ARDUINO
 #include <ArduinoOTA.h>
@@ -10,16 +9,17 @@
 // No-op for native
 #endif
 
-class OTAService : public ISensor, public ISwitch {
+class OTAService : public IBlocker {
 public:
     OTAService(const char* hostname);
     
-    void update() override;
-    
-    Reading getReading() override;
-    SensorMetadata getMetadata() override;
-    
+    // IBlocker implementation
+    String getStatusMessage() const override;
+    float getProgress() const override;
+    bool isFailed() const override;
+
     // ISwitch implementation
+    void update() override;
     bool isActive() const override { return _isActive; }
     bool justStarted() const override { return _justStarted; }
     bool justStopped() const override { return _justStopped; }

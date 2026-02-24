@@ -3,11 +3,12 @@
 
 #include "Interfaces/IMachineProvider.h"
 #include "OTAServiceStub.h"
+#include "IBlocker.h"
 
 class MachineProviderStub : public ISensorProvider, public ISwitchProvider, public IThemeProvider {
 public:
-    MachineProviderStub(ISwitch* wifiSwitch, ISensor* wifiSensor, OTAServiceStub* ota) 
-        : _wifiSwitch(wifiSwitch), _wifiSensor(wifiSensor), _ota(ota), _otaCreated(false) {}
+    MachineProviderStub(IBlocker* wifiSwitch, OTAServiceStub* ota) 
+        : _wifiSwitch(wifiSwitch), _ota(ota), _otaCreated(false) {}
 
     // IThemeProvider
     const std::vector<ITheme*>& getThemes() const override { return _themes; }
@@ -16,14 +17,12 @@ public:
     ISensor* getBoilerPressure() override { return nullptr; }
     ISensor* getBoilerTemp() override { return nullptr; }
     ISensor* getShotTimer() override { return nullptr; }
-    ISensor* getOTASensor() override { return _ota; }
-    ISensor* getWiFiSensor() override { return _wifiSensor; }
 
     // ISwitchProvider
     ISwitch* getPump() override { return nullptr; }
-    ISwitch* getWiFiSwitch() override { return _wifiSwitch; }
-    ISwitch* getOTASwitch() override { return _ota; }
-    ISwitch* createOTA() override { 
+    IBlocker* getWiFiSwitch() override { return _wifiSwitch; }
+    IBlocker* getOTASwitch() override { return _ota; }
+    IBlocker* createOTA() override { 
         _otaCreated = true;
         return _ota; 
     }
@@ -31,8 +30,7 @@ public:
     bool otaCreated() const { return _otaCreated; }
 
 private:
-    ISwitch* _wifiSwitch;
-    ISensor* _wifiSensor;
+    IBlocker* _wifiSwitch;
     OTAServiceStub* _ota;
     bool _otaCreated;
     std::vector<ITheme*> _themes;

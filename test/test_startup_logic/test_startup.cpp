@@ -5,16 +5,16 @@
 #include "../_common/stubs/MachineProviderStub.h"
 #include "../_common/stubs/Arduino.h"
 #include "../_common/stubs/Arduino.cpp"
-#include "Hardware/WiFiSensor.h"
-#include "Hardware/WiFiSensor.cpp"
+#include "../../lib/Services/WiFiService.h"
+#include "../../lib/Services/WiFiService.cpp"
 #include "Logic/StartupLogic.h"
 #include "Logic/StartupLogic.cpp"
 
 void test_startup_factory_coordination() {
     WiFi.setStatus(WL_IDLE_STATUS);
-    WiFiSensor wifi("dummy", "dummy");
+    WiFiService wifi("dummy", "dummy");
     OTAServiceStub ota;
-    MachineProviderStub factory(&wifi, &wifi, &ota);
+    MachineProviderStub factory(&wifi, &ota);
     StartupLogic logic(&factory);
 
     TEST_ASSERT_FALSE(logic.isActive());

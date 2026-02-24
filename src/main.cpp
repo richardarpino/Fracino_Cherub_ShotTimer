@@ -11,6 +11,7 @@
 #include "SensorWidget.h"
 #include "GaugeWidget.h"
 #include "StatusWidget.h"
+#include "BlockerWidget.h"
  
 // --- Factory & Configuration ---
 MachineConfig config = {
@@ -55,7 +56,7 @@ void setup() {
   
   // Startup Layout (1x1)
   shotDisplay.resetLayout(1, 1);
-  shotDisplay.getLayout()->addWidget(new StatusWidget(factory.getWiFiSensor()));
+  shotDisplay.getLayout()->addWidget(new BlockerWidget(factory.getWiFiSwitch()));
 }
 
 void loop() {
