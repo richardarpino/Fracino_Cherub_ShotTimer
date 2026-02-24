@@ -9,6 +9,7 @@
 #include "secrets.h"
 #include "ScreenLayout.h"
 #include "SensorWidget.h"
+#include "GaugeWidget.h"
 #include "StatusWidget.h"
  
 // --- Factory & Configuration ---
@@ -32,7 +33,7 @@ ThemeManager themeManager(&shotDisplay, factory.getButtonInput());
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
   ScreenLayout* layout = shotDisplay.getLayout();
-  layout->addWidget(new SensorWidget(factory.getBoilerPressure()));   // Slot 0 (TL)
+  layout->addWidget(new GaugeWidget(factory.getBoilerPressure()));   // Slot 0 (TL)
   layout->addWidget(new SensorWidget(factory.getBoilerTemp()));       // Slot 1 (BL)
   layout->addWidget(new StatusWidget(factory.getShotTimer()));        // Slot 2 (TR)
   layout->addWidget(new SensorWidget(factory.getShotTimer()));        // Slot 3 (BR)

@@ -6,16 +6,27 @@ GaugeWidget::GaugeWidget(ISensor* sensor)
 lv_obj_t* GaugeWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     // Ensure parent layout is updated so we can read its size
     lv_obj_update_layout(parent);
-    lv_coord_t w = lv_obj_get_width(parent);
-    lv_coord_t h = lv_obj_get_height(parent);
+    lv_coord_t parent_w = lv_obj_get_width(parent);
+    lv_coord_t parent_h = lv_obj_get_height(parent);
     
-    // Maximize diameter - fill cell almost completely (2px padding)
-    // For 2x2, we oversize by 10% as requested to maximize legibility
+    // Fallback to screen dimensions (Landscape: 240x135) if parent layout not yet ready
+    if (parent_w <= 0) parent_w = 240; 
+    if (parent_h <= 0) parent_h = 135;
+
+    // Calculate target cell size
+    lv_coord_t cell_w = parent_w / cols;
+    lv_coord_t cell_h = parent_h / rows;
+    
+    // Maximize diameter - fill cell almost completely
+    // For 2x2, we "oversize" relative to the cell height to maximize legibility, 
+    // but we clamp it to both width and height to prevent clipping.
     lv_coord_t diameter;
     if (cols == 2 && rows == 2) {
-        diameter = (h * 11) / 10;
+        diameter = (cell_h * 11) / 10;
+        if (diameter > cell_w - 2) diameter = cell_w - 2;
+        if (diameter > cell_h - 2) diameter = cell_h - 2;
     } else {
-        diameter = (w < h ? w : h) - 2;
+        diameter = (cell_w < cell_h ? cell_w : cell_h) - 4;
     }
     
     if (diameter < 40) diameter = 40; 

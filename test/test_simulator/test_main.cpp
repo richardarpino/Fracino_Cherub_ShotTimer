@@ -148,21 +148,24 @@ void test_generate_examples() {
                 for (const auto& state : states) {
                     lv_obj_clean(lv_scr_act());
                     
-                    // Create parent of target size to force widget scaling
+                    // Create parent of FULL grid size to force correct internal scaling math
                     lv_obj_t* parent = lv_obj_create(lv_scr_act());
-                    lv_obj_set_size(parent, 240, 135);
+                    lv_obj_set_size(parent, 240, 135); 
                     lv_obj_set_style_pad_all(parent, 0, 0);
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
 
                     IWidget* widget = wInfo.create(sInfo.sensor);
-                    lv_obj_t* widgetObj = widget->init(parent, sizes[0].cols, sizes[0].rows); // Changed to use sizes[0] for 1x1
+                    lv_obj_t* root = widget->init(parent, sizes[0].cols, sizes[0].rows);
                     widget->applyTheme(themeInfo.theme);
                     widget->update(state.second);
                     
+                    // Force the widget root to fill only the target cell area for snapshot
+                    lv_obj_set_size(root, 240, 135); 
+                    
                     std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-" + state.first + ".bmp");
                     std::string fullPath = "lib/Sensors/examples/1x1/" + imgName;
-                    HeadlessDriver::saveSnapshot(parent, fullPath);
+                    HeadlessDriver::saveSnapshot(root, fullPath); // Target the widget root
                     
                     sensorReadme << "| ![" << state.first << "](../1x1/" << imgName << ") ";
                     delete widget;
@@ -174,21 +177,24 @@ void test_generate_examples() {
                     const auto& size = sizes[i];
                     lv_obj_clean(lv_scr_act());
 
-                    // Create parent of target size to force widget scaling
+                    // Create parent of FULL grid size to force correct internal scaling math
                     lv_obj_t* parent = lv_obj_create(lv_scr_act());
-                    lv_obj_set_size(parent, size.w, size.h);
+                    lv_obj_set_size(parent, 240, 135);
                     lv_obj_set_style_pad_all(parent, 0, 0);
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
 
                     IWidget* widget = wInfo.create(sInfo.sensor);
-                    lv_obj_t* widgetObj = widget->init(parent, size.cols, size.rows);
+                    lv_obj_t* root = widget->init(parent, size.cols, size.rows);
                     widget->applyTheme(themeInfo.theme);
                     widget->update(meta.init);
 
+                    // Force the widget root to fill only the target cell area for snapshot
+                    lv_obj_set_size(root, size.w, size.h);
+
                     std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-init.bmp");
                     std::string fullPath = "lib/Sensors/examples/" + size.name + "/" + imgName;
-                    HeadlessDriver::saveSnapshot(parent, fullPath);
+                    HeadlessDriver::saveSnapshot(root, fullPath); // Target the widget root
 
                     sensorReadme << "![" << size.name << "](../" << size.name << "/" << imgName << ") ";
                     delete widget;
