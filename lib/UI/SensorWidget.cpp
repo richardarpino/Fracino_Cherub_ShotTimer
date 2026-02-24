@@ -13,13 +13,12 @@ lv_obj_t* SensorWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     // Container
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
-    lv_obj_set_style_pad_all(_container, 2, 0); // Tighter padding
-    lv_obj_set_style_pad_bottom(_container, 8, 0); // Extra room for unit
+    lv_obj_set_style_pad_all(_container, 4, 0); // Uniform padding
     lv_obj_set_style_border_width(_container, 0, 0);
     lv_obj_set_style_radius(_container, 0, 0);
     lv_obj_set_flex_flow(_container, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(_container, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_row(_container, 0, 0); // No gap between value and unit
+    lv_obj_set_style_pad_row(_container, 2, 0); // Small gap between value and unit
     lv_obj_clear_flag(_container, LV_OBJ_FLAG_SCROLLABLE);
 
     // Value (Middle)
@@ -32,7 +31,6 @@ lv_obj_t* SensorWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     _unit_label = lv_label_create(_container);
     lv_label_set_text(_unit_label, "");
     lv_obj_set_style_text_font(_unit_label, &lv_font_montserrat_12, 0);
-    lv_obj_set_style_translate_y(_unit_label, -4, 0); // Pull unit closer to large numbers
     return _container;
 }
 
