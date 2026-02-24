@@ -6,20 +6,23 @@ OTAService::OTAService(const char* hostname)
     ArduinoOTA.setHostname(_hostname);
     
     ArduinoOTA.onStart([this]() {
-        _isActive = true;
+        _isError = false;
+        _progress = 0;
     });
     
     ArduinoOTA.onEnd([this]() {
-        _isActive = false;
+        _progress = 100.0f;
     });
     
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
-        _progress = (progress / (total / 100.0f));
+        if (total > 0) {
+            _progress = (progress / (total / 100.0f));
+        }
     });
     
     ArduinoOTA.onError([this](ota_error_t error) {
         _isError = true;
-        _isActive = false;
+        _progress = 0;
     });
     
     ArduinoOTA.begin();
