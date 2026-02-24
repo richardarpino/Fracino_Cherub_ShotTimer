@@ -41,6 +41,7 @@ public:
     virtual IBlocker* getWiFiSwitch() = 0;
     virtual IBlocker* getOTASwitch() = 0;
     virtual IBlocker* createOTA() = 0;
+    virtual IBlocker* getWarmingUpBlocker() = 0;
 };
 
 /**

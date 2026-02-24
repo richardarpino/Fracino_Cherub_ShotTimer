@@ -15,6 +15,7 @@ public:
 
 private:
     lv_obj_t* _container;
+    lv_obj_t* _title_label;
     lv_obj_t* _status_label;
     lv_obj_t* _bar;
     IBlocker* _blocker;

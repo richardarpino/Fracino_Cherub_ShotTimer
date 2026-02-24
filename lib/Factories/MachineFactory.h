@@ -11,6 +11,7 @@
 #include "../Sensors/Hardware/ShotTimer.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
+#include "../Services/WarmingUpBlocker.h"
 #include "../Themes/DefaultTheme.h"
 #include "../Themes/CandyTheme.h"
 #include "../Themes/ChristmasTheme.h"
@@ -39,6 +40,7 @@ public:
     WiFiService* getWiFiSwitch() override;
     OTAService* getOTASwitch() override { return _ota; }
     OTAService* createOTA() override;
+    WarmingUpBlocker* getWarmingUpBlocker() override;
 
     // Specialized accessors
     DigitalRawSource* getButtonInput() { return &_buttonInput; }
@@ -59,6 +61,7 @@ private:
     ShotTimer _shotTimer;
     WiFiService* _wifi;
     OTAService* _ota;
+    WarmingUpBlocker* _warmingUpBlocker;
 
     // Configuration
     MachineConfig _config;

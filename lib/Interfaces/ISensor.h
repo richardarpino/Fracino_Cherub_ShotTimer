@@ -46,6 +46,7 @@ struct SensorMetadata {
     Reading init;
     Reading error;
 
+    SensorMetadata() = default;
     SensorMetadata(Reading l, Reading h, Reading i, Reading e)
         : low(l), high(h), init(i), error(e) {}
 };

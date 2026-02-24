@@ -14,9 +14,7 @@ public:
     WiFiService(const char* ssid = nullptr, const char* password = nullptr);
     
     // IBlocker Implementation
-    String getStatusMessage() const override;
-    float getProgress() const override;
-    bool isFailed() const override;
+    BlockerStatus getStatus() const override;
 
     // ISwitch Implementation
     void update() override;

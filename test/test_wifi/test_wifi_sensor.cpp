@@ -11,17 +11,17 @@ void test_wifi_blocker_reporting() {
     IBlocker* blocker = (IBlocker*)&service;
     
     // Process should be indeterminate/connecting
-    TEST_ASSERT_EQUAL_STRING("CONNECTING...", blocker->getStatusMessage().c_str());
-    TEST_ASSERT_EQUAL_FLOAT(-1.0f, blocker->getProgress());
-    TEST_ASSERT_FALSE(blocker->isFailed());
+    TEST_ASSERT_EQUAL_STRING("CONNECTING...", blocker->getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_FLOAT(-1.0f, blocker->getStatus().progress);
+    TEST_ASSERT_FALSE(blocker->getStatus().isFailed);
 
     // Connected state
     WiFi.setStatus(WL_CONNECTED);
     WiFi.setIP("192.168.1.50");
     blocker->update();
-    TEST_ASSERT_EQUAL_STRING("CONNECTED\n192.168.1.50", blocker->getStatusMessage().c_str());
+    TEST_ASSERT_EQUAL_STRING("CONNECTED: 192.168.1.50", blocker->getStatus().message.c_str());
     TEST_ASSERT_TRUE(blocker->isActive());
-    TEST_ASSERT_EQUAL_FLOAT(100.0f, blocker->getProgress());
+    TEST_ASSERT_EQUAL_FLOAT(100.0f, blocker->getStatus().progress);
 }
 
 void test_wifi_blocker_failure() {
@@ -30,8 +30,8 @@ void test_wifi_blocker_failure() {
     WiFi.setStatus(WL_CONNECT_FAILED);
     
     blocker->update();
-    TEST_ASSERT_EQUAL_STRING("FAILED", blocker->getStatusMessage().c_str());
-    TEST_ASSERT_TRUE(blocker->isFailed());
+    TEST_ASSERT_EQUAL_STRING("CONNECTION FAILED", blocker->getStatus().message.c_str());
+    TEST_ASSERT_TRUE(blocker->getStatus().isFailed);
     TEST_ASSERT_FALSE(blocker->isActive());
 }
 

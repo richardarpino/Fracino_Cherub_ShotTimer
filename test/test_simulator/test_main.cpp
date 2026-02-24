@@ -15,6 +15,7 @@
 #include "../../lib/Sensors/Hardware/ShotTimer.cpp"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
+#include "../../lib/Services/WarmingUpBlocker.cpp"
 #include "../../lib/UI/StatusWidget.cpp"
 #include "../../lib/UI/SensorWidget.cpp"
 #include "../../lib/UI/GaugeWidget.cpp"
@@ -52,7 +53,8 @@ struct BlockerInfo {
     IBlocker* blocker;
     struct State {
         std::string name;
-        std::string status;
+        std::string title;
+        std::string message;
         float progress;
         bool failed;
     };
@@ -110,18 +112,27 @@ void test_generate_examples() {
             "WiFiService", 
             new WiFiService(),
             {
-                {"Connecting", "CONNECTING...", -1.0f, false},
-                {"Connected", "CONNECTED\n192.168.1.50", 100.0f, false},
-                {"Failed", "FAILED", -1.0f, true}
+                {"Connecting", "WiFi", "CONNECTING...", -1.0f, false},
+                {"Connected", "WiFi", "CONNECTED: 192.168.1.50", 100.0f, false},
+                {"Failed", "WiFi", "CONNECTION FAILED", -1.0f, true}
             }
         },
         {
             "OTAService",
             new OTAService("test"),
             {
-                {"Ready", "OTA READY", 0.0f, false},
-                {"Updating", "UPDATING: 42%", 42.0f, false},
-                {"Error", "OTA ERROR", 0.0f, true}
+                {"Ready", "OTA Update", "LISTENING...", 100.0f, false},
+                {"Updating", "OTA Update", "UPDATING: 42%", 42.0f, false},
+                {"Error", "OTA Update", "UPDATE FAILED", 0.0f, true}
+            }
+        },
+        {
+            "WarmingUpBlocker",
+            nullptr,
+            {
+                {"Stage1", "Warming Up...", "Heating Cycle 1, currently 0.1bar", 5.0f, false},
+                {"Stage2", "Warming Up...", "Heating Cycle 2, currently 0.8bar", 45.0f, false},
+                {"Warm", "Warming Up...", "WARM", 100.0f, false}
             }
         }
     };
@@ -278,9 +289,13 @@ void test_generate_examples() {
                 widget->applyTheme(themeInfo.theme);
                 
                 // Manual drive for gallery purposes
-                lv_obj_t* label = lv_obj_get_child(root, 0);
-                lv_obj_t* bar = lv_obj_get_child(root, 1);
-                lv_label_set_text(label, state.status.c_str());
+                lv_obj_t* title_label = lv_obj_get_child(root, 0);
+                lv_obj_t* status_label = lv_obj_get_child(root, 1);
+                lv_obj_t* bar = lv_obj_get_child(root, 2);
+                
+                lv_label_set_text(title_label, state.title.c_str());
+                lv_label_set_text(status_label, state.message.c_str());
+                
                 if (state.progress >= 0) {
                     lv_obj_clear_flag(bar, LV_OBJ_FLAG_HIDDEN);
                     lv_bar_set_value(bar, (int32_t)state.progress, LV_ANIM_OFF);
@@ -291,7 +306,8 @@ void test_generate_examples() {
                 if (state.failed) {
                     // Force alert style (manually mimicking BlockerWidget::refresh logic)
                     lv_obj_set_style_bg_color(root, lv_palette_main(LV_PALETTE_RED), 0);
-                    lv_obj_set_style_text_color(label, lv_color_white(), 0);
+                    lv_obj_set_style_text_color(title_label, lv_color_white(), 0);
+                    lv_obj_set_style_text_color(status_label, lv_color_white(), 0);
                 }
 
                 std::string imgName = to_lower(bInfo.name + "-blocker-" + themeInfo.name + "-" + state.name + ".bmp");

@@ -11,7 +11,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _boilerTemp(&_boilerPressure),
       _shotTimer(config.minShotDuration),
       _wifi(nullptr),
-      _ota(nullptr) {
+      _ota(nullptr),
+      _warmingUpBlocker(nullptr) {
     _themes.push_back(&_defaultTheme);
     _themes.push_back(&_candyTheme);
     _themes.push_back(&_christmasTheme);
@@ -27,6 +28,7 @@ WiFiService* MachineFactory::getWiFiSwitch() {
 MachineFactory::~MachineFactory() {
     if (_wifi) delete _wifi;
     if (_ota) delete _ota;
+    if (_warmingUpBlocker) delete _warmingUpBlocker;
 }
 
 OTAService* MachineFactory::createOTA() {
@@ -34,4 +36,11 @@ OTAService* MachineFactory::createOTA() {
         _ota = new OTAService(_config.otaHostname);
     }
     return _ota;
+}
+
+WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
+    if (!_warmingUpBlocker) {
+        _warmingUpBlocker = new WarmingUpBlocker(&_boilerPressure);
+    }
+    return _warmingUpBlocker;
 }

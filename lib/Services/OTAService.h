@@ -14,9 +14,7 @@ public:
     OTAService(const char* hostname);
     
     // IBlocker implementation
-    String getStatusMessage() const override;
-    float getProgress() const override;
-    bool isFailed() const override;
+    BlockerStatus getStatus() const override;
 
     // ISwitch implementation
     void update() override;

@@ -19,26 +19,17 @@ void WiFiService::update() {
     _lastActive = _isActive;
 }
 
-String WiFiService::getStatusMessage() const {
+BlockerStatus WiFiService::getStatus() const {
     wl_status_t status = WiFi.status();
-    
-    switch (status) {
-        case WL_CONNECTED:
-            return "CONNECTED\n" + WiFi.localIP().toString();
-        case WL_CONNECT_FAILED:
-            return "FAILED";
-        case WL_IDLE_STATUS:
-        case WL_DISCONNECTED:
-            return "CONNECTING...";
-        default:
-            return "CONNECTING...";
+    String msg = "CONNECTING...";
+    bool failed = (status == WL_CONNECT_FAILED);
+    float progress = _isActive ? 100.0f : -1.0f;
+
+    if (_isActive) {
+        msg = "CONNECTED: " + WiFi.localIP().toString();
+    } else if (failed) {
+        msg = "CONNECTION FAILED";
     }
-}
 
-float WiFiService::getProgress() const {
-    return _isActive ? 100.0f : -1.0f; // Indeterminate while connecting
-}
-
-bool WiFiService::isFailed() const {
-    return WiFi.status() == WL_CONNECT_FAILED;
+    return BlockerStatus("WiFi", msg, progress, failed);
 }

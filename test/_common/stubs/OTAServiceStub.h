@@ -18,9 +18,9 @@ public:
     }
     
     // IBlocker Implementation
-    String getStatusMessage() const override { return "OTA STUB"; }
-    float getProgress() const override { return _progress; }
-    bool isFailed() const override { return _failed; }
+    BlockerStatus getStatus() const override { 
+        return BlockerStatus("OTA STUB", "OTA MSG", _progress, _failed); 
+    }
     
     bool isActive() const override { return _active; }
     bool justStarted() const override { return _justStarted; }

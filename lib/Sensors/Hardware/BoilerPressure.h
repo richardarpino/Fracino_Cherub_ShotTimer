@@ -7,7 +7,7 @@
 class BoilerPressure : public FilteredSensor {
 public:
     BoilerPressure(IRawSource* source, float scalar = 1.0f) 
-        : FilteredSensor(0.1f, 0.02f), // alpha=0.1, hysteresis=0.02 Bar
+        : FilteredSensor(0.05f, 0.05f), // alpha=0.05 (Smoother), hysteresis=0.05 Bar (Display stability)
           _source(source), _lastSampleTime(0), _scalar(scalar) {}
 
 

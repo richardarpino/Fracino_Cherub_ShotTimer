@@ -44,6 +44,14 @@ public:
         return _lastDisplayedValue;
     }
 
+    /**
+     * Returns the high-precision filtered value before hysteresis.
+     * Use this for virtual sensors that need to derive data from this sensor.
+     */
+    float getFilteredValue() const {
+        return _currentFilteredValue;
+    }
+
 protected:
     float _alpha;               // Smoothing factor (0.0 to 1.0)
     float _hysteresisThreshold; // Minimum change required to update display

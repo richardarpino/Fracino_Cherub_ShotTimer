@@ -31,9 +31,16 @@ void ScreenLayout::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
 
 void ScreenLayout::reset() {
     _nextSlot = 0;
-    // LVGL: Delete children of the grid
-    lv_obj_clean(_grid);
+    // Delete all widgets to free memory
+    for (auto* w : _widgets) {
+        delete w;
+    }
     _widgets.clear();
+
+    // LVGL: Delete children of the grid
+    if (_grid) {
+        lv_obj_clean(_grid);
+    }
 }
 
 void ScreenLayout::addWidget(IWidget* widget) {

@@ -45,19 +45,15 @@ void OTAService::update() {
 #endif
 }
 
-String OTAService::getStatusMessage() const {
-    if (_isError) return "OTA ERROR";
-    if (_progress > 0 && _progress < 100.0f) {
-        return "UPDATING: " + String((int)_progress) + "%";
+BlockerStatus OTAService::getStatus() const {
+    String msg = "OTA INACTIVE";
+    if (_isError) {
+        msg = "UPDATE FAILED";
+    } else if (_progress > 0 && _progress < 100.0f) {
+        msg = "UPDATING: " + String((int)_progress) + "%";
+    } else if (_isActive) {
+        msg = "LISTENING...";
     }
-    if (_isActive) return "OTA READY";
-    return "OTA INACTIVE";
-}
-
-float OTAService::getProgress() const {
-    return _progress;
-}
-
-bool OTAService::isFailed() const {
-    return _isError;
+    
+    return BlockerStatus("OTA Update", msg, _progress, _isError);
 }

@@ -1,4 +1,5 @@
 #include "GaugeWidget.h"
+#include "../Utils/StringUtils.h"
 
 GaugeWidget::GaugeWidget(ISensor* sensor) 
     : _container(nullptr), _meter(nullptr), _scale(nullptr), _indic(nullptr), _unit_label(nullptr), _sensor(sensor) {}
@@ -189,10 +190,7 @@ void GaugeWidget::meter_event_cb(lv_event_t* e) {
             } else if (val == (int)val) {
                 lv_snprintf(dsc->text, 16, "%d", (int)val);
             } else {
-                int whole = (int)val;
-                int frac = (int)((val - whole) * 10 + 0.5f);
-                if (frac >= 10) { whole++; frac = 0; }
-                lv_snprintf(dsc->text, 16, "%d.%d", whole, frac);
+                StringUtils::formatFloat1(dsc->text, 16, val);
             }
         }
     }
