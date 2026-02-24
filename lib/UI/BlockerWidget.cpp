@@ -45,7 +45,7 @@ void BlockerWidget::refresh() {
 
     if (_blocker->isFailed()) {
         lv_obj_set_style_bg_color(_container, _alertBgColor, 0);
-        lv_obj_set_style_text_color(_status_label, _errorColor, 0);
+        lv_obj_set_style_text_color(_status_label, lv_color_white(), 0);
     } else {
         lv_obj_set_style_bg_color(_container, _bgColor, 0);
         lv_obj_set_style_text_color(_status_label, _textColor, 0);

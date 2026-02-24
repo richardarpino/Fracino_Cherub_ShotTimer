@@ -292,6 +292,7 @@ void test_generate_examples() {
                 if (state.failed) {
                     // Force alert style (manually mimicking BlockerWidget::refresh logic)
                     lv_obj_set_style_bg_color(root, lv_palette_main(LV_PALETTE_RED), 0);
+                    lv_obj_set_style_text_color(label, lv_color_white(), 0);
                 }
 
                 std::string imgName = to_lower(bInfo.name + "-blocker-" + themeInfo.name + "-" + state.name + ".bmp");
