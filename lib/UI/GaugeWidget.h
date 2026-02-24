@@ -26,6 +26,12 @@ private:
     lv_color_t _errorColor;
     lv_color_t _labelColor;
     lv_color_t _alertBgColor;
+    
+    // Layout-dependent tick properties
+    uint16_t _tick_count;
+    lv_coord_t _tick_len;
+    lv_coord_t _major_tick_len;
+    lv_coord_t _label_gap;
 
     static void meter_event_cb(lv_event_t* e);
 };

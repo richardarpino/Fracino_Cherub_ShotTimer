@@ -57,17 +57,17 @@ lv_obj_t* GaugeWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     bool isFull = (cols == 1 && rows == 1);
     bool isHalf = (rows == 1 && cols == 2) || (rows == 2 && cols == 1);
     
-    uint16_t tick_count = (isFull || isHalf) ? 11 : 7;
-    lv_coord_t major_tick_len = isFull ? 10 : (isHalf ? 6 : 5);
-    lv_coord_t tick_len = isFull ? 6 : (isHalf ? 4 : 2);
-    lv_coord_t label_gap = isFull ? 18 : (isHalf ? 12 : 2);
+    _tick_count = (isFull || isHalf) ? 11 : 7;
+    _major_tick_len = isFull ? 14 : (isHalf ? 10 : 8);
+    _tick_len = isFull ? 10 : (isHalf ? 8 : 6);
+    _label_gap = isFull ? 18 : (isHalf ? 12 : 4);
     
     uint16_t needle_width = isFull ? 8 : (isHalf ? 6 : 4);
     const lv_font_t* dial_font = (isFull || isHalf) ? &lv_font_montserrat_14 : &lv_font_montserrat_12;
     const lv_font_t* unit_font = isFull ? &lv_font_montserrat_18 : (isHalf ? &lv_font_montserrat_14 : &lv_font_montserrat_12);
 
-    lv_meter_set_scale_ticks(_meter, _scale, tick_count, 2, tick_len, lv_palette_main(LV_PALETTE_GREY));
-    lv_meter_set_scale_major_ticks(_meter, _scale, 2, 4, major_tick_len, lv_color_black(), label_gap);
+    lv_meter_set_scale_ticks(_meter, _scale, _tick_count, 2, _tick_len, lv_palette_main(LV_PALETTE_GREY));
+    lv_meter_set_scale_major_ticks(_meter, _scale, 2, 4, _major_tick_len, lv_color_black(), _label_gap);
     
     // Scale Dial Labels (Numbers)
     lv_obj_set_style_text_font(_meter, dial_font, 0);
@@ -135,13 +135,18 @@ void GaugeWidget::update(const Reading& reading) {
         
         // Ensure needle also visible/semantically correct in alert
         lv_obj_set_style_line_color(_meter, _errorColor, LV_PART_INDICATOR);
+        
+        // Dial (ticks) -> Error Color
+        lv_meter_set_scale_ticks(_meter, _scale, _tick_count, 2, _tick_len, _errorColor);
+        lv_meter_set_scale_major_ticks(_meter, _scale, 2, 4, _major_tick_len, _errorColor, _label_gap);
     } else {
         // Normal Mode
         lv_obj_set_style_bg_color(_container, _bgColor, 0);
         lv_obj_set_style_bg_opa(_container, LV_OPA_COVER, 0);
         
-        // Dial (ticks) -> Text Color
-        lv_meter_set_scale_ticks(_meter, _scale, 11, 2, 10, _textColor);
+        // Dial (ticks)
+        lv_meter_set_scale_ticks(_meter, _scale, _tick_count, 2, _tick_len, _textColor);
+        lv_meter_set_scale_major_ticks(_meter, _scale, 2, 4, _major_tick_len, _labelColor, _label_gap);
         
         // Numbers (labels) -> Label Color
         lv_obj_set_style_text_color(_meter, _labelColor, LV_PART_MAIN);
@@ -174,7 +179,7 @@ void GaugeWidget::applyTheme(ITheme* theme) {
 
 void GaugeWidget::meter_event_cb(lv_event_t* e) {
     lv_obj_draw_part_dsc_t* dsc = (lv_obj_draw_part_dsc_t*)lv_event_get_param(e);
-    if(dsc->part == LV_PART_TICKS && dsc->id == LV_METER_DRAW_PART_TICK) {
+    if(dsc->part == LV_PART_TICKS && dsc->type == LV_METER_DRAW_PART_TICK) {
         if(dsc->label_dsc != NULL) {
             float val = (float)dsc->value / 10.0f;
             
@@ -184,7 +189,10 @@ void GaugeWidget::meter_event_cb(lv_event_t* e) {
             } else if (val == (int)val) {
                 lv_snprintf(dsc->text, 16, "%d", (int)val);
             } else {
-                lv_snprintf(dsc->text, 16, "%.1f", val);
+                int whole = (int)val;
+                int frac = (int)((val - whole) * 10 + 0.5f);
+                if (frac >= 10) { whole++; frac = 0; }
+                lv_snprintf(dsc->text, 16, "%d.%d", whole, frac);
             }
         }
     }
