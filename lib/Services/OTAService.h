@@ -16,7 +16,8 @@ public:
     
     void update() override;
     
-    Reading getReading() override { return { _progress, "%" }; }
+    Reading getReading() override;
+    SensorMetadata getMetadata() override;
     
     // ISwitch implementation
     bool isActive() const override { return _isActive; }

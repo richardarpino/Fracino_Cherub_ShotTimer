@@ -41,3 +41,26 @@ void OTAService::update() {
     }
 #endif
 }
+
+Reading OTAService::getReading() {
+    String label = "OTA INACTIVE";
+    if (_isError) {
+        label = "OTA ERROR";
+    } else if (_isActive) {
+        if (_progress > 0) {
+            label = "UPDATING: " + String((int)_progress) + "%";
+        } else {
+            label = "OTA READY";
+        }
+    }
+    return Reading(_progress, "%", label, 0, _isError);
+}
+
+SensorMetadata OTAService::getMetadata() {
+    return SensorMetadata(
+        Reading(0.0f, "%", "OTA INACTIVE", 0, false),
+        Reading(100.0f, "%", "OTA COMPLETE", 0, false),
+        Reading(0.0f, "%", "OTA READY", 0, false),
+        Reading(0.0f, "%", "OTA ERROR", 0, true)
+    );
+}
