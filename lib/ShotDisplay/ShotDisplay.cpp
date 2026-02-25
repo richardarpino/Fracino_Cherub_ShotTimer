@@ -80,3 +80,9 @@ void ShotDisplay::resetLayout(uint8_t cols, uint8_t rows) {
         _layout->applyTheme(_currentTheme);
     }
 }
+
+void ShotDisplay::setRegistry(ISensorRegistry* registry) {
+    if (_layout) {
+        _layout->setRegistry(registry);
+    }
+}

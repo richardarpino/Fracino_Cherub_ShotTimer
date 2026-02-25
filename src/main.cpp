@@ -34,12 +34,11 @@ ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
   ScreenLayout* layout = shotDisplay.getLayout();
-  ISensorRegistry* registry = factory.getRegistry();
 
-  layout->addWidget(new SensorWidget<BoilerPressureTag>(registry));  // Slot 0 (TL)
-  layout->addWidget(new SensorWidget<BoilerTempTag>(registry));     // Slot 1 (BL)
-  layout->addWidget(new StatusWidget<ShotTimeTag>(registry));       // Slot 2 (TR)
-  layout->addWidget(new SensorWidget<ShotTimeTag>(registry));       // Slot 3 (BR)
+  layout->addWidget(new SensorWidget<BoilerPressureTag>()); 
+  layout->addWidget(new SensorWidget<BoilerTempTag>());     
+  layout->addWidget(new StatusWidget<ShotTimeTag>());       
+  layout->addWidget(new SensorWidget<ShotTimeTag>());       
 }
 
 void setup() {
@@ -53,10 +52,12 @@ void setup() {
   }
  
   shotDisplay.init();
+  shotDisplay.setRegistry(factory.getRegistry());
   
   // Startup Layout (1x1)
   shotDisplay.resetLayout(1, 1);
   shotDisplay.getLayout()->addWidget(new BlockerWidget(&startupLogic));
+  startupLogic.update(); // Initial poll
 }
 
 void loop() {

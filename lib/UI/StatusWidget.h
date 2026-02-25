@@ -35,7 +35,11 @@ protected:
 template<typename T = void>
 class StatusWidget : public StatusWidgetBase {
 public:
-    StatusWidget(ISensorRegistry* registry) : _registry(registry) {}
+    StatusWidget(ISensorRegistry* registry = nullptr) : _registry(registry) {}
+
+    void setRegistry(ISensorRegistry* registry) override {
+        _registry = registry;
+    }
 
     void refresh() override {
         if (_registry && millis() > _messageTimeout) {

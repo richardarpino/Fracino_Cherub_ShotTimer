@@ -60,9 +60,14 @@ void test_dispatcher_unregistered_tag_returns_invalid() {
 template<typename Tag>
 class MockRegistryWidget {
 public:
-    MockRegistryWidget(ISensorRegistry* registry) : _registry(registry) {}
+    MockRegistryWidget(ISensorRegistry* registry = nullptr) : _registry(registry) {}
+    
+    void setRegistry(ISensorRegistry* registry) {
+        _registry = registry;
+    }
     
     Reading getLatest() {
+        if (!_registry) return Reading(0, "", "ERROR", 0, true);
         return _registry->getLatest<Tag>();
     }
 
@@ -108,6 +113,22 @@ void test_widget_logic_reflects_registry_sync() {
     TEST_ASSERT_EQUAL_FLOAT(1.0f, r2.value);
 }
 
+void test_widget_logic_supports_late_binding() {
+    SensorDispatcher registry;
+    SensorStub sensor;
+    sensor.setReading(Reading(3.14f, "x", "L", 2, false));
+    registry.provide<BoilerPressureTag>(&sensor);
+    registry.update();
+
+    // Construct WITHOUT registry
+    MockRegistryWidget<BoilerPressureTag> widget;
+    TEST_ASSERT_TRUE(widget.getLatest().isError);
+
+    // Late Binding
+    widget.setRegistry(&registry);
+    TEST_ASSERT_EQUAL_FLOAT(3.14f, widget.getLatest().value);
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_dispatcher_provides_latest_reading);
@@ -115,5 +136,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_dispatcher_unregistered_tag_returns_invalid);
     RUN_TEST(test_widget_logic_pulls_correct_tag);
     RUN_TEST(test_widget_logic_reflects_registry_sync);
+    RUN_TEST(test_widget_logic_supports_late_binding);
     return UNITY_END();
 }

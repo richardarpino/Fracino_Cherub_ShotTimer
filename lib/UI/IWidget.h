@@ -12,6 +12,7 @@ public:
     virtual void update(const Reading& reading) = 0;
     virtual void refresh() = 0;
     virtual void applyTheme(ITheme* theme) = 0;
+    virtual void setRegistry(class ISensorRegistry* registry) {} // Default No-Op
     
     // RTTI-free type checking
     virtual bool isStatusWidget() { return false; }

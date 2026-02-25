@@ -39,7 +39,11 @@ protected:
 template<typename T = void>
 class SensorWidget : public SensorWidgetBase {
 public:
-    SensorWidget(ISensorRegistry* registry) : _registry(registry) {}
+    SensorWidget(ISensorRegistry* registry = nullptr) : _registry(registry) {}
+
+    void setRegistry(ISensorRegistry* registry) override {
+        _registry = registry;
+    }
 
     void refresh() override {
         if (_registry) {
