@@ -41,19 +41,23 @@ public:
     OTAService* getOTASwitch() override { return _ota; }
     OTAService* createOTA() override;
     WarmingUpBlocker* getWarmingUpBlocker() override;
-
-    // Specialized accessors
-    DigitalRawSource* getButtonInput() { return &_buttonInput; }
+    ISwitch* getButtonRight() override { return &_buttonRightSw; }
+    ISwitch* getButtonLeft() override { return &_buttonLeftSw; }
 
 private:
     // Raw Sources
     ADCRawSource _pressureADC;
     DigitalRawSource _pumpInput;
-    DigitalRawSource _buttonInput;
+    DigitalRawSource _buttonRightInput;
+    DigitalRawSource _buttonLeftInput;
 
     // Switches
     HardwareSwitch _pumpHw;
     DebouncedSwitch _pumpSw;
+    HardwareSwitch _buttonRightHw;
+    DebouncedSwitch _buttonRightSw;
+    HardwareSwitch _buttonLeftHw;
+    DebouncedSwitch _buttonLeftSw;
 
     // Sensors
     BoilerPressure _boilerPressure;

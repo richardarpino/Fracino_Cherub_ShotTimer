@@ -42,6 +42,8 @@ public:
     virtual IBlocker* getOTASwitch() = 0;
     virtual IBlocker* createOTA() = 0;
     virtual IBlocker* getWarmingUpBlocker() = 0;
+    virtual ISwitch* getButtonRight() = 0;
+    virtual ISwitch* getButtonLeft() = 0;
 };
 
 /**

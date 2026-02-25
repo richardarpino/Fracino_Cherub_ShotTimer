@@ -28,6 +28,8 @@ public:
         return _ota; 
     }
     IBlocker* getWarmingUpBlocker() override { return _warmingUp; }
+    ISwitch* getButtonRight() override { return nullptr; }
+    ISwitch* getButtonLeft() override { return nullptr; }
 
     bool otaCreated() const { return _otaCreated; }
 

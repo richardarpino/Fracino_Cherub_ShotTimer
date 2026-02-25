@@ -2,6 +2,7 @@
 #define VIRTUAL_BOILER_TEMPERATURE_H
 
 #include "../../Interfaces/ISensor.h"
+#include <cmath> // Required for log10() in native test environment
 #include "../Hardware/BoilerPressure.h"
 
 /**
