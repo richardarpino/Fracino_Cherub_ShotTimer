@@ -97,13 +97,14 @@ The `WarmingUpBlocker` uses a robust **Dimensional History** approach:
 
 ---
 
-## 📖 Documentation & Community
+## 📖 Documentation & Thinking of Others
 
-For more in-depth information, please refer to the following resources:
+For more in-depth information and the rules of the codebase, please refer to the following:
 
-- **[Internal Library Map](lib/README.md)**: A detailed guide to the project's file structure and the role of each directory.
+- **[📜 Developer Standards & Principles](docs/README.md)**: **Mandatory reading** for all contributors. Covers our TDD charter, Coordinator-Logic patterns, and Agentic rules.
+- **[Internal Library Map](lib/README.md)**: A detailed guide to the project's file structure.
 - **[GitHub Wiki](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/wiki)**: Technical deep-dives, hardware schematics, and setup guides.
-- **[Issue Tracker](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/issues)**: Found a bug or have a feature request? Please open an issue here!
+- **[🐞 Issue Tracker](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/issues)**: Found a bug or have a feature request? Please open an issue here!
 
 ---
 
