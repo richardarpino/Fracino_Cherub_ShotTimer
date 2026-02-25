@@ -55,24 +55,8 @@ private:
     ISensorRegistry* _registry;
 };
 
-/**
- * Direct-Sensor Widget (The LEGACY Way)
- * Specialization for 'void' allows co-existence during migration.
- * Usage: layout->addWidget(new SensorWidget(sensor_ptr));
- */
-template<>
-class SensorWidget<void> : public SensorWidgetBase {
-public:
-    SensorWidget(ISensor* sensor) : _sensor(sensor) {}
-
-    void refresh() override {
-        if (_sensor) {
-            update(_sensor->getReading());
-        }
-    }
-
 private:
-    ISensor* _sensor;
+    ISensorRegistry* _registry;
 };
 
 #endif

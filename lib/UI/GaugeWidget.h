@@ -58,23 +58,8 @@ private:
     ISensorRegistry* _registry;
 };
 
-/**
- * Legacy Pointer-Based Gauge
- */
-template<>
-class GaugeWidget<void> : public GaugeWidgetBase {
-public:
-    GaugeWidget(ISensor* sensor) : _sensor(sensor) {}
-
-    void refresh() override {
-        if (_sensor) {
-            updateMetadata(_sensor->getMetadata());
-            update(_sensor->getReading());
-        }
-    }
-
 private:
-    ISensor* _sensor;
+    ISensorRegistry* _registry;
 };
 
 #endif

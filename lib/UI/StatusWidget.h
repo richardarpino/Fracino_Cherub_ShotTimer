@@ -51,22 +51,8 @@ private:
     ISensorRegistry* _registry;
 };
 
-/**
- * Legacy Pointer-Based Status Widget
- */
-template<>
-class StatusWidget<void> : public StatusWidgetBase {
-public:
-    StatusWidget(ISensor* sensor) : _sensor(sensor) {}
-
-    void refresh() override {
-        if (_sensor && millis() > _messageTimeout) {
-            update(_sensor->getReading());
-        }
-    }
-
 private:
-    ISensor* _sensor;
+    ISensorRegistry* _registry;
 };
 
 #endif

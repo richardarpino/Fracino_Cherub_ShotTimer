@@ -16,8 +16,6 @@ public:
     const std::vector<ITheme*>& getThemes() const override { return _themes; }
 
     // ISensorProvider
-    ISensor* getBoilerPressure() override { return nullptr; }
-    ISensor* getBoilerTemp() override { return nullptr; }
     ISensor* getShotTimer() override { return nullptr; }
     ISensorRegistry* getRegistry() override { return &_dispatcher; }
 

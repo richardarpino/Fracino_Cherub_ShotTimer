@@ -27,8 +27,6 @@ class ITheme;
 class ISensorProvider {
 public:
     virtual ~ISensorProvider() = default;
-    virtual ISensor* getBoilerPressure() = 0;
-    virtual ISensor* getBoilerTemp() = 0;
     virtual ISensor* getShotTimer() = 0;
     virtual ISensorRegistry* getRegistry() = 0;
 };
