@@ -17,6 +17,13 @@ Reading SensorDispatcher::getReadingByIndex(int index) {
     return _cache[index];
 }
 
+SensorMetadata SensorDispatcher::getMetadataByIndex(int index) {
+    if (index >= 0 && (size_t)index < _sensors.size() && _sensors[index]) {
+        return _sensors[index]->getMetadata();
+    }
+    return SensorMetadata(); 
+}
+
 void SensorDispatcher::ensureCapacity(int index) {
     if ((size_t)index >= _sensors.size()) {
         _sensors.resize(index + 1, nullptr);

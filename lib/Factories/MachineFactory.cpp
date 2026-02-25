@@ -50,7 +50,8 @@ OTAService* MachineFactory::createOTA() {
 
 WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
     if (!_warmingUpBlocker) {
-        _warmingUpBlocker = new WarmingUpBlocker(&_boilerPressure);
+        // Fudge timeout to 10s for USB-C testing (No machine pressurized)
+        _warmingUpBlocker = new WarmingUpBlocker(&_boilerPressure, 10000);
     }
     return _warmingUpBlocker;
 }

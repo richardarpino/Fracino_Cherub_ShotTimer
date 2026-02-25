@@ -17,17 +17,23 @@ public:
      */
     virtual void update() = 0;
 
-    /**
-     * Returns the latest cached reading for a specific Type-Tag.
-     */
     template<typename T>
     Reading getLatest() {
         return getReadingByIndex(getTypeIndex<T>());
     }
 
+    /**
+     * Returns the static metadata for a specific Type-Tag.
+     */
+    template<typename T>
+    SensorMetadata getMetadata() {
+        return getMetadataByIndex(getTypeIndex<T>());
+    }
+
 protected:
     // Internal bridging to allow templates to work with virtual methods
     virtual Reading getReadingByIndex(int index) = 0;
+    virtual SensorMetadata getMetadataByIndex(int index) = 0;
     
     // Static type-to-index mapping trick
     static int getNextIndex() {

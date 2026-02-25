@@ -71,7 +71,7 @@ void ScreenLayout::update() {
 void ScreenLayout::showMessage(const String& text) {
     for (auto* w : _widgets) {
         if (w->isStatusWidget()) {
-            StatusWidget* sw = static_cast<StatusWidget*>(w);
+            StatusWidgetBase* sw = static_cast<StatusWidgetBase*>(w);
             Reading r(0, "", text, 0, false);
             sw->update(r);
             return; // Found the status area

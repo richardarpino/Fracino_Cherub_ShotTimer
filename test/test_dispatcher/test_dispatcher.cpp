@@ -55,10 +55,65 @@ void test_dispatcher_unregistered_tag_returns_invalid() {
     TEST_ASSERT_TRUE(r.isError);
 }
 
+// --- Widget-Registry Integration Tests ---
+
+template<typename Tag>
+class MockRegistryWidget {
+public:
+    MockRegistryWidget(ISensorRegistry* registry) : _registry(registry) {}
+    
+    Reading getLatest() {
+        return _registry->getLatest<Tag>();
+    }
+
+private:
+    ISensorRegistry* _registry;
+};
+
+void test_widget_logic_pulls_correct_tag() {
+    SensorDispatcher registry;
+    SensorStub pressureSensor;
+    SensorStub tempSensor;
+
+    pressureSensor.setReading(Reading(1.5f, "bar", "P", 1, false));
+    tempSensor.setReading(Reading(95.0f, "C", "T", 1, false));
+
+    registry.provide<BoilerPressureTag>(&pressureSensor);
+    registry.provide<BoilerTempTag>(&tempSensor);
+    registry.update();
+
+    MockRegistryWidget<BoilerPressureTag> pressureWidget(&registry);
+    MockRegistryWidget<BoilerTempTag> tempWidget(&registry);
+
+    TEST_ASSERT_EQUAL_FLOAT(1.5f, pressureWidget.getLatest().value);
+    TEST_ASSERT_EQUAL_FLOAT(95.0f, tempWidget.getLatest().value);
+}
+
+void test_widget_logic_reflects_registry_sync() {
+    SensorDispatcher registry;
+    SensorStub sensor;
+    registry.provide<BoilerPressureTag>(&sensor);
+
+    MockRegistryWidget<BoilerPressureTag> widget(&registry);
+
+    sensor.setReading(Reading(1.0f, "bar", "P", 1, false));
+    registry.update();
+    Reading r1 = widget.getLatest();
+
+    sensor.setReading(Reading(2.0f, "bar", "P", 1, false));
+    // Notice: NO registry.update() here
+    Reading r2 = widget.getLatest();
+
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, r1.value);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, r2.value);
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_dispatcher_provides_latest_reading);
     RUN_TEST(test_dispatcher_ensures_synchronization);
     RUN_TEST(test_dispatcher_unregistered_tag_returns_invalid);
+    RUN_TEST(test_widget_logic_pulls_correct_tag);
+    RUN_TEST(test_widget_logic_reflects_registry_sync);
     return UNITY_END();
 }

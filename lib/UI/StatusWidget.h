@@ -3,34 +3,66 @@
 
 #include <lvgl.h>
 #include <Arduino.h>
-#include "../Themes/ITheme.h"
 #include "IWidget.h"
+#include "../Interfaces/ISensorRegistry.h"
 
-class StatusWidget : public IWidget {
+/**
+ * Base class for Status UI logic.
+ */
+class StatusWidgetBase : public IWidget {
 public:
-    StatusWidget(ISensor* sensor = nullptr);
-    
+    StatusWidgetBase();
+    virtual ~StatusWidgetBase() = default;
+
     lv_obj_t* init(lv_obj_t* parent, uint8_t cols, uint8_t rows) override;
     void update(const Reading& reading) override;
-    void refresh() override;
     void applyTheme(ITheme* theme) override;
     
     bool isStatusWidget() override { return true; }
-    
-    // Explicit text setting (manual use)
     void setText(const char* text);
 
-private:
+protected:
     lv_obj_t* _container;
     lv_obj_t* _label;
-    ISensor* _sensor;
     unsigned long _messageTimeout;
     
-    // Store theme colors for error state reversal
-    lv_color_t _bgColor;
-    lv_color_t _textColor;
-    lv_color_t _errorColor;
-    lv_color_t _alertBgColor;
+    lv_color_t _bgColor, _textColor, _errorColor, _alertBgColor;
+};
+
+/**
+ * Templated Registry-Aware Status Widget
+ */
+template<typename T = void>
+class StatusWidget : public StatusWidgetBase {
+public:
+    StatusWidget(ISensorRegistry* registry) : _registry(registry) {}
+
+    void refresh() override {
+        if (_registry && millis() > _messageTimeout) {
+            update(_registry->getLatest<T>());
+        }
+    }
+
+private:
+    ISensorRegistry* _registry;
+};
+
+/**
+ * Legacy Pointer-Based Status Widget
+ */
+template<>
+class StatusWidget<void> : public StatusWidgetBase {
+public:
+    StatusWidget(ISensor* sensor) : _sensor(sensor) {}
+
+    void refresh() override {
+        if (_sensor && millis() > _messageTimeout) {
+            update(_sensor->getReading());
+        }
+    }
+
+private:
+    ISensor* _sensor;
 };
 
 #endif

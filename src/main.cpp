@@ -34,10 +34,12 @@ ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
   ScreenLayout* layout = shotDisplay.getLayout();
-  layout->addWidget(new SensorWidget(factory.getBoilerPressure()));  // Slot 0 (TL)
-  layout->addWidget(new SensorWidget(factory.getBoilerTemp()));       // Slot 1 (BL)
-  layout->addWidget(new StatusWidget(factory.getShotTimer()));        // Slot 2 (TR)
-  layout->addWidget(new SensorWidget(factory.getShotTimer()));        // Slot 3 (BR)
+  ISensorRegistry* registry = factory.getRegistry();
+
+  layout->addWidget(new GaugeWidget<BoilerPressureTag>(registry));  // Slot 0 (TL) - Now a Gauage!
+  layout->addWidget(new SensorWidget<BoilerTempTag>(registry));     // Slot 1 (BL)
+  layout->addWidget(new StatusWidget<ShotTimeTag>(registry));       // Slot 2 (TR)
+  layout->addWidget(new SensorWidget<ShotTimeTag>(registry));       // Slot 3 (BR)
 }
 
 void setup() {
