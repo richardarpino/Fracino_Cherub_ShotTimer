@@ -36,7 +36,7 @@ void setupMainDashboard() {
   ScreenLayout* layout = shotDisplay.getLayout();
   ISensorRegistry* registry = factory.getRegistry();
 
-  layout->addWidget(new GaugeWidget<BoilerPressureTag>(registry));  // Slot 0 (TL) - Now a Gauage!
+  layout->addWidget(new SensorWidget<BoilerPressureTag>(registry));  // Slot 0 (TL)
   layout->addWidget(new SensorWidget<BoilerTempTag>(registry));     // Slot 1 (BL)
   layout->addWidget(new StatusWidget<ShotTimeTag>(registry));       // Slot 2 (TR)
   layout->addWidget(new SensorWidget<ShotTimeTag>(registry));       // Slot 3 (BR)
