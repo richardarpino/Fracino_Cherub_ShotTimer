@@ -86,6 +86,13 @@ To add new cross-component behavior:
 - **`ADCRawSource`**: Averages 64 samples at the hardware level.
 - **`FilteredSensor`**: A base class providing **EMA Smoothing** and **Display Hysteresis** to stop value "flicker".
 
+### 4. Warmup Detection (Dimensional History)
+The `WarmingUpBlocker` uses a robust **Dimensional History** approach:
+- **Moves**: Tracks monotonic pressure moves (Cooling/Heating) as "dimensions" in a 2D vector history.
+- **Cycles**: Completion is derived from move transitions: `((moves.size() - 1) / 2) >= 3`.
+- **UI Feedback**: High-granularity progress (14% steps) reflects every directional flip.
+- **Bypass**: Boilers already pressurized (> 0.3 Bar) bypass the warmup phase entirely.
+
 ---
 
 ---

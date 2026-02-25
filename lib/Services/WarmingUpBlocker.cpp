@@ -2,9 +2,13 @@
 #include "../Utils/StringUtils.h"
 
 WarmingUpBlocker::WarmingUpBlocker(ISensor* pressureSensor, unsigned long timeoutMs)
-    : _pressureSensor(pressureSensor), _cycleCount(0), _lastPressure(0.0f), 
-      _currentPeak(0.0f), _startTime(millis()), _timeoutMs(timeoutMs), 
-      _isFinished(false), _wasFinished(false) {}
+    : _pressureSensor(pressureSensor), _lastPressure(0.0f), 
+      _startTime(millis()), _timeoutMs(timeoutMs), 
+      _isFinished(false), _wasFinished(false),
+      _lastRoundedReading(-1.0f) {
+    // Start with the first move (ramp up)
+    _moves.push_back({});
+}
 
 void WarmingUpBlocker::update() {
     _wasFinished = _isFinished;
@@ -21,25 +25,68 @@ void WarmingUpBlocker::update() {
     
     Reading r = _pressureSensor->getReading();
     float currentPressure = r.value;
-
-    // Track peak within current cycle
-    if (currentPressure > _currentPeak) {
-        _currentPeak = currentPressure;
-    }
-
-    // Peak detection: look for a meaningful drop (e.g. 0.15bar)
-    // The user sees 1.1 -> 0.8 (0.3 bar drop)
-    const float DROP_THRESHOLD = 0.15f;
-    if (_currentPeak > 0.1f && (currentPressure <= (_currentPeak - DROP_THRESHOLD))) {
-        _cycleCount++;
-        _currentPeak = currentPressure; // Reset peak for next cycle
-        
-        if (_cycleCount >= TARGET_CYCLES) {
-            _isFinished = true;
-        }
-    }
+    
+    processHistory(currentPressure);
 
     _lastPressure = currentPressure;
+}
+
+void WarmingUpBlocker::processHistory(float pressure) {
+    // Round to 1 decimal place (e.g. 1.1)
+    float rounded = (int)(pressure * 10 + 0.5f) / 10.0f;
+    
+    // Only process if it's a distinct 0.1 bar step
+    if (rounded == _lastRoundedReading) return;
+
+    // Handle Warm Start Bypass:
+    // If first move, empty, and already pressurized
+    if (_moves.size() == 1 && _moves.back().empty() && rounded > 0.3f) {
+        _isFinished = true;
+        _lastRoundedReading = rounded;
+        return;
+    }
+
+    std::vector<float>& currentMove = _moves.back();
+    
+    // If current move is empty, add first point
+    if (currentMove.empty()) {
+        currentMove.push_back(rounded);
+        _lastRoundedReading = rounded;
+        return;
+    }
+
+    // Determine current direction from the last move's trend
+    // or from the first two points of the current move.
+    bool roundingUp = (rounded > currentMove.back());
+    bool wasRising = true; // Default for first move or if move has 1 point
+
+    if (currentMove.size() >= 2) {
+        wasRising = (currentMove.back() > currentMove[currentMove.size()-2]);
+    } else if (_moves.size() >= 2) {
+        // Look at previous move's last two points to determine direction flip
+        // (Move N ends where Move N+1 starts)
+        std::vector<float>& prevMove = _moves[_moves.size()-2];
+        wasRising = (currentMove.back() > prevMove.back());
+    }
+
+    // Direction flip?
+    if (roundingUp != wasRising && currentMove.size() >= 1) {
+        // Start a new dimension
+        _moves.push_back({rounded});
+    } else {
+        currentMove.push_back(rounded);
+    }
+
+    _lastRoundedReading = rounded;
+
+    // Cycle check: (moves.size() - 1) / 2
+    // Move 0: Initial
+    // Move 1: Fall
+    // Move 2: Rise (Cycle 1 Confirmed)
+    int cycleCount = (_moves.size() - 1) / 2;
+    if (cycleCount >= TARGET_CYCLES) {
+        _isFinished = true;
+    }
 }
 
 BlockerStatus WarmingUpBlocker::getStatus() const {
@@ -47,8 +94,9 @@ BlockerStatus WarmingUpBlocker::getStatus() const {
         return BlockerStatus("Warming Up...", "WARM", 100.0f, false);
     }
 
+    int cycleCount = (_moves.size() - 1) / 2;
     char buf[64];
-    int displayCycle = (_cycleCount < TARGET_CYCLES) ? (_cycleCount + 1) : TARGET_CYCLES;
+    int displayCycle = (cycleCount < TARGET_CYCLES) ? (cycleCount + 1) : TARGET_CYCLES;
     
     char valBuf[16];
     StringUtils::formatFloat1(valBuf, sizeof(valBuf), _lastPressure);
@@ -59,15 +107,22 @@ BlockerStatus WarmingUpBlocker::getStatus() const {
 }
 
 float WarmingUpBlocker::getProgress() const {
-    // Progress is based on cycles (80%) and time (20% fallback)
-    float cycleProgress = (float)_cycleCount / (float)TARGET_CYCLES * 100.0f;
+    if (_isFinished) return 100.0f;
+
+    // Progress is based on moves (80%) and time (20% fallback)
+    // Total expected moves = 1 (Initial Ramp) + 2 * TARGET_CYCLES (Down/Up cycles)
+    const int totalMoves = 1 + (2 * TARGET_CYCLES); // e.g., 7
+    
+    // We treat the current move as partial progress
+    // If we have started Move N (index N-1), we are at least N/7 through.
+    float moveProgress = ((float)_moves.size() / (float)totalMoves) * 100.0f;
     
     unsigned long elapsed = millis() - _startTime;
     float timeProgress = (float)elapsed / (float)_timeoutMs * 100.0f;
     if (timeProgress > 100.0f) timeProgress = 100.0f;
     
-    // Whichever is further along, but mostly driven by cycles
-    return (cycleProgress > timeProgress) ? cycleProgress : timeProgress;
+    // Whichever is further along, but mostly driven by moves
+    return (moveProgress > timeProgress) ? moveProgress : timeProgress;
 }
 
 bool WarmingUpBlocker::isActive() const {

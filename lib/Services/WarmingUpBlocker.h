@@ -4,6 +4,8 @@
 #include "../Interfaces/IBlocker.h"
 #include "../Interfaces/ISensor.h"
 
+#include <vector>
+
 class WarmingUpBlocker : public IBlocker {
 public:
     WarmingUpBlocker(ISensor* pressureSensor, unsigned long timeoutMs = 600000);
@@ -19,17 +21,19 @@ public:
 
 private:
     ISensor* _pressureSensor;
-    int _cycleCount;
     float _lastPressure;
-    float _currentPeak;
     unsigned long _startTime;
     unsigned long _timeoutMs;
     bool _isFinished;
     bool _wasFinished;
 
+    // Dimensional History
+    std::vector<std::vector<float>> _moves;
+    float _lastRoundedReading;
+
     const int TARGET_CYCLES = 3;
     float getProgress() const;
-    void updateFilter(float pressure);
+    void processHistory(float pressure);
 };
 
 #endif
