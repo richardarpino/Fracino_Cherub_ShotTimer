@@ -6,44 +6,41 @@ This directory contains the core machine logic, hardware abstractions, and UI co
 
 ### 🏭 `Factories/`
 The "Assembly Line" of the machine.
-- **`MachineFactory`**: The single source of truth for hardware. It handles pin mappings and component lifetimes.
-- **Pattern**: Uses **Lazy Instantiation**. Hardware services (WiFi, OTA) only start when a logic module first requests them.
+- **`MachineFactory`**: The single source of truth for Dependency Injection. Wires concrete hardware to abstract logic.
 
 ### 🔌 `Interfaces/`
-The "Contract Layer". All logic modules depend on these abstractions, not on concrete hardware.
-- **`ISensor` / `ISwitch`**: Base protocols for reading states and detecting edges.
-- **`IMachineProvider`**: Segregated interfaces (`ISensorProvider`, `ISwitchProvider`) that provide access to hardware.
+The "Contract Layer." All logic depends on these abstractions to remain host-independent.
+- **`ISensor` / `ISwitch`**: Telemetry and state protocols.
+- **`IBlocker`**: Transient startup gate protocol (WiFi, Warmup).
+- **`IRawSource`**: Basic pin/ADC abstraction.
 
 ### 🧠 `Logic/`
-The "Brain" of the machine. Contains orchestrators that coordindate between sensors.
-- **`StartupLogic`**: Manages the boot sequence and network status.
-- **`ScaleLogic`**: Coordinates the pump signal with the shot timer and taring logic.
-- **`ThemeManager`**: Handles visual state transitions.
+The orchestrators (Coordinators). Process-specific behavior that combines multiple data sources.
+- **`StartupLogic`**: Manages the boot journey via `IBlocker` states.
+- **`ScaleLogic`**: High-level espresso weighing and timing logic.
 
 ### 🌡️ `Sensors/`
-Hardware and software-based measurement components.
-- **`Hardware/`**: Physical inputs like `BoilerPressure`, `DigitalRawSource`, and `WiFiSensor`.
-- **`Virtual/`**: Logic-based sensors like `DebouncedSwitch` (decorator) or `TaredWeight`.
+Data acquisition components.
+- **`Hardware/`**: Concrete sensors like `BoilerPressure` and `WeightSensor`.
+- **`Virtual/`**: Logic-based decorators like `DebouncedSwitch` or `EMAFilter`.
 
 ### 🛰️ `Services/`
-Active system-level components.
-- **`OTAService`**: Handles wireless updates. Encapsulates its own hardware listeners.
+System-level lifecycle managers and transient startup gates.
+- **`WiFiService`**: Manages connection and network status.
+- **`OTAService`**: Handles wireless firmware updates.
+- **`WarmingUpBlocker`**: Detects boiler warmup cycles via dimensional history.
 
-### 🎨 `Themes/`
-Visual styling and branding.
-- **`Colors.h`**: Hardware-agnostic 16-bit color tokens.
-- **`ITheme`**: Interface for visual skins (`CandyTheme`, `ChristmasTheme`).
+### 🔌 `Hardware/`
+The lowest level of the stack. Direct pin scanners (`ADCRawSource`, `DigitalRawSource`).
 
-### 📱 `UI/` & `ShotDisplay/`
-The presentation layer built on **LVGL**.
-- **`UI/`**: Reusable widgets like `SensorWidget`.
-- **`ShotDisplay/`**: The main display coordinator and screen layouts.
+### 🎨 `Themes/` & `UI/`
+The presentation layer. Passive widgets that consume data from the logic layer.
 
 ---
 
 ## 🛠 Developer Workflow
 
-1. **Find an Interface**: Look in `lib/Interfaces` to see if a contract already exists.
-2. **Add a Component**: Place concrete hardware in `lib/Sensors/Hardware` and wire it into the `MachineFactory`.
-3. **Add Logic**: Create an orchestrator in `lib/Logic` that uses the `IMachineProvider` to get components.
-4. **Test**: Always add a native test in `test/` verifying your logic using stubs.
+1.  **Architecture First**: Read the **[📜 Developer Standards & Principles](../docs/README.md)** before starting.
+2.  **TDD**: Start with a `native` test using stubs.
+3.  **Abstractions**: Use `lib/Interfaces`. Do not leak hardware-specific code into `lib/Logic`.
+4.  **Wiring**: Update the `MachineFactory` to register new components.
