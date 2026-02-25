@@ -13,3 +13,4 @@ include/secrets.h
 compile_commands.json
 include/pins.h
 pio_test_output.log
+debug_output.txt

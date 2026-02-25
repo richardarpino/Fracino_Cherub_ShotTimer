@@ -51,6 +51,22 @@ We use a **Pure Factory** pattern to manage hardware.
 
 ---
 
+## 🎨 UI Gallery & Automated Documentation
+
+The project includes an automated visual documentation system to ensure UI consistency across themes and sensors.
+
+### 📸 Sensor Gallery (TOC)
+A cross-product of all sensors, widgets, and themes is generated automatically:
+- [**View Documentation Gallery**](lib/Sensors/examples/README.md) - Automated visual documentation for all sensors (Real and Virtual).
+
+### ⚙️ How it works
+The UI is built using **LVGL**. To verify visual changes without physical hardware, we use a **Simulator Framework**:
+1. **Snapshots**: Running `pio test -e simulator` executes a specialized test suite (`test_main.cpp`) that uses the LVGL Snapshot extension.
+2. **Matrix Generation**: The test iterates through every sensor, applies every theme, and renders them in every widget type.
+3. **Markdown Sync**: The framework automatically updates the individual README files and BMP images in `lib/Sensors/examples/`, ensuring documentation stays in sync with code.
+
+---
+
 ## 🧪 Developer Guide
 
 ### 1. Adding a New Feature (TDD)
@@ -69,6 +85,13 @@ To add new cross-component behavior:
 ### 3. Handling Noisy Hardware
 - **`ADCRawSource`**: Averages 64 samples at the hardware level.
 - **`FilteredSensor`**: A base class providing **EMA Smoothing** and **Display Hysteresis** to stop value "flicker".
+
+### 4. Warmup Detection (Dimensional History)
+The `WarmingUpBlocker` uses a robust **Dimensional History** approach:
+- **Moves**: Tracks monotonic pressure moves (Cooling/Heating) as "dimensions" in a 2D vector history.
+- **Cycles**: Completion is derived from move transitions: `((moves.size() - 1) / 2) >= 3`.
+- **UI Feedback**: High-granularity progress (14% steps) reflects every directional flip.
+- **Bypass**: Boilers already pressurized (> 0.3 Bar) bypass the warmup phase entirely.
 
 ---
 

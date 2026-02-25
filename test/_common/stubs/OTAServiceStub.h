@@ -1,11 +1,10 @@
 #ifndef OTA_SERVICE_STUB_H
 #define OTA_SERVICE_STUB_H
 
-#include "../../lib/Interfaces/ISensor.h"
-#include "../../lib/Interfaces/ISwitch.h"
+#include "../../lib/Interfaces/IBlocker.h"
 #include <string>
 
-class OTAServiceStub : public ISensor, public ISwitch {
+class OTAServiceStub : public IBlocker {
 public:
     void begin() { 
         _begun = true; 
@@ -18,7 +17,10 @@ public:
         _updateCalled = true; 
     }
     
-    Reading getReading() override { return { _progress, "%" }; }
+    // IBlocker Implementation
+    BlockerStatus getStatus() const override { 
+        return BlockerStatus("OTA STUB", "OTA MSG", _progress, _failed); 
+    }
     
     bool isActive() const override { return _active; }
     bool justStarted() const override { return _justStarted; }
@@ -30,6 +32,7 @@ public:
     void setActive(bool active) { _active = active; }
     void setProgress(float progress) { _progress = progress; }
     void setBegun(bool begun) { _begun = begun; }
+    void setFailed(bool failed) { _failed = failed; }
 
 private:
     bool _begun = false;
@@ -38,6 +41,7 @@ private:
     bool _lastActive = false;
     bool _justStarted = false;
     bool _justStopped = false;
+    bool _failed = false;
     float _progress = 0;
 };
 

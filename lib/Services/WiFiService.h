@@ -1,21 +1,20 @@
-#ifndef WIFI_SENSOR_H
-#define WIFI_SENSOR_H
+#ifndef WIFI_SERVICE_H
+#define WIFI_SERVICE_H
 
-#include "../../Interfaces/ISensor.h"
-#include "../../Interfaces/ISwitch.h"
+#include "../Interfaces/IBlocker.h"
 
 #ifdef ARDUINO
 #include <WiFi.h>
 #else
-#include "../../../test/_common/stubs/WiFi.h"
+#include "../../test/_common/stubs/WiFi.h"
 #endif
 
-class WiFiSensor : public ISensor, public ISwitch {
+class WiFiService : public IBlocker {
 public:
-    WiFiSensor(const char* ssid, const char* password);
+    WiFiService(const char* ssid = nullptr, const char* password = nullptr);
     
-    // ISensor Implementation
-    Reading getReading() override;
+    // IBlocker Implementation
+    BlockerStatus getStatus() const override;
 
     // ISwitch Implementation
     void update() override;

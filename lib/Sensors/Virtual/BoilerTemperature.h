@@ -6,20 +6,35 @@
 
 /**
  * Virtual Sensor that derives Temperature from a Pressure Sensor reading.
+ * Now uses its own filtering and stability logic to avoid inherited jitter.
  */
-class BoilerTemperature : public ISensor {
+class BoilerTemperature : public FilteredSensor {
 public:
     BoilerTemperature(BoilerPressure* pressureSensor) 
-        : _pressureSensor(pressureSensor) {}
+        : FilteredSensor(0.05f, 0.5f), // alpha=0.05, 0.5C Hysteresis for stability
+          _pressureSensor(pressureSensor) {}
 
 
     Reading getReading() override {
         if (!_pressureSensor) return Reading(25.0f, "C", "TEMP", 0, true);
         
-        float pressureBar = _pressureSensor->getReading().value;
-        float temp = calculateTemperature(pressureBar);
+        // Use high-precision filtered pressure before display hysteresis
+        float pressureBar = _pressureSensor->getFilteredValue();
+        float currentTemp = calculateTemperature(pressureBar);
         
-        return Reading(temp, "C", "TEMP", 0, false);
+        // Update our own filter
+        updateFilter(currentTemp);
+        
+        return Reading(getStableDisplayValue(), "C", "TEMP", 0, false);
+    }
+
+    SensorMetadata getMetadata() override {
+        return SensorMetadata(
+            Reading(25.0f, "C", "TEMP", 0, false),
+            Reading(150.0f, "C", "TEMP", 0, false),
+            Reading(25.0f, "C", "TEMP", 0, false),
+            Reading(0.0f, "C", "TEMP ERR", 0, true)
+        );
     }
 
 private:

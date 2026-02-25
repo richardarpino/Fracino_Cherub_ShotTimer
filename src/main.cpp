@@ -9,7 +9,9 @@
 #include "secrets.h"
 #include "ScreenLayout.h"
 #include "SensorWidget.h"
+#include "GaugeWidget.h"
 #include "StatusWidget.h"
+#include "BlockerWidget.h"
  
 // --- Factory & Configuration ---
 MachineConfig config = {
@@ -32,7 +34,7 @@ ThemeManager themeManager(&shotDisplay, factory.getButtonInput());
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
   ScreenLayout* layout = shotDisplay.getLayout();
-  layout->addWidget(new SensorWidget(factory.getBoilerPressure()));   // Slot 0 (TL)
+  layout->addWidget(new SensorWidget(factory.getBoilerPressure()));  // Slot 0 (TL)
   layout->addWidget(new SensorWidget(factory.getBoilerTemp()));       // Slot 1 (BL)
   layout->addWidget(new StatusWidget(factory.getShotTimer()));        // Slot 2 (TR)
   layout->addWidget(new SensorWidget(factory.getShotTimer()));        // Slot 3 (BR)
@@ -54,7 +56,7 @@ void setup() {
   
   // Startup Layout (1x1)
   shotDisplay.resetLayout(1, 1);
-  shotDisplay.getLayout()->addWidget(new StatusWidget(factory.getWiFiSensor()));
+  shotDisplay.getLayout()->addWidget(new BlockerWidget(&startupLogic));
 }
 
 void loop() {
