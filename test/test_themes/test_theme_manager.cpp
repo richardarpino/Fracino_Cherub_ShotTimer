@@ -19,20 +19,24 @@ private:
     int _setCount = 0;
 };
 
-class RawSourceStub : public IRawSource {
+class MockSwitch : public ISwitch {
 public:
-    RawReading read() override { return { _value, _timestamp }; }
-    void setValue(int value) { _value = value; }
-    void setTimestamp(unsigned long ts) { _timestamp = ts; }
+    void update() override {}
+    bool isActive() const override { return _active; }
+    bool justStarted() const override { return _started; }
+    bool justStopped() const override { return false; }
+    
+    void setActive(bool active) { _active = active; }
+    void setStarted(bool started) { _started = started; }
 
 private:
-    int _value = HIGH;
-    unsigned long _timestamp = 0;
+    bool _active = false;
+    bool _started = false;
 };
 
 void test_theme_manager_initial_theme() {
     ThemeableStub display;
-    RawSourceStub button;
+    MockSwitch button;
     ThemeManager manager(&display, &button);
 
     DefaultTheme theme;
@@ -45,7 +49,7 @@ void test_theme_manager_initial_theme() {
 
 void test_theme_manager_switching() {
     ThemeableStub display;
-    RawSourceStub button;
+    MockSwitch button;
     ThemeManager manager(&display, &button);
 
     DefaultTheme theme1;
@@ -56,9 +60,8 @@ void test_theme_manager_switching() {
     // Initial state
     TEST_ASSERT_EQUAL_PTR(&theme1, display.lastTheme());
 
-    // Press button (Active LOW)
-    button.setValue(LOW);
-    button.setTimestamp(1000);
+    // Press button (Simulate edge)
+    button.setStarted(true);
     manager.update();
 
     TEST_ASSERT_EQUAL_PTR(&theme2, display.lastTheme());

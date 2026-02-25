@@ -15,9 +15,10 @@ The "Contract Layer." All logic depends on these abstractions to remain host-ind
 - **`IRawSource`**: Basic pin/ADC abstraction.
 
 ### 🧠 `Logic/`
-The orchestrators (Coordinators). Process-specific behavior that combines multiple data sources.
+The orchestrators (Coordinators). Process-specific behavior that combines multiple data sources and handles UI state logic.
 - **`StartupLogic`**: Manages the boot journey via `IBlocker` states.
 - **`ScaleLogic`**: High-level espresso weighing and timing logic.
+- **`ThemeManager`**: Handles display theme switching based on `ISwitch` trigger events.
 
 ### 🌡️ `Sensors/`
 Data acquisition components.

@@ -13,3 +13,7 @@ void setMillis(unsigned long ms) {
 void addMillis(unsigned long ms) {
     _mock_millis += ms;
 }
+
+void pinMode(int pin, int mode) {}
+int digitalRead(int pin) { return HIGH; }
+int analogRead(int pin) { return 0; }

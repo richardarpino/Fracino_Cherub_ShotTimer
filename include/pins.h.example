@@ -19,6 +19,7 @@ const float pressureScalar = 1.0f; // Fine-tune to match mechanical dial
 
 // Built-in Hardware
 const int backlightPin = 4;
-const int buttonPin = 35; // Built-in "Right" button
+const int buttonPin = 35;     // Built-in "Right" button
+const int buttonLeftPin = 0;  // Built-in "Left" button
 
 #endif // PINS_H

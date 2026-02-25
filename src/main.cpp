@@ -29,7 +29,7 @@ StartupLogic startupLogic(&factory);
 ScaleLogic scaleLogic(factory.getPump(), factory.getShotTimer(), nullptr); 
 
 ShotDisplay shotDisplay;
-ThemeManager themeManager(&shotDisplay, factory.getButtonInput());
+ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
 
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
@@ -43,9 +43,7 @@ void setupMainDashboard() {
 void setup() {
   Serial.begin(115200);
 
-  // Hardware Pins
-  pinMode(backlightPin, OUTPUT);
-  pinMode(buttonPin, INPUT_PULLUP);
+  // Hardware Pins managed by Factory
   digitalWrite(backlightPin, HIGH);
  
   for (ITheme* theme : factory.getThemes()) {

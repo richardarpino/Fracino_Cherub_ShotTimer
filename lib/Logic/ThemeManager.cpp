@@ -1,7 +1,7 @@
 #include "ThemeManager.h"
 
-ThemeManager::ThemeManager(IThemeable* display, IRawSource* buttonSource, unsigned long debounceMs)
-    : _display(display), _buttonSource(buttonSource), _currentIndex(0), _lastPressTime(0), _debounceTime(debounceMs) {}
+ThemeManager::ThemeManager(IThemeable* display, ISwitch* themeButton)
+    : _display(display), _themeButton(themeButton), _currentIndex(0) {}
 
 void ThemeManager::addTheme(ITheme* theme) {
     if (_themes.empty() && _display) {
@@ -11,17 +11,11 @@ void ThemeManager::addTheme(ITheme* theme) {
 }
 
 void ThemeManager::update() {
-    if (!_buttonSource || !_display || _themes.empty()) return;
+    if (!_themeButton || !_display || _themes.empty()) return;
 
-    RawReading raw = _buttonSource->read();
-    unsigned long now = raw.timestamp;
-
-    // Active LOW logic for button
-    if (raw.value == LOW) {
-        if (now - _lastPressTime > _debounceTime) {
-            _currentIndex = (_currentIndex + 1) % _themes.size();
-            _display->setTheme(_themes[_currentIndex]);
-            _lastPressTime = now;
-        }
+    _themeButton->update();
+    if (_themeButton->justStarted()) {
+        _currentIndex = (_currentIndex + 1) % _themes.size();
+        _display->setTheme(_themes[_currentIndex]);
     }
 }

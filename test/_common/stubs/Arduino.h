@@ -12,6 +12,9 @@ extern "C" {
 unsigned long millis();
 void setMillis(unsigned long ms);
 void addMillis(unsigned long ms);
+void pinMode(int pin, int mode);
+int digitalRead(int pin);
+int analogRead(int pin);
 
 #ifdef __cplusplus
 }
