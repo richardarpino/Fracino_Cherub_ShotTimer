@@ -69,6 +69,9 @@ void loop() {
   // Orchestrators handle their own constituent polling
   startupLogic.update();
 
+  // Centralized sensor update - "freezes" machine state for this frame
+  factory.getRegistry()->update();
+
   // All widgets pull their own data from their assigned sensors
   shotDisplay.update();
 

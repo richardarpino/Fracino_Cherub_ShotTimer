@@ -21,6 +21,11 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _themes.push_back(&_defaultTheme);
     _themes.push_back(&_candyTheme);
     _themes.push_back(&_christmasTheme);
+
+    // Register sensors with the dispatcher
+    _dispatcher.provide<BoilerPressureTag>(&_boilerPressure);
+    _dispatcher.provide<BoilerTempTag>(&_boilerTemp);
+    _dispatcher.provide<ShotTimeTag>(&_shotTimer);
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {

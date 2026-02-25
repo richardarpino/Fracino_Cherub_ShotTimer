@@ -12,6 +12,8 @@
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Services/WarmingUpBlocker.h"
+#include "../Logic/SensorDispatcher.h"
+#include "../Interfaces/SensorTags.h"
 #include "../Themes/DefaultTheme.h"
 #include "../Themes/CandyTheme.h"
 #include "../Themes/ChristmasTheme.h"
@@ -34,6 +36,7 @@ public:
     BoilerPressure* getBoilerPressure() override { return &_boilerPressure; }
     BoilerTemperature* getBoilerTemp() override { return &_boilerTemp; }
     ShotTimer* getShotTimer() override { return &_shotTimer; }
+    ISensorRegistry* getRegistry() override { return &_dispatcher; }
 
     // ISwitchProvider
     DebouncedSwitch* getPump() override { return &_pumpSw; }
@@ -66,6 +69,7 @@ private:
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
+    SensorDispatcher _dispatcher;
 
     // Configuration
     MachineConfig _config;
