@@ -9,6 +9,7 @@ struct BoilerPressureTag {};
 struct BoilerTempTag {};
 struct ShotTimeTag {};
 struct WeightTag {};
+struct TaredWeightTag {};
 struct WiFiStrengthTag {};
 
 #endif

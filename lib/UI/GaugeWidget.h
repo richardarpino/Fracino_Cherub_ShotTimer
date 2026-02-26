@@ -18,7 +18,7 @@ public:
     void applyTheme(ITheme* theme) override;
     
     // Explicit metadata update for scaling the meter
-    void updateMetadata(const SensorMetadata& meta);
+    void setMetadata(const SensorMetadata& meta) override;
 
 protected:
     lv_obj_t* _container;
@@ -49,7 +49,7 @@ public:
 
     void refresh() override {
         if (_registry) {
-            updateMetadata(_registry->getMetadata<T>());
+            setMetadata(_registry->getMetadata<T>());
             update(_registry->getLatest<T>());
         }
     }
@@ -57,9 +57,4 @@ public:
 private:
     ISensorRegistry* _registry;
 };
-
-private:
-    ISensorRegistry* _registry;
-};
-
 #endif

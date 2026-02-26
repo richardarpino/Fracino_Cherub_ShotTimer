@@ -54,9 +54,4 @@ public:
 private:
     ISensorRegistry* _registry;
 };
-
-private:
-    ISensorRegistry* _registry;
-};
-
 #endif
