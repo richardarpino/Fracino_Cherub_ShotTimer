@@ -24,6 +24,8 @@
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
 #include "Hardware/WeightSensor.h"
+#include "../../lib/Logic/SensorDispatcher.h"
+#include "../../lib/Interfaces/SensorTags.h"
 #include <functional>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -61,9 +63,12 @@ struct BlockerInfo {
     std::vector<State> states;
 };
 
-struct WidgetInfo {
+struct DocEntry {
     std::string name;
-    std::function<IWidget*(ISensor*)> create;
+    ISensor* sensor;
+    std::function<IWidget*()> createSensorWidget;
+    std::function<IWidget*()> createGaugeWidget;
+    std::function<void(SensorDispatcher*)> registerFunc;
 };
 
 struct SensorDocs {
@@ -94,18 +99,40 @@ void test_generate_examples() {
     BoilerPressure* bp = new BoilerPressure(nullptr);
     WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
 
-    std::vector<SensorInfo> sensors = {
-        {"BoilerPressure", bp},
-        {"BoilerTemperature", new BoilerTemperature(bp)},
-        {"ManualPumpTimer", new ManualPumpTimer()},
-        {"WeightSensor", ws},
-        {"TaredWeight", new TaredWeight(ws)}
+    std::vector<DocEntry> docEntries = {
+        {
+            "BoilerPressure", bp, 
+            []() { return new SensorWidget<BoilerPressureTag>(); },
+            []() { return new GaugeWidget<BoilerPressureTag>(); },
+            [&](SensorDispatcher* d) { d->provide<BoilerPressureTag>(bp); }
+        },
+        {
+            "BoilerTemperature", new BoilerTemperature(bp),
+            []() { return new SensorWidget<BoilerTempTag>(); },
+            []() { return new GaugeWidget<BoilerTempTag>(); },
+            [&](SensorDispatcher* d) { d->provide<BoilerTempTag>(new BoilerTemperature(bp)); }
+        },
+        {
+            "ManualPumpTimer", new ManualPumpTimer(),
+            []() { return new SensorWidget<ShotTimeTag>(); },
+            []() { return new StatusWidget<ShotTimeTag>(); }, 
+            [&](SensorDispatcher* d) { d->provide<ShotTimeTag>(new ManualPumpTimer()); }
+        },
+        {
+            "WeightSensor", ws,
+            []() { return new SensorWidget<WeightTag>(); },
+            []() { return new GaugeWidget<WeightTag>(); },
+            [&](SensorDispatcher* d) { d->provide<WeightTag>(ws); }
+        },
+        {
+            "TaredWeight", new TaredWeight(ws),
+            []() { return new SensorWidget<TaredWeightTag>(); },
+            []() { return new GaugeWidget<TaredWeightTag>(); },
+            [&](SensorDispatcher* d) { d->provide<TaredWeightTag>(new TaredWeight(ws)); }
+        }
     };
 
-    std::vector<WidgetInfo> widgets = {
-        {"SensorWidget", [](ISensor* s) { return new SensorWidget(s); }},
-        {"GaugeWidget", [](ISensor* s) { return new GaugeWidget(s); }}
-    };
+    SensorDispatcher dispatcher;
 
     std::vector<BlockerInfo> blockers = {
         {
@@ -160,21 +187,29 @@ void test_generate_examples() {
 
     HeadlessDriver::init(320, 320);
 
-    for (auto& sInfo : sensors) {
-        std::string sensorDir = "lib/Sensors/examples/" + sInfo.name;
+    HeadlessDriver::init(320, 320);
+
+    for (auto& entry : docEntries) {
+        std::string sensorDir = "lib/Sensors/examples/" + entry.name;
         ensure_dir(sensorDir);
 
-        SensorMetadata meta = sInfo.sensor->getMetadata();
-        docs.push_back({sInfo.name, "Visualizing " + sInfo.name + " data.", meta});
+        SensorMetadata meta = entry.sensor->getMetadata();
+        docs.push_back({entry.name, "Visualizing " + entry.name + " data.", meta});
 
         std::ofstream sensorReadme(sensorDir + "/README.md");
-        sensorReadme << "# " << sInfo.name << " Documentation" << "\n\n";
-        sensorReadme << "Visualizing " << sInfo.name << " data." << "\n\n";
+        sensorReadme << "# " << entry.name << " Documentation" << "\n\n";
+        sensorReadme << "Visualizing " << entry.name << " data." << "\n\n";
 
-        for (auto& wInfo : widgets) {
-            std::cout << "Generating " << sInfo.name << " in " << wInfo.name << "..." << std::endl;
+        std::vector<std::pair<std::string, std::function<IWidget*()>>> widgetVariants = {
+            {"SensorWidget", entry.createSensorWidget},
+            {"GaugeWidget", entry.createGaugeWidget}
+        };
 
-            sensorReadme << "## " << wInfo.name << "\n";
+        for (auto& wVariant : widgetVariants) {
+            std::string wName = wVariant.first;
+            std::cout << "Generating " << entry.name << " in " << wName << "..." << std::endl;
+
+            sensorReadme << "## " << wName << "\n";
             sensorReadme << "| Theme | Low (" << meta.low.value << ") | Init (" << meta.init.value << ") | High (" << meta.high.value << ") | Error | Scaled (Init) |" << "\n";
             sensorReadme << "| :--- | :---: | :---: | :---: | :---: | :---: |" << "\n";
 
@@ -199,15 +234,24 @@ void test_generate_examples() {
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
 
-                    IWidget* widget = wInfo.create(sInfo.sensor);
+                    // Registry setup for each snapshot to ensure fresh data
+                    SensorDispatcher tempDispatcher;
+                    entry.registerFunc(&tempDispatcher);
+                    
+                    // Force the "current" reading to the one we want to snapshot
+                    // Since dispatcher::update normally polls, we need to mock the registry behavior here
+                    // Actually, the simplest way is to manually update the widget with state.second
+                    
+                    IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, sizes[0].cols, sizes[0].rows);
                     widget->applyTheme(themeInfo.theme);
-                    widget->update(state.second);
+                    widget->setMetadata(meta); // Set scale range before update
+                    widget->update(state.second); // Immediate update for snapshot
                     
                     // Force the widget root to fill only the target cell area for snapshot
                     lv_obj_set_size(root, 240, 135); 
                     
-                    std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-" + state.first + ".bmp");
+                    std::string imgName = to_lower(entry.name + "-" + wName + "-" + themeInfo.name + "-" + state.first + ".bmp");
                     std::string fullPath = "lib/Sensors/examples/1x1/" + imgName;
                     HeadlessDriver::saveSnapshot(root, fullPath); // Target the widget root
                     
@@ -228,15 +272,16 @@ void test_generate_examples() {
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
 
-                    IWidget* widget = wInfo.create(sInfo.sensor);
+                    IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, size.cols, size.rows);
                     widget->applyTheme(themeInfo.theme);
+                    widget->setMetadata(meta);
                     widget->update(meta.init);
 
                     // Force the widget root to fill only the target cell area for snapshot
                     lv_obj_set_size(root, size.w, size.h);
 
-                    std::string imgName = to_lower(sInfo.name + "-" + wInfo.name + "-" + themeInfo.name + "-init.bmp");
+                    std::string imgName = to_lower(entry.name + "-" + wName + "-" + themeInfo.name + "-init.bmp");
                     std::string fullPath = "lib/Sensors/examples/" + size.name + "/" + imgName;
                     HeadlessDriver::saveSnapshot(root, fullPath); // Target the widget root
 
@@ -325,7 +370,7 @@ void test_generate_examples() {
     
     // Cleanup
     for(auto& t : themes) delete t.theme;
-    for(auto& s : sensors) delete s.sensor;
+    for(auto& s : docEntries) delete s.sensor;
     for(auto& b : blockers) delete b.blocker;
 }
 

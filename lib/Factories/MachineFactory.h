@@ -12,6 +12,8 @@
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Services/WarmingUpBlocker.h"
+#include "../Logic/SensorDispatcher.h"
+#include "../Interfaces/SensorTags.h"
 #include "../Themes/DefaultTheme.h"
 #include "../Themes/CandyTheme.h"
 #include "../Themes/ChristmasTheme.h"
@@ -31,9 +33,7 @@ public:
     const std::vector<ITheme*>& getThemes() const override { return _themes; }
 
     // ISensorProvider
-    BoilerPressure* getBoilerPressure() override { return &_boilerPressure; }
-    BoilerTemperature* getBoilerTemp() override { return &_boilerTemp; }
-    ManualPumpTimer* getManualPumpTimer() override { return &_manualPumpTimer; }
+    ISensorRegistry* getRegistry() override { return &_dispatcher; }
 
     // ISwitchProvider
     DebouncedSwitch* getPump() override { return &_pumpSw; }
@@ -66,6 +66,7 @@ private:
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
+    SensorDispatcher _dispatcher;
 
     // Configuration
     MachineConfig _config;

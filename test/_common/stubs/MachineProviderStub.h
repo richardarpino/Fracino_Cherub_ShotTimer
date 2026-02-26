@@ -5,7 +5,8 @@
 #include "OTAServiceStub.h"
 #include "BlockerStub.h"
 #include "IBlocker.h"
-#include "Sensors/Virtual/ManualPumpTimer.h"
+#include "Logic/ManualPumpTimer.h"
+#include "Logic/SensorDispatcher.h"
 
 class MachineProviderStub : public ISensorProvider, public ISwitchProvider, public IThemeProvider {
 public:
@@ -16,9 +17,7 @@ public:
     const std::vector<ITheme*>& getThemes() const override { return _themes; }
 
     // ISensorProvider
-    ISensor* getBoilerPressure() override { return nullptr; }
-    ISensor* getBoilerTemp() override { return nullptr; }
-    ISensor* getManualPumpTimer() override { return &shotTimer; }
+    ISensorRegistry* getRegistry() override { return &_dispatcher; }
 
     // ISwitchProvider
     ISwitch* getPump() override { return nullptr; }
@@ -41,6 +40,7 @@ private:
     bool _otaCreated;
     std::vector<ITheme*> _themes;
     ManualPumpTimer shotTimer;
+    SensorDispatcher _dispatcher;
 };
 
 #endif

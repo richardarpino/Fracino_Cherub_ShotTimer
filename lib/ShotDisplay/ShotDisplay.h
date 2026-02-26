@@ -23,6 +23,7 @@ public:
     void showInfo(const String& topText, const String& bottomText);
     void clearScreen();
     void resetLayout(uint8_t cols = 2, uint8_t rows = 2);
+    void setRegistry(class ISensorRegistry* registry);
 
     // Updates
     void update(); // The main "Pull" update

@@ -18,10 +18,12 @@ public:
     
     void addWidget(IWidget* widget);
     void showMessage(const String& text);
+    void setRegistry(class ISensorRegistry* registry);
 
 private:
     lv_obj_t* _grid;
     std::vector<IWidget*> _widgets;
+    class ISensorRegistry* _registry;
     ITheme* _currentTheme;
     uint8_t _cols;
     uint8_t _rows;
