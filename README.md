@@ -31,23 +31,22 @@ cp include/pins.h.example include/pins.h        # Define your pins
 
 The project is split into three distinct layers to make it maintainable and testable.
 
-### 🔌 Layer 1: Data Sources & Interfaces (`lib/Interfaces`)
-Everything that measures or detects implements `ISensor` or `ISwitch`.
-- **Sensors**: Continuous values like `BoilerPressure` or `WeightSensor`.
+### 🔌 Layer 1: Hardware & Interfaces (`lib/Interfaces` & `lib/Sensors/Hardware`)
+Everything that measures or detects a physical signal.
+- **`HardwareSensor`**: Root base class for all physical sensors (e.g., `BoilerPressure`). Enforces pasivity and EMA filtering.
+- **`IRawSource`**: Abstract interface for physical ADCs/GPIOs.
 - **Switches**: Binary states with edge detection (`HardwareSwitch`, `DebouncedSwitch`).
-- **Decorators**: Virtual sensors like `TaredWeight` or `BoilerTemperature`.
 
 ### 🧠 Layer 2: Logic Modules (`lib/Logic`)
-This is the **"Brain"** of the machine. It coordinates behavior between sensors using **Orchestrators**.
-- **`ScaleLogic`**: Coordinates the shot timer and scale auto-taring.
-- **`StartupLogic`**: Manages the boot sequence (WiFi/OTA).
-- **Polling**: Orchestrators are responsible for polling their required switches/sensors.
+The **"Brain"** of the machine. It processes hardware signals into machine-domain data.
+- **Derived Components**: `BoilerTemperature`, `ManualPumpTimer`, `TaredWeight`. These are **NOT** sensors; they are logical producers.
+- **Orchestrators**: `ScaleLogic` coords behavior (e.g., "If pump starts, start shot timer and publish results to Registry").
+- **`SensorDispatcher`**: The central **Registry** (Single Source of Truth). Logic modules *push* data here; the UI *pulls* it.
 
 ### 🏭 Layer 3: Providers & Factories (`lib/Factories`)
-We use a **Pure Factory** pattern to manage hardware.
-- **`MachineFactory`**: The single point of instantiation for all hardware.
-- **`IMachineProvider`**: Segregated interfaces (`ISensorProvider`, `ISwitchProvider`, `IThemeProvider`) used by logic modules to access hardware without knowing implementation details.
-- **Lazy Initialization**: Hardware services (like WiFi/OTA) are instantiated only when first requested. Instantiation *is* the activation signal.
+Manages lifetime and wiring.
+- **`MachineFactory`**: The single point of instantiation. It wires the concrete hardware to the orchestrators.
+- **`IMachineProvider`**: Segregated interfaces (`ISensorProvider`, `ISwitchProvider`) used to access the global Registry and hardware switches.
 
 ---
 
@@ -57,7 +56,7 @@ The project includes an automated visual documentation system to ensure UI consi
 
 ### 📸 Sensor Gallery (TOC)
 A cross-product of all sensors, widgets, and themes is generated automatically:
-- [**View Documentation Gallery**](lib/Sensors/examples/README.md) - Automated visual documentation for all sensors (Real and Virtual).
+- [**View Documentation Gallery**](lib/Sensors/examples/README.md) - Automated visual documentation driven by **Type-Tag Domain Contracts**.
 
 ### ⚙️ How it works
 The UI is built using **LVGL**. To verify visual changes without physical hardware, we use a **Simulator Framework**:

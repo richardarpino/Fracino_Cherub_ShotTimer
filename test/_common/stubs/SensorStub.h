@@ -1,13 +1,14 @@
 #ifndef SENSOR_STUB_H
 #define SENSOR_STUB_H
 
-#include "../../lib/Interfaces/ISensor.h"
+#include "../../lib/Interfaces/SensorTypes.h"
+#include "../../lib/Interfaces/HardwareSensor.h"
 
-class SensorStub : public ISensor {
+class SensorStub : public HardwareSensor {
 public:
+    SensorStub() : HardwareSensor(nullptr) {}
     void setReading(const Reading& reading) { _reading = reading; }
     Reading getReading() override { return _reading; }
-    SensorMetadata getMetadata() override { return SensorMetadata(); }
     void update() {}
 
 private:

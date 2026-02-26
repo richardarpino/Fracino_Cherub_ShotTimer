@@ -1,11 +1,8 @@
 #include <unity.h>
 #include "Hardware/BoilerPressure.h"
-#include "Hardware/ShotTimer.h"
 #include "Hardware/WeightSensor.h"
 #include "Hardware/HardwareSwitch.h"
-#include "ScaleLogic.h"
-#include "Logic/ScaleLogic.cpp"
-#include "Virtual/DebouncedSwitch.h"
+#include "Sensors/Virtual/DebouncedSwitch.h"
 #include "../_common/MockRawSource.h"
 #include "../_common/stubs/Arduino.h"
 #include "../_common/stubs/Arduino.cpp"
@@ -36,31 +33,6 @@ void test_weight_conversion() {
     weightMock.setRawValue(5000); 
     for(int i=0; i<100; i++) { setMillis(i); weightSensor.getReading(); }
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, weightSensor.getReading().value);
-}
-
-void test_shot_timer_logic() {
-    MockRawSource mock;
-    HardwareSwitch pumpHw(&mock, true);
-    DebouncedSwitch pumpSw(&pumpHw, 150);
-    ShotTimer timer(10.0);
-    ScaleLogic logic(&pumpSw, &timer, nullptr);
-    
-    setMillis(0);
-    mock.setRawValue(HIGH); pumpSw.update(); logic.update();
-    
-    setMillis(1000);
-    mock.setRawValue(LOW); pumpSw.update(); logic.update();
-    
-    setMillis(6000);
-    mock.setRawValue(HIGH); pumpSw.update(); logic.update();
-    TEST_ASSERT_EQUAL_FLOAT(0.0f, timer.getReading().value);
-    
-    setMillis(7000);
-    mock.setRawValue(LOW); pumpSw.update(); logic.update();
-    setMillis(19000); pumpSw.update(); logic.update(); 
-    mock.setRawValue(HIGH); setMillis(19200); pumpSw.update(); logic.update();
-    
-    TEST_ASSERT_FLOAT_WITHIN(0.2f, 12.0f, timer.getReading().value);
 }
 
 void test_switch_logic() {
@@ -100,7 +72,6 @@ int main() {
     RUN_TEST(test_pressure_calculation);
     RUN_TEST(test_pressure_floor);
     RUN_TEST(test_weight_conversion);
-    RUN_TEST(test_shot_timer_logic);
     RUN_TEST(test_switch_logic);
     RUN_TEST(test_switch_idempotency);
     return UNITY_END();

@@ -1,20 +1,19 @@
 #include "ScaleLogic.h"
 
-ScaleLogic::ScaleLogic(ISwitch* pump, ShotTimer* timer, TaredWeight* weight)
-    : _pump(pump), _timer(timer), _weight(weight) {}
+ScaleLogic::ScaleLogic(ISwitch* pump, TaredWeight* weight, ISensorRegistry* registry)
+    : _pump(pump), _weight(weight), _registry(registry) {}
 
 void ScaleLogic::update() {
-    if (!_pump) return;
+    if (!_pump || !_registry) return;
 
-    // Logic Ownership: Orchestrator polls its constituents
     _pump->update();
 
     if (_pump->justStarted()) {
-        if (_timer) _timer->start();
         if (_weight) _weight->tare();
     }
 
-    if (_pump->justStopped()) {
-        if (_timer) _timer->stop();
+    // Publish logical results to the Registry every frame
+    if (_weight) {
+        _registry->publish<TaredWeightTag>(_weight->getReading());
     }
 }

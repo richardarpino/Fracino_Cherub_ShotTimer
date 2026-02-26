@@ -1,22 +1,37 @@
-#ifndef FILTERED_SENSOR_H
-#define FILTERED_SENSOR_H
+#ifndef HARDWARE_SENSOR_H
+#define HARDWARE_SENSOR_H
 
-#include "ISensor.h"
+#include "SensorTypes.h"
 
 /**
- * Enhanced base class for sensors that require smoothing and display stability.
- * Provides EMA (Exponential Moving Average) and Hysteresis.
+ * Mandatory base class for all physical hardware sensors.
+ * Consolidates EMA filtering and hysteresis logic.
+ * Enforces a pattern where sensors are passive observers of a physical signal.
  */
-class FilteredSensor : public ISensor {
+class HardwareSensor {
 public:
-    FilteredSensor(float alpha = 0.1f, float hysteresisThreshold = 0.05f) 
-        : _alpha(alpha), _hysteresisThreshold(hysteresisThreshold), 
+    HardwareSensor(IRawSource* source, float alpha = 0.1f, float hysteresisThreshold = 0.05f) 
+        : _source(source), _alpha(alpha), _hysteresisThreshold(hysteresisThreshold), 
           _currentFilteredValue(0.0f), _lastDisplayedValue(0.0f), 
           _initialized(false) {}
 
+    virtual ~HardwareSensor() = default;
+
+    /**
+     * Physical sensors must provide metadata and their current processed reading.
+     */
+    virtual Reading getReading() = 0;
+
+    /**
+     * Returns the high-precision filtered value before hysteresis.
+     * Useful for logic components that derive data from this sensor.
+     */
+    float getFilteredValue() const { return _currentFilteredValue; }
+
+protected:
     /**
      * Updates the internal filter with a new raw measurement.
-     * Should be called periodically by the concrete implementation.
+     * Concrete implementations should call this in their getReading() or similar.
      */
     void updateFilter(float newValue) {
         if (!_initialized) {
@@ -31,30 +46,18 @@ public:
 
     /**
      * Applies hysteresis to the filtered value to prevent display flickering.
-     * Returns the value that should be shown on the UI.
      */
     float getStableDisplayValue() {
         float diff = _currentFilteredValue - _lastDisplayedValue;
-        
-        // Only update display if the filtered value moves beyond the threshold
         if (std::abs(diff) > _hysteresisThreshold) {
             _lastDisplayedValue = _currentFilteredValue;
         }
-        
         return _lastDisplayedValue;
     }
 
-    /**
-     * Returns the high-precision filtered value before hysteresis.
-     * Use this for virtual sensors that need to derive data from this sensor.
-     */
-    float getFilteredValue() const {
-        return _currentFilteredValue;
-    }
-
-protected:
-    float _alpha;               // Smoothing factor (0.0 to 1.0)
-    float _hysteresisThreshold; // Minimum change required to update display
+    IRawSource* _source;
+    float _alpha;
+    float _hysteresisThreshold;
     float _currentFilteredValue;
     float _lastDisplayedValue;
     bool _initialized;

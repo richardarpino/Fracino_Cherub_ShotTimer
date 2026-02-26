@@ -1,5 +1,5 @@
-#ifndef ISENSOR_H
-#define ISENSOR_H
+#ifndef SENSOR_TYPES_H
+#define SENSOR_TYPES_H
 
 #include <Arduino.h>
 
@@ -49,16 +49,6 @@ struct SensorMetadata {
     SensorMetadata() = default;
     SensorMetadata(Reading l, Reading h, Reading i, Reading e)
         : low(l), high(h), init(i), error(e) {}
-};
-
-/**
- * Interface for a component that processes raw values into domain readings.
- */
-class ISensor {
-public:
-    virtual ~ISensor() {}
-    virtual Reading getReading() = 0;
-    virtual SensorMetadata getMetadata() = 0;
 };
 
 #endif

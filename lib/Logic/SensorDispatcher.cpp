@@ -12,17 +12,16 @@ void SensorDispatcher::update() {
 
 Reading SensorDispatcher::getReadingByIndex(int index) {
     if (index < 0 || (size_t)index >= _cache.size()) {
-        return Reading(0.0f, "", "", 1, true); // Unregistered
+        return Reading(0.0f, "", "", 1, true); 
     }
     return _cache[index];
 }
 
-SensorMetadata SensorDispatcher::getMetadataByIndex(int index) {
-    if (index >= 0 && (size_t)index < _sensors.size() && _sensors[index]) {
-        return _sensors[index]->getMetadata();
-    }
-    return SensorMetadata(); 
+void SensorDispatcher::setReadingByIndex(int index, Reading reading) {
+    ensureCapacity(index);
+    _cache[index] = reading;
 }
+
 
 void SensorDispatcher::ensureCapacity(int index) {
     if ((size_t)index >= _sensors.size()) {

@@ -1,7 +1,7 @@
 #ifndef DIGITAL_RAW_SOURCE_H
 #define DIGITAL_RAW_SOURCE_H
 
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/SensorTypes.h"
 
 /**
  * Concrete implementation of IRawSource for Digital Pins (e.g. Pump, Buttons).

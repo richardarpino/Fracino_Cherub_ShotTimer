@@ -7,8 +7,10 @@
 #include "../Sensors/Hardware/HardwareSwitch.h"
 #include "../Sensors/Virtual/DebouncedSwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
-#include "../Sensors/Virtual/BoilerTemperature.h"
-#include "../Sensors/Hardware/ShotTimer.h"
+#include "../Sensors/Hardware/WeightSensor.h"
+#include "../Logic/BoilerTemperature.h"
+#include "../Logic/ManualPumpTimer.h"
+#include "../Logic/TaredWeight.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Services/WarmingUpBlocker.h"
@@ -21,8 +23,7 @@
 
 /**
  * Concrete Machine Factory.
- * Manages the lifetime and configuration of all physical and virtual machine components.
- * Returns specialized types to allow control logic access (Covariant Returns).
+ * Lifetime manager for all machine components.
  */
 class MachineFactory : public ISensorProvider, public ISwitchProvider, public IThemeProvider {
 public:
@@ -33,7 +34,6 @@ public:
     const std::vector<ITheme*>& getThemes() const override { return _themes; }
 
     // ISensorProvider
-    ShotTimer* getShotTimer() override { return &_shotTimer; }
     ISensorRegistry* getRegistry() override { return &_dispatcher; }
 
     // ISwitchProvider
@@ -44,6 +44,13 @@ public:
     WarmingUpBlocker* getWarmingUpBlocker() override;
     ISwitch* getButtonRight() override { return &_buttonRightSw; }
     ISwitch* getButtonLeft() override { return &_buttonLeftSw; }
+
+    // Component Access for Orchestrators
+    BoilerPressure* getBoilerPressure() { return &_boilerPressure; }
+    WeightSensor* getWeightSensor() { return &_weightSensor; }
+    BoilerTemperature* getBoilerTemp() { return &_boilerTemp; }
+    ManualPumpTimer* getManualPumpTimer() { return &_manualPumpTimer; }
+    TaredWeight* getTaredWeight() { return &_taredWeight; }
 
 private:
     // Raw Sources
@@ -60,19 +67,22 @@ private:
     HardwareSwitch _buttonLeftHw;
     DebouncedSwitch _buttonLeftSw;
 
-    // Sensors
+    // Physical Sensors (Registered with Dispatcher)
     BoilerPressure _boilerPressure;
+    WeightSensor _weightSensor;
+
+    // Logical Components (Published to Dispatcher via ScaleLogic)
     BoilerTemperature _boilerTemp;
-    ShotTimer _shotTimer;
+    ManualPumpTimer _manualPumpTimer;
+    TaredWeight _taredWeight;
+
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
     SensorDispatcher _dispatcher;
 
-    // Configuration
     MachineConfig _config;
 
-    // Themes
     DefaultTheme _defaultTheme;
     CandyTheme _candyTheme;
     ChristmasTheme _christmasTheme;

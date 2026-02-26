@@ -2,6 +2,7 @@
 #define SENSOR_DISPATCHER_H
 
 #include "../Interfaces/ISensorRegistry.h"
+#include "../Interfaces/HardwareSensor.h"
 #include <vector>
 
 /**
@@ -16,7 +17,7 @@ public:
      * Registers a physical sensor for a specific Type-Tag.
      */
     template<typename T>
-    void provide(ISensor* sensor) {
+    void provide(HardwareSensor* sensor) {
         int index = getTypeIndex<T>();
         ensureCapacity(index);
         _sensors[index] = sensor;
@@ -26,13 +27,13 @@ public:
 
 protected:
     Reading getReadingByIndex(int index) override;
-    SensorMetadata getMetadataByIndex(int index) override;
+    void setReadingByIndex(int index, Reading reading) override;
 
 private:
     void ensureCapacity(int index);
 
     // List of physical sensors mapped by their Type-Index
-    std::vector<ISensor*> _sensors;
+    std::vector<HardwareSensor*> _sensors;
     
     // Cache of the latest readings, updated once per update() call
     std::vector<Reading> _cache;

@@ -1,7 +1,7 @@
 #ifndef ADC_RAW_SOURCE_H
 #define ADC_RAW_SOURCE_H
 
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/SensorTypes.h"
 
 /**
  * Concrete implementation of IRawSource for ESP32/Arduino ADC.

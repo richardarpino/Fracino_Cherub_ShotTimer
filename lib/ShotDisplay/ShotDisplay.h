@@ -4,7 +4,7 @@
 #include <TFT_eSPI.h>
 #include "../Themes/ITheme.h"
 #include "../Themes/IThemeable.h"
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/SensorTypes.h"
 
 #include <lvgl.h>
 

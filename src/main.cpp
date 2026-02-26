@@ -2,6 +2,8 @@
 #include "ThemeManager.h"
 #include "ShotDisplay.h"
 #include "ScaleLogic.h"
+#include "ShotMonitor.h"
+#include "BoilerMonitor.h"
 #include "StartupLogic.h"
 #include "MachineFactory.h"
 #include <vector>
@@ -18,15 +20,16 @@ MachineConfig config = {
   .otaHostname = OTA_HOSTNAME,
   .wifiSsid = WIFI_SSID,
   .wifiPassword = WIFI_PASSWORD,
-  .debounceMs = 150,
-  .minShotDuration = 10.0
+  .debounceMs = 150
 };
 
 MachineFactory factory(config);
 
 // --- Coordination & Logic ---
 StartupLogic startupLogic(&factory);
-ScaleLogic scaleLogic(factory.getPump(), factory.getShotTimer(), nullptr); 
+ShotMonitor shotMonitor(factory.getPump(), factory.getManualPumpTimer(), factory.getRegistry());
+BoilerMonitor boilerMonitor(factory.getBoilerTemp(), factory.getRegistry());
+ScaleLogic scaleLogic(factory.getPump(), factory.getTaredWeight(), factory.getRegistry()); 
 
 ShotDisplay shotDisplay;
 ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
@@ -79,5 +82,7 @@ void loop() {
   shotDisplay.update();
 
   themeManager.update();
+  shotMonitor.update();
+  boilerMonitor.update();
   scaleLogic.update();
 }

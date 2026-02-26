@@ -2,7 +2,7 @@
 #define IWIDGET_H
 
 #include <lvgl.h>
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/SensorTypes.h"
 #include "../Themes/ITheme.h"
 
 class IWidget {

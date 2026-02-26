@@ -2,7 +2,7 @@
 #define HARDWARE_SWITCH_H
 
 #include "../../Interfaces/ISwitch.h"
-#include "../../Interfaces/ISensor.h"
+#include "../../Interfaces/SensorTypes.h"
 
 class HardwareSwitch : public ISwitch {
 public:

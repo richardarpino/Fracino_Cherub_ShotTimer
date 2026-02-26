@@ -1,6 +1,6 @@
 # Agentic Rules of Engagement
 
-This document is specifically for AI Agentic systems (like Antigravity) contributing to this repository. These rules ensure that AI efficiency doesn't compromise the project's architectural integrity.
+This document is specifically for AI Agentic systems (like Antigravity) contributing to this repository. These rules provide **Guidance** to ensure efficiency without compromising integrity. **Pragmatism** and **Evolution** are favored over dogma.
 
 ## 1. Contextual Awareness
 *   **Read Before Write**: Before proposing any structural change, you **must** read `docs/principles.md`.
@@ -11,8 +11,11 @@ This document is specifically for AI Agentic systems (like Antigravity) contribu
 *   **Regression Testing**: If you modify a shared library (e.g., `StringUtils` or `FilteredSensor`), you must run the *entire* native test suite.
 
 ### 3. Abstraction & SOLID Preservation
-*   **Respect Interfaces**: Never bypass an interface (`ISensor`, `ISwitch`, `IBlocker`, `IRawSource`) to access hardware directly from logic.
-*   **Maintain SRP**: If you find yourself adding history-tracking to a logic component or state-logic to a sensor, you are breaking SRP. Create a Decorator or a new Orchestrator instead.
+*   **Respect the Boundary**: Never bypass an interface (`ISwitch`, `IBlocker`, `IRawSource`) to access hardware directly from logic.
+*   **Sensor = Hardware**: All physical observers must inherit from `HardwareSensor`. Never inherit this for logical calculations.
+*   **Registry Producers**: New logic components must be "Producers." They should calculate data and utilize `ISensorRegistry::publish<Tag>()` to make it available to the UI.
+*   **Tags = Contracts**: Always define `static SensorMetadata getMetadata()` within the Type-Tag. This is where scaling and display metadata live.
+*   **Maintain SRP**: If you find yourself adding history-tracking to a logic component or state-logic to a sensor, you are breaking SRP. Create a new Orchestrator in `lib/Logic/` instead.
 *   **MachineFactory (DI)**: All object instantiation should happen in the `MachineFactory`. Always favor constructor injection over direct instantiation of dependencies.
 
 ## 4. Domain-Driven Design (DDD)

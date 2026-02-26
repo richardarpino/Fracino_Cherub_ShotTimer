@@ -13,19 +13,22 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _buttonLeftHw(&_buttonLeftInput, true),
       _buttonLeftSw(&_buttonLeftHw, config.debounceMs),
       _boilerPressure(&_pressureADC, pressureScalar),
+      _weightSensor(nullptr), // TODO: Wire actual weight source if available
       _boilerTemp(&_boilerPressure),
-      _shotTimer(config.minShotDuration),
+      _manualPumpTimer(),
+      _taredWeight(&_weightSensor),
       _wifi(nullptr),
       _ota(nullptr),
       _warmingUpBlocker(nullptr) {
-    _themes.push_back(&_defaultTheme);
-    _themes.push_back(&_candyTheme);
-    _themes.push_back(&_christmasTheme);
+    
+    _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
 
-    // Register sensors with the dispatcher
+    // ONLY Physical Sensors are registered for polling
     _dispatcher.provide<BoilerPressureTag>(&_boilerPressure);
-    _dispatcher.provide<BoilerTempTag>(&_boilerTemp);
-    _dispatcher.provide<ShotTimeTag>(&_shotTimer);
+    _dispatcher.provide<WeightTag>(&_weightSensor);
+    
+    // Logical Components (BoilerTemp, ShotTime, TaredWeight) 
+    // are NOT registered here. They are pushed by ScaleLogic.
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {

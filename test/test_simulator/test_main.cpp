@@ -12,7 +12,7 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
-#include "../../lib/Sensors/Hardware/ShotTimer.cpp"
+#include "../../lib/Logic/ManualPumpTimer.h"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
@@ -34,8 +34,8 @@
 #include <iomanip>
 
 // Headers for virtual sensors
-#include "../../lib/Sensors/Virtual/BoilerTemperature.h"
-#include "../../lib/Sensors/Virtual/TaredWeight.h"
+#include "../../lib/Logic/BoilerTemperature.h"
+#include "../../lib/Logic/TaredWeight.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -45,10 +45,6 @@ struct ThemeInfo {
     ITheme* theme;
 };
 
-struct SensorInfo {
-    std::string name;
-    ISensor* sensor;
-};
 
 struct BlockerInfo {
     std::string name;
@@ -65,7 +61,7 @@ struct BlockerInfo {
 
 struct DocEntry {
     std::string name;
-    ISensor* sensor;
+    std::function<SensorMetadata()> getMetadata;
     std::function<IWidget*()> createSensorWidget;
     std::function<IWidget*()> createGaugeWidget;
     std::function<void(SensorDispatcher*)> registerFunc;
@@ -87,6 +83,17 @@ void ensure_dir(const std::string& path) {
     mkdir(path.c_str(), 0777);
 }
 
+template<typename Tag>
+DocEntry createEntry(std::string name, HardwareSensor* hw = nullptr) {
+    return {
+        name,
+        []() { return Tag::getMetadata(); },
+        []() { return new SensorWidget<Tag>(); },
+        []() { return new GaugeWidget<Tag>(); },
+        [hw](SensorDispatcher* d) { if (hw) d->provide<Tag>(hw); }
+    };
+}
+
 void test_generate_examples() {
     HeadlessDriver::init(240, 135);
     
@@ -100,36 +107,12 @@ void test_generate_examples() {
     WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
 
     std::vector<DocEntry> docEntries = {
-        {
-            "BoilerPressure", bp, 
-            []() { return new SensorWidget<BoilerPressureTag>(); },
-            []() { return new GaugeWidget<BoilerPressureTag>(); },
-            [&](SensorDispatcher* d) { d->provide<BoilerPressureTag>(bp); }
-        },
-        {
-            "BoilerTemperature", new BoilerTemperature(bp),
-            []() { return new SensorWidget<BoilerTempTag>(); },
-            []() { return new GaugeWidget<BoilerTempTag>(); },
-            [&](SensorDispatcher* d) { d->provide<BoilerTempTag>(new BoilerTemperature(bp)); }
-        },
-        {
-            "ShotTimer", new ShotTimer(10.0),
-            []() { return new SensorWidget<ShotTimeTag>(); },
-            []() { return new StatusWidget<ShotTimeTag>(); }, // Use StatusWidget for timer
-            [&](SensorDispatcher* d) { d->provide<ShotTimeTag>(new ShotTimer(10.0)); }
-        },
-        {
-            "WeightSensor", ws,
-            []() { return new SensorWidget<WeightTag>(); },
-            []() { return new GaugeWidget<WeightTag>(); },
-            [&](SensorDispatcher* d) { d->provide<WeightTag>(ws); }
-        },
-        {
-            "TaredWeight", new TaredWeight(ws),
-            []() { return new SensorWidget<TaredWeightTag>(); },
-            []() { return new GaugeWidget<TaredWeightTag>(); },
-            [&](SensorDispatcher* d) { d->provide<TaredWeightTag>(new TaredWeight(ws)); }
-        }
+        createEntry<BoilerPressureTag>("BoilerPressure", bp),
+        createEntry<BoilerTempTag>("BoilerTemperature"),
+        createEntry<ShotTimeTag>("ManualPumpTimer"),
+        createEntry<LastValidShotTag>("LastValidShot"),
+        createEntry<WeightTag>("WeightSensor", ws),
+        createEntry<TaredWeightTag>("TaredWeight")
     };
 
     SensorDispatcher dispatcher;
@@ -193,7 +176,7 @@ void test_generate_examples() {
         std::string sensorDir = "lib/Sensors/examples/" + entry.name;
         ensure_dir(sensorDir);
 
-        SensorMetadata meta = entry.sensor->getMetadata();
+        SensorMetadata meta = entry.getMetadata();
         docs.push_back({entry.name, "Visualizing " + entry.name + " data.", meta});
 
         std::ofstream sensorReadme(sensorDir + "/README.md");
@@ -370,7 +353,8 @@ void test_generate_examples() {
     
     // Cleanup
     for(auto& t : themes) delete t.theme;
-    for(auto& s : docEntries) delete s.sensor;
+    delete bp;
+    delete ws;
     for(auto& b : blockers) delete b.blocker;
 }
 

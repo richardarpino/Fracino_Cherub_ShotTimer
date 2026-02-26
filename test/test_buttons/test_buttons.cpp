@@ -58,7 +58,7 @@ void test_theme_manager_uses_switch_edge() {
 }
 
 void test_factory_provides_dual_buttons() {
-    MachineConfig config = {"host", "ssid", "pass", 50, 10.0f};
+    MachineConfig config = {"host", "ssid", "pass", 50};
     MachineFactory factory(config);
     
     ISwitchProvider* provider = &factory;

@@ -2,7 +2,7 @@
 #define IMACHINE_PROVIDER_H
 
 #include <vector>
-#include "ISensor.h"
+#include "SensorTypes.h"
 #include "ISwitch.h"
 #include "IBlocker.h"
 #include "ISensorRegistry.h"
@@ -16,7 +16,6 @@ struct MachineConfig {
     const char* wifiSsid;
     const char* wifiPassword;
     unsigned long debounceMs;
-    float minShotDuration;
 };
 
 class ITheme;
@@ -27,7 +26,6 @@ class ITheme;
 class ISensorProvider {
 public:
     virtual ~ISensorProvider() = default;
-    virtual ISensor* getShotTimer() = 0;
     virtual ISensorRegistry* getRegistry() = 0;
 };
 
