@@ -1,9 +1,9 @@
 #include <unity.h>
 #include "Hardware/BoilerPressure.h"
 #include "Hardware/HardwareSwitch.h"
-#include "Virtual/BoilerTemperature.h"
-#include "Virtual/TaredWeight.h"
-#include "Virtual/DebouncedSwitch.h"
+#include "Logic/BoilerTemperature.h"
+#include "Logic/TaredWeight.h"
+#include "Sensors/Virtual/DebouncedSwitch.h"
 #include "Hardware/WeightSensor.h"
 #include "../_common/MockRawSource.h"
 #include "../_common/stubs/Arduino.h"

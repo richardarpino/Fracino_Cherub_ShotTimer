@@ -12,7 +12,7 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
-#include "../../lib/Sensors/Virtual/ManualPumpTimer.h"
+#include "../../lib/Logic/ManualPumpTimer.h"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
@@ -34,8 +34,8 @@
 #include <iomanip>
 
 // Headers for virtual sensors
-#include "../../lib/Sensors/Virtual/BoilerTemperature.h"
-#include "../../lib/Sensors/Virtual/TaredWeight.h"
+#include "../../lib/Logic/BoilerTemperature.h"
+#include "../../lib/Logic/TaredWeight.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -65,7 +65,7 @@ struct BlockerInfo {
 
 struct DocEntry {
     std::string name;
-    ISensor* sensor;
+    std::function<SensorMetadata()> getMetadata;
     std::function<IWidget*()> createSensorWidget;
     std::function<IWidget*()> createGaugeWidget;
     std::function<void(SensorDispatcher*)> registerFunc;
@@ -99,36 +99,40 @@ void test_generate_examples() {
     BoilerPressure* bp = new BoilerPressure(nullptr);
     WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
 
+    BoilerTemperature* bt = new BoilerTemperature(bp);
+    ManualPumpTimer* mpt = new ManualPumpTimer();
+    TaredWeight* tw = new TaredWeight(ws);
+
     std::vector<DocEntry> docEntries = {
         {
-            "BoilerPressure", bp, 
+            "BoilerPressure", [bp]() { return bp->getMetadata(); }, 
             []() { return new SensorWidget<BoilerPressureTag>(); },
             []() { return new GaugeWidget<BoilerPressureTag>(); },
             [&](SensorDispatcher* d) { d->provide<BoilerPressureTag>(bp); }
         },
         {
-            "BoilerTemperature", new BoilerTemperature(bp),
+            "BoilerTemperature", [bt]() { return bt->getMetadata(); },
             []() { return new SensorWidget<BoilerTempTag>(); },
             []() { return new GaugeWidget<BoilerTempTag>(); },
-            [&](SensorDispatcher* d) { d->provide<BoilerTempTag>(new BoilerTemperature(bp)); }
+            [&](SensorDispatcher* d) { /* Logic component - no provider needed */ }
         },
         {
-            "ManualPumpTimer", new ManualPumpTimer(),
+            "ManualPumpTimer", [mpt]() { return mpt->getMetadata(); },
             []() { return new SensorWidget<ShotTimeTag>(); },
             []() { return new StatusWidget<ShotTimeTag>(); }, 
-            [&](SensorDispatcher* d) { d->provide<ShotTimeTag>(new ManualPumpTimer()); }
+            [&](SensorDispatcher* d) { /* Logic component - no provider needed */ }
         },
         {
-            "WeightSensor", ws,
+            "WeightSensor", [ws]() { return ws->getMetadata(); },
             []() { return new SensorWidget<WeightTag>(); },
             []() { return new GaugeWidget<WeightTag>(); },
             [&](SensorDispatcher* d) { d->provide<WeightTag>(ws); }
         },
         {
-            "TaredWeight", new TaredWeight(ws),
+            "TaredWeight", [tw]() { return tw->getMetadata(); },
             []() { return new SensorWidget<TaredWeightTag>(); },
             []() { return new GaugeWidget<TaredWeightTag>(); },
-            [&](SensorDispatcher* d) { d->provide<TaredWeightTag>(new TaredWeight(ws)); }
+            [&](SensorDispatcher* d) { /* Logic component - no provider needed */ }
         }
     };
 
@@ -193,7 +197,7 @@ void test_generate_examples() {
         std::string sensorDir = "lib/Sensors/examples/" + entry.name;
         ensure_dir(sensorDir);
 
-        SensorMetadata meta = entry.sensor->getMetadata();
+        SensorMetadata meta = entry.getMetadata();
         docs.push_back({entry.name, "Visualizing " + entry.name + " data.", meta});
 
         std::ofstream sensorReadme(sensorDir + "/README.md");
@@ -370,7 +374,11 @@ void test_generate_examples() {
     
     // Cleanup
     for(auto& t : themes) delete t.theme;
-    for(auto& s : docEntries) delete s.sensor;
+    delete bp;
+    delete ws;
+    delete bt;
+    delete mpt;
+    delete tw;
     for(auto& b : blockers) delete b.blocker;
 }
 

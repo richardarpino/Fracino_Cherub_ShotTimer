@@ -1,7 +1,7 @@
 #ifndef MOCK_RAW_SOURCE_H
 #define MOCK_RAW_SOURCE_H
 
-#include "../lib/Interfaces/ISensor.h"
+#include "../lib/Interfaces/SensorTypes.h"
 
 /**
  * Mock implementation of IRawSource for unit testing.

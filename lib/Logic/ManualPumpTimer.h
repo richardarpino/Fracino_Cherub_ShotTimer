@@ -2,24 +2,23 @@
 #define MANUAL_PUMP_TIMER_H
 
 #include <Arduino.h>
-#include "../../Interfaces/ISensor.h"
+#include "../Interfaces/SensorTypes.h"
 
 /**
- * A Virtual Sensor that tracks pump duration.
- * Simple SRP: It only knows how to count elapsed time between start() and stop().
+ * A logical component that tracks pump duration.
+ * Note: No longer an ISensor. Orchestrators publish its results to the Registry.
  */
-class ManualPumpTimer : public ISensor {
+class ManualPumpTimer {
 public:
     ManualPumpTimer() : _startTime(0), _isRunning(false), _lastDuration(0.0) {}
 
-    // ISensor Implementation
-    Reading getReading() override {
+    Reading getReading() {
         float time = _isRunning ? (millis() - _startTime) / 1000.0f : _lastDuration;
         String status = _isRunning ? "RUNNING" : "READY";
         return Reading(time, "SECS", status, 1, false);
     }
 
-    SensorMetadata getMetadata() override {
+    static SensorMetadata getMetadata() {
         return SensorMetadata(
             Reading(0.0f, "SECS", "READY", 1, false),
             Reading(60.0f, "SECS", "RUNNING", 1, false),
@@ -28,7 +27,6 @@ public:
         );
     }
 
-    // Control API
     void start() {
         _isRunning = true;
         _startTime = millis();

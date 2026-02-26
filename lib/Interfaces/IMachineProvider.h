@@ -2,7 +2,7 @@
 #define IMACHINE_PROVIDER_H
 
 #include <vector>
-#include "ISensor.h"
+#include "SensorTypes.h"
 #include "ISwitch.h"
 #include "IBlocker.h"
 #include "ISensorRegistry.h"

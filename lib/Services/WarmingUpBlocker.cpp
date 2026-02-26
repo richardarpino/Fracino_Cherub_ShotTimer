@@ -1,7 +1,7 @@
 #include "WarmingUpBlocker.h"
 #include "../Utils/StringUtils.h"
 
-WarmingUpBlocker::WarmingUpBlocker(ISensor* pressureSensor, unsigned long timeoutMs)
+WarmingUpBlocker::WarmingUpBlocker(HardwareSensor* pressureSensor, unsigned long timeoutMs)
     : _pressureSensor(pressureSensor), _lastPressure(0.0f), 
       _startTime(millis()), _timeoutMs(timeoutMs), 
       _isFinished(false), _wasFinished(false),

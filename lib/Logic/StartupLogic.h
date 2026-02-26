@@ -1,7 +1,7 @@
 #ifndef STARTUP_LOGIC_H
 #define STARTUP_LOGIC_H
 
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/SensorTypes.h"
 #include "../Interfaces/ISwitch.h"
 #include "../Interfaces/IBlocker.h"
 

@@ -1,7 +1,7 @@
 #ifndef ISENSOR_REGISTRY_H
 #define ISENSOR_REGISTRY_H
 
-#include "ISensor.h"
+#include "SensorTypes.h"
 
 /**
  * Interface for the centralized sensor data registry.
@@ -23,6 +23,15 @@ public:
     }
 
     /**
+     * Publishes a logical reading to the registry cache.
+     * Used by orchestrators to provide non-physical data.
+     */
+    template<typename T>
+    void publish(Reading reading) {
+        setReadingByIndex(getTypeIndex<T>(), reading);
+    }
+
+    /**
      * Returns the static metadata for a specific Type-Tag.
      */
     template<typename T>
@@ -33,6 +42,7 @@ public:
 protected:
     // Internal bridging to allow templates to work with virtual methods
     virtual Reading getReadingByIndex(int index) = 0;
+    virtual void setReadingByIndex(int index, Reading reading) = 0;
     virtual SensorMetadata getMetadataByIndex(int index) = 0;
     
     // Static type-to-index mapping trick

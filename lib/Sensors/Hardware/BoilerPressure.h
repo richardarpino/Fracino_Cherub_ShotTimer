@@ -2,14 +2,13 @@
 #define BOILER_PRESSURE_H
 
 #include <Arduino.h>
-#include "../../Interfaces/FilteredSensor.h"
+#include "../../Interfaces/HardwareSensor.h"
 
-class BoilerPressure : public FilteredSensor {
+class BoilerPressure : public HardwareSensor {
 public:
     BoilerPressure(IRawSource* source, float scalar = 1.0f) 
-        : FilteredSensor(0.05f, 0.05f), // alpha=0.05 (Smoother), hysteresis=0.05 Bar (Display stability)
-          _source(source), _lastSampleTime(0), _scalar(scalar) {}
-
+        : HardwareSensor(source, 0.05f, 0.05f), 
+          _lastSampleTime(0), _scalar(scalar) {}
 
     // ISensor Implementation
     Reading getReading() override {
@@ -55,7 +54,6 @@ public:
     }
 
 private:
-    IRawSource* _source;
     unsigned long _lastSampleTime;
     float _scalar;
 

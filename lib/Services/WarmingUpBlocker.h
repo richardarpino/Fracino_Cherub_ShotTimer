@@ -2,13 +2,13 @@
 #define WARMING_UP_BLOCKER_H
 
 #include "../Interfaces/IBlocker.h"
-#include "../Interfaces/ISensor.h"
+#include "../Interfaces/HardwareSensor.h"
 
 #include <vector>
 
 class WarmingUpBlocker : public IBlocker {
 public:
-    WarmingUpBlocker(ISensor* pressureSensor, unsigned long timeoutMs = 600000);
+    WarmingUpBlocker(HardwareSensor* pressureSensor, unsigned long timeoutMs = 600000);
     // IBlocker Implementation
     BlockerStatus getStatus() const override;
 
@@ -20,7 +20,7 @@ public:
     bool justStopped() const override;
 
 private:
-    ISensor* _pressureSensor;
+    HardwareSensor* _pressureSensor;
     float _lastPressure;
     unsigned long _startTime;
     unsigned long _timeoutMs;

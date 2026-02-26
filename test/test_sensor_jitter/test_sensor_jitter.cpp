@@ -1,6 +1,6 @@
 #include <unity.h>
 #include "Hardware/BoilerPressure.h"
-#include "Virtual/BoilerTemperature.h"
+#include "Logic/BoilerTemperature.h"
 #include "../_common/MockRawSource.h"
 #include "../_common/stubs/Arduino.h"
 #include "../_common/stubs/Arduino.cpp"

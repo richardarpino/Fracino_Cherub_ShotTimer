@@ -1,11 +1,11 @@
 #include <unity.h>
 #include "Hardware/BoilerPressure.h"
-#include "Virtual/ManualPumpTimer.h"
+#include "Logic/ManualPumpTimer.h"
 #include "Hardware/WeightSensor.h"
 #include "Hardware/HardwareSwitch.h"
-#include "ScaleLogic.h"
+#include "Logic/ScaleLogic.h"
 #include "Logic/ScaleLogic.cpp"
-#include "Virtual/DebouncedSwitch.h"
+#include "Sensors/Virtual/DebouncedSwitch.h"
 #include "../_common/MockRawSource.h"
 #include "../_common/stubs/Arduino.h"
 #include "../_common/stubs/Arduino.cpp"
@@ -43,7 +43,7 @@ void test_shot_timer_logic() {
     HardwareSwitch pumpHw(&mock, true);
     DebouncedSwitch pumpSw(&pumpHw, 150);
     ManualPumpTimer timer;
-    ScaleLogic logic(&pumpSw, &timer, nullptr);
+    ScaleLogic logic(&pumpSw, &timer, nullptr, nullptr, nullptr);
     
     setMillis(0);
     mock.setRawValue(HIGH); pumpSw.update(); logic.update();

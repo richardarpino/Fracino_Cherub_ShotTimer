@@ -2,11 +2,13 @@
 #include "Logic/ScaleLogic.h"
 #include "Logic/ScaleLogic.cpp"
 #include "Logic/ManualPumpTimer.h"
-#include "Logic/ManualPumpTimer.cpp"
+#include "Logic/BoilerTemperature.h"
 #include "Hardware/HardwareSwitch.h"
-#include "Virtual/DebouncedSwitch.h"
-#include "Virtual/TaredWeight.h"
+#include "Sensors/Virtual/DebouncedSwitch.h"
+#include "Logic/TaredWeight.h"
 #include "Hardware/WeightSensor.h"
+#include "Logic/SensorDispatcher.h"
+#include "Logic/SensorDispatcher.cpp"
 #include "../_common/MockRawSource.h"
 #include "../_common/stubs/Arduino.h"
 #include "../_common/stubs/Arduino.cpp"
@@ -22,7 +24,8 @@ void test_scale_logic() {
     WeightSensor weightSensor(&weightMock, 0.001f);
     TaredWeight taredWeight(&weightSensor);
 
-    ScaleLogic logic(&pumpSw, &timer, &taredWeight);
+    SensorDispatcher registry;
+    ScaleLogic logic(&pumpSw, &timer, &taredWeight, nullptr, &registry);
 
     setMillis(0);
     mockPin.setRawValue(HIGH); // Pump OFF
@@ -54,7 +57,8 @@ void test_scale_logic_edge_consumption() {
     HardwareSwitch pumpHw(&mockPin, true);
     DebouncedSwitch pumpSw(&pumpHw, 150);
     ManualPumpTimer timer;
-    ScaleLogic logic(&pumpSw, &timer, nullptr);
+    SensorDispatcher registry;
+    ScaleLogic logic(&pumpSw, &timer, nullptr, nullptr, &registry);
 
     setMillis(0);
     mockPin.setRawValue(HIGH);

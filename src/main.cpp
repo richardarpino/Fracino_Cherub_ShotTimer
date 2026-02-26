@@ -25,7 +25,7 @@ MachineFactory factory(config);
 
 // --- Coordination & Logic ---
 StartupLogic startupLogic(&factory);
-ScaleLogic scaleLogic(factory.getPump(), factory.getShotTimer(), nullptr); 
+ScaleLogic scaleLogic(factory.getPump(), factory.getShotTimer(), factory.getTaredWeight(), factory.getBoilerTemp(), factory.getRegistry()); 
 
 ShotDisplay shotDisplay;
 ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
