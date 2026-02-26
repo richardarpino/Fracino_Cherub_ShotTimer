@@ -1,6 +1,6 @@
 # Agentic Rules of Engagement
 
-This document is specifically for AI Agentic systems (like Antigravity) contributing to this repository. These rules ensure that AI efficiency doesn't compromise the project's architectural integrity.
+This document is specifically for AI Agentic systems (like Antigravity) contributing to this repository. These rules provide **Guidance** to ensure efficiency without compromising integrity. **Pragmatism** and **Evolution** are favored over dogma.
 
 ## 1. Contextual Awareness
 *   **Read Before Write**: Before proposing any structural change, you **must** read `docs/principles.md`.

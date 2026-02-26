@@ -1,6 +1,13 @@
 # Architectural Pillars
 
-These principles define the structural integrity of the codebase. Adhering to these ensures that hardware changes don't break logic, and logic changes don't crash the UI.
+These principles provide **Guidance** rather than rigid Rules. The goal is structural integrity, but we value **Evolution** over perfection. It is often better to put something in the "wrong" place to see how it behaves and then refactor later once the pattern emerges.
+
+## 0. Rule Zero: Pragmatic Evolution
+**The Guidance**: Abstractions are discovered, not manufactured.
+
+*   **Temporary Coupling**: It is okay to couple components or place logic in suboptimal locations during feature exploration.
+*   **Divergence points to Discovery**: When the code feels "messy" or "wrong," it is a signal that a new abstraction is trying to emerge. This is when we refactor into the patterns below.
+*   **Refinement over Correctness**: We prioritize working code that can be easily split apart later over complex abstractions built too early.
 
 ## 1. Domain-Driven Design (DDD) & Ubiquitous Language
 **The Rule**: We use a shared, ubiquitous language derived from the espresso machine domain (`WarmingUp`, `ShotTimer`, `PumpSignal`).
