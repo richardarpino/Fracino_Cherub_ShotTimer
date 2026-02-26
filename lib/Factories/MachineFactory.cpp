@@ -4,7 +4,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     : _config(config),
       _pressureADC(pressurePin),
       _pumpInput(pumpPin),
-      _buttonRightInput(buttonPin),
+      _buttonRightInput(buttonRightPin),
       _buttonLeftInput(buttonLeftPin),
       _pumpHw(&_pumpInput, true),
       _pumpSw(&_pumpHw, config.debounceMs),
