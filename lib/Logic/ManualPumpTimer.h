@@ -18,14 +18,6 @@ public:
         return Reading(time, "SECS", status, 1, false);
     }
 
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "SECS", "READY", 1, false),
-            Reading(60.0f, "SECS", "RUNNING", 1, false),
-            Reading(0.0f, "SECS", "READY", 1, false),
-            Reading(0.0f, "SECS", "ERR", 1, true)
-        );
-    }
 
     void start() {
         _isRunning = true;

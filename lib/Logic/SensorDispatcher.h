@@ -28,7 +28,6 @@ public:
 protected:
     Reading getReadingByIndex(int index) override;
     void setReadingByIndex(int index, Reading reading) override;
-    SensorMetadata getMetadataByIndex(int index) override;
 
 private:
     void ensureCapacity(int index);

@@ -22,12 +22,6 @@ void SensorDispatcher::setReadingByIndex(int index, Reading reading) {
     _cache[index] = reading;
 }
 
-SensorMetadata SensorDispatcher::getMetadataByIndex(int index) {
-    if (index >= 0 && (size_t)index < _sensors.size() && _sensors[index]) {
-        return _sensors[index]->getMetadata();
-    }
-    return SensorMetadata(); 
-}
 
 void SensorDispatcher::ensureCapacity(int index) {
     if ((size_t)index >= _sensors.size()) {

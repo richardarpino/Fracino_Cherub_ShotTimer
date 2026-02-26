@@ -21,7 +21,6 @@ public:
      * Physical sensors must provide metadata and their current processed reading.
      */
     virtual Reading getReading() = 0;
-    virtual SensorMetadata getMetadata() = 0;
 
     /**
      * Returns the high-precision filtered value before hysteresis.

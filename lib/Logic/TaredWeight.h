@@ -21,14 +21,6 @@ public:
         return r;
     }
 
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(-2000.0f, "g", "WEIGHT", 1, false), 
-            Reading(2000.0f, "g", "WEIGHT", 1, false), 
-            Reading(0.0f, "g", "WEIGHT", 1, false), 
-            Reading(0.0f, "g", "WEIGHT ERR", 1, true)
-        );
-    }
     
     void tare() {
         if (_base) {

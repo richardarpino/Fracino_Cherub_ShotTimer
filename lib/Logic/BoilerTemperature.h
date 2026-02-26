@@ -27,14 +27,6 @@ public:
         return Reading(getStableDisplayValue(), "C", "TEMP", 0, false);
     }
 
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(25.0f, "C", "TEMP", 0, false),
-            Reading(150.0f, "C", "TEMP", 0, false),
-            Reading(25.0f, "C", "TEMP", 0, false),
-            Reading(0.0f, "C", "TEMP ERR", 0, true)
-        );
-    }
 
 private:
     BoilerPressure* _pressureSensor;

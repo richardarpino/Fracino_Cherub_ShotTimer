@@ -14,6 +14,7 @@ This document is specifically for AI Agentic systems (like Antigravity) contribu
 *   **Respect the Boundary**: Never bypass an interface (`ISwitch`, `IBlocker`, `IRawSource`) to access hardware directly from logic.
 *   **Sensor = Hardware**: All physical observers must inherit from `HardwareSensor`. Never inherit this for logical calculations.
 *   **Registry Producers**: New logic components must be "Producers." They should calculate data and utilize `ISensorRegistry::publish<Tag>()` to make it available to the UI.
+*   **Tags = Contracts**: Always define `static SensorMetadata getMetadata()` within the Type-Tag. This is where scaling and display metadata live.
 *   **Maintain SRP**: If you find yourself adding history-tracking to a logic component or state-logic to a sensor, you are breaking SRP. Create a new Orchestrator in `lib/Logic/` instead.
 *   **MachineFactory (DI)**: All object instantiation should happen in the `MachineFactory`. Always favor constructor injection over direct instantiation of dependencies.
 

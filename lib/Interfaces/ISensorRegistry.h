@@ -36,14 +36,13 @@ public:
      */
     template<typename T>
     SensorMetadata getMetadata() {
-        return getMetadataByIndex(getTypeIndex<T>());
+        return T::getMetadata();
     }
 
 protected:
     // Internal bridging to allow templates to work with virtual methods
     virtual Reading getReadingByIndex(int index) = 0;
     virtual void setReadingByIndex(int index, Reading reading) = 0;
-    virtual SensorMetadata getMetadataByIndex(int index) = 0;
     
     // Static type-to-index mapping trick
     static int getNextIndex() {

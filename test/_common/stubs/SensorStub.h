@@ -9,7 +9,6 @@ public:
     SensorStub() : HardwareSensor(nullptr) {}
     void setReading(const Reading& reading) { _reading = reading; }
     Reading getReading() override { return _reading; }
-    SensorMetadata getMetadata() override { return SensorMetadata(); }
     void update() {}
 
 private:

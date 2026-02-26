@@ -22,14 +22,6 @@ public:
         return Reading(getStableDisplayValue(), "g", "WEIGHT", 1, false);
     }
 
-    SensorMetadata getMetadata() override {
-        return SensorMetadata(
-            Reading(0.0f, "g", "WEIGHT", 1, false),
-            Reading(2000.0f, "g", "WEIGHT", 1, false),
-            Reading(0.0f, "g", "WEIGHT", 1, false),
-            Reading(0.0f, "g", "WEIGHT ERR", 1, true)
-        );
-    }
 
 private:
     float _gramsPerUnit;

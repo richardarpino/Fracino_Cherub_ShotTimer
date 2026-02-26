@@ -15,10 +15,12 @@ We moved to a **Registry Producer Pattern**:
 2.  **Logic Components** are stripped of sensor interfaces. They are manipulated by **Orchestrators** (e.g., `ScaleLogic`).
 3.  **The Registry** (`ISensorRegistry`) becomes the single source of truth for both physical and logical data.
 4.  **Producers**: Orchestrators are responsible for calculating high-level results and **pushing** them into the Registry cache via `publish<Tag>()`.
+5.  **Tags as Domain Contracts**: Type-Tags are no longer dumb markers; they carry static `SensorMetadata`. Documentation and UI Widgets use the Tag to determine scaling, units, and ranges.
 
 ## Consequences
 - **Positive**: Strict bifurcation between "Hardware" (observers) and "Logic" (calculators).
 - **Positive**: UI widgets are completely decoupled; they only know "Type Tags" and the Registry.
+- **Positive**: Meta-restoration; by moving metadata to Tags, logical components (like `ShotTimer`) regain their descriptive metadata without needing an instance.
 - **Positive**: Frame-synchronized data; the Registry cache ensures all components see the same values for the duration of the loop.
 - **Negative**: Adds a "Registry Registration" step in the `MachineFactory` or Orchestrator wiring.
 - **Negative**: Logic components now require an explicit "Update/Publish" cycle.

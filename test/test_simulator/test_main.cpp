@@ -45,10 +45,6 @@ struct ThemeInfo {
     ITheme* theme;
 };
 
-struct SensorInfo {
-    std::string name;
-    ISensor* sensor;
-};
 
 struct BlockerInfo {
     std::string name;
@@ -87,6 +83,17 @@ void ensure_dir(const std::string& path) {
     mkdir(path.c_str(), 0777);
 }
 
+template<typename Tag>
+DocEntry createEntry(std::string name, HardwareSensor* hw = nullptr) {
+    return {
+        name,
+        []() { return Tag::getMetadata(); },
+        []() { return new SensorWidget<Tag>(); },
+        []() { return new GaugeWidget<Tag>(); },
+        [hw](SensorDispatcher* d) { if (hw) d->provide<Tag>(hw); }
+    };
+}
+
 void test_generate_examples() {
     HeadlessDriver::init(240, 135);
     
@@ -99,41 +106,12 @@ void test_generate_examples() {
     BoilerPressure* bp = new BoilerPressure(nullptr);
     WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
 
-    BoilerTemperature* bt = new BoilerTemperature(bp);
-    ManualPumpTimer* mpt = new ManualPumpTimer();
-    TaredWeight* tw = new TaredWeight(ws);
-
     std::vector<DocEntry> docEntries = {
-        {
-            "BoilerPressure", [bp]() { return bp->getMetadata(); }, 
-            []() { return new SensorWidget<BoilerPressureTag>(); },
-            []() { return new GaugeWidget<BoilerPressureTag>(); },
-            [&](SensorDispatcher* d) { d->provide<BoilerPressureTag>(bp); }
-        },
-        {
-            "BoilerTemperature", [bt]() { return bt->getMetadata(); },
-            []() { return new SensorWidget<BoilerTempTag>(); },
-            []() { return new GaugeWidget<BoilerTempTag>(); },
-            [&](SensorDispatcher* d) { /* Logic component - no provider needed */ }
-        },
-        {
-            "ManualPumpTimer", [mpt]() { return mpt->getMetadata(); },
-            []() { return new SensorWidget<ShotTimeTag>(); },
-            []() { return new StatusWidget<ShotTimeTag>(); }, 
-            [&](SensorDispatcher* d) { /* Logic component - no provider needed */ }
-        },
-        {
-            "WeightSensor", [ws]() { return ws->getMetadata(); },
-            []() { return new SensorWidget<WeightTag>(); },
-            []() { return new GaugeWidget<WeightTag>(); },
-            [&](SensorDispatcher* d) { d->provide<WeightTag>(ws); }
-        },
-        {
-            "TaredWeight", [tw]() { return tw->getMetadata(); },
-            []() { return new SensorWidget<TaredWeightTag>(); },
-            []() { return new GaugeWidget<TaredWeightTag>(); },
-            [&](SensorDispatcher* d) { /* Logic component - no provider needed */ }
-        }
+        createEntry<BoilerPressureTag>("BoilerPressure", bp),
+        createEntry<BoilerTempTag>("BoilerTemperature"),
+        createEntry<ShotTimeTag>("ManualPumpTimer"),
+        createEntry<WeightTag>("WeightSensor", ws),
+        createEntry<TaredWeightTag>("TaredWeight")
     };
 
     SensorDispatcher dispatcher;
@@ -376,9 +354,6 @@ void test_generate_examples() {
     for(auto& t : themes) delete t.theme;
     delete bp;
     delete ws;
-    delete bt;
-    delete mpt;
-    delete tw;
     for(auto& b : blockers) delete b.blocker;
 }
 

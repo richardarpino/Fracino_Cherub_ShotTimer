@@ -26,6 +26,7 @@ These principles define the structural integrity of the codebase. Adhering to th
 **The Rule**: Sensors and Switches are passive data pipes. Behavior logic must reside in `Logic/` orchestrators which act as **Registry Producers**.
 
 *   **The Pattern**: Instead of components being "polled" by the UI, logic modules coordinate hardware and **push** high-level machine data (`ShotTimer`, `TaredWeight`) into the `ISensorRegistry`.
+*   **Type Tags as Domain Contracts**: Tags (e.g., `BoilerPressureTag`) are not just markers. They contain static `SensorMetadata` that defines the measurement limits, units, and nominal values. This ensures the Registry and UI always have a consistent "Contract" for the data.
 *   **Benefit**: The UI remains completely decoupled. It pulls from the Registry by a `TypeTag`, oblivious to whether the data came from a physical pin or a complex logical calculation.
 *   **Verification**: This enables 100% test coverage in `native` by verifying that the correct data is "deposited" into the Registry during the update loop.
 
