@@ -51,7 +51,7 @@ lv_obj_t* GaugeWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     _tick_len = isFull ? 10 : (isHalf ? 8 : 6);
     _label_gap = isFull ? 18 : (isHalf ? 12 : 4);
     
-    uint16_t needle_width = isFull ? 8 : (isHalf ? 6 : 4);
+    uint16_t needle_width = isFull ? 4 : (isHalf ? 3 : 2);
     const lv_font_t* dial_font = (isFull || isHalf) ? &lv_font_montserrat_14 : &lv_font_montserrat_12;
     const lv_font_t* unit_font = isFull ? &lv_font_montserrat_18 : (isHalf ? &lv_font_montserrat_14 : &lv_font_montserrat_12);
 
