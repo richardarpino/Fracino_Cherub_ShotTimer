@@ -110,6 +110,7 @@ void test_generate_examples() {
         createEntry<BoilerPressureTag>("BoilerPressure", bp),
         createEntry<BoilerTempTag>("BoilerTemperature"),
         createEntry<ShotTimeTag>("ManualPumpTimer"),
+        createEntry<LastValidShotTag>("LastValidShot"),
         createEntry<WeightTag>("WeightSensor", ws),
         createEntry<TaredWeightTag>("TaredWeight")
     };

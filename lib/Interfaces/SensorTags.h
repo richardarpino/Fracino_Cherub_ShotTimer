@@ -71,4 +71,15 @@ struct WiFiStrengthTag {
     }
 };
 
+struct LastValidShotTag {
+    static SensorMetadata getMetadata() {
+        return SensorMetadata(
+            Reading(0.0f, "SECS", "LAST SHOT", 1, false),
+            Reading(60.0f, "SECS", "LAST SHOT", 1, false),
+            Reading(0.0f, "SECS", "LAST SHOT", 1, false),
+            Reading(0.0f, "SECS", "ERR", 1, true)
+        );
+    }
+};
+
 #endif

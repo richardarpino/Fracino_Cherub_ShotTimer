@@ -25,7 +25,7 @@ void test_scale_logic() {
     TaredWeight taredWeight(&weightSensor);
 
     SensorDispatcher registry;
-    ScaleLogic logic(&pumpSw, &timer, &taredWeight, nullptr, &registry);
+    ScaleLogic logic(&pumpSw, &taredWeight, &registry);
 
     setMillis(0);
     mockPin.setRawValue(HIGH); // Pump OFF
@@ -49,16 +49,15 @@ void test_scale_logic() {
     pumpSw.update();
     logic.update();
 
-    TEST_ASSERT_TRUE(timer.getReading().value > 0.9f); 
+    // Note: Timer verification moved to test_shot_monitor
 }
 
 void test_scale_logic_edge_consumption() {
     MockRawSource mockPin;
     HardwareSwitch pumpHw(&mockPin, true);
     DebouncedSwitch pumpSw(&pumpHw, 150);
-    ManualPumpTimer timer;
     SensorDispatcher registry;
-    ScaleLogic logic(&pumpSw, &timer, nullptr, nullptr, &registry);
+    ScaleLogic logic(&pumpSw, nullptr, &registry);
 
     setMillis(0);
     mockPin.setRawValue(HIGH);
@@ -69,14 +68,10 @@ void test_scale_logic_edge_consumption() {
     mockPin.setRawValue(LOW);
     
     // 2. ScaleLogic update will now internally call pumpSw.update()
-    // and should catch the edge even if time has advanced since the raw pin changed.
     setMillis(1001); 
     logic.update();
 
-    setMillis(2001); // Advance time
-    
-    // 3. ShotTimer should have started
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, timer.getReading().value); 
+    // Verify it just ran without crashing - timer verification moved to ShotMonitor
 }
 
 int main(int argc, char **argv) {

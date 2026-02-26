@@ -2,8 +2,8 @@
 #define BOILER_TEMPERATURE_H
 
 #include "../Interfaces/SensorTypes.h"
+#include "../Interfaces/HardwareSensor.h"
 #include <cmath> 
-#include "../Sensors/Hardware/BoilerPressure.h"
 
 /**
  * Logical component that derives Temperature from Pressure.
@@ -12,7 +12,7 @@
  */
 class BoilerTemperature {
 public:
-    BoilerTemperature(BoilerPressure* pressureSensor) 
+    BoilerTemperature(HardwareSensor* pressureSensor) 
         : _pressureSensor(pressureSensor), _currentFilteredValue(0.0f), 
           _lastDisplayedValue(0.0f), _initialized(false) {}
 
@@ -29,7 +29,7 @@ public:
 
 
 private:
-    BoilerPressure* _pressureSensor;
+    HardwareSensor* _pressureSensor;
     float _currentFilteredValue;
     float _lastDisplayedValue;
     bool _initialized;

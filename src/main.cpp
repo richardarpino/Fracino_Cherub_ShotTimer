@@ -2,6 +2,8 @@
 #include "ThemeManager.h"
 #include "ShotDisplay.h"
 #include "ScaleLogic.h"
+#include "ShotMonitor.h"
+#include "BoilerMonitor.h"
 #include "StartupLogic.h"
 #include "MachineFactory.h"
 #include <vector>
@@ -25,7 +27,9 @@ MachineFactory factory(config);
 
 // --- Coordination & Logic ---
 StartupLogic startupLogic(&factory);
-ScaleLogic scaleLogic(factory.getPump(), factory.getShotTimer(), factory.getTaredWeight(), factory.getBoilerTemp(), factory.getRegistry()); 
+ShotMonitor shotMonitor(factory.getPump(), factory.getShotTimer(), factory.getRegistry());
+BoilerMonitor boilerMonitor(factory.getBoilerTemp(), factory.getRegistry());
+ScaleLogic scaleLogic(factory.getPump(), factory.getTaredWeight(), factory.getRegistry()); 
 
 ShotDisplay shotDisplay;
 ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
@@ -78,5 +82,7 @@ void loop() {
   shotDisplay.update();
 
   themeManager.update();
+  shotMonitor.update();
+  boilerMonitor.update();
   scaleLogic.update();
 }
