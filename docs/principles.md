@@ -11,9 +11,10 @@ These principles define the structural integrity of the codebase. Adhering to th
 ## 2. SOLID: Single Responsibility (SRP)
 **The Rule**: Every class must have one, and only one, reason to change.
 
-*   **Sensors**: Measure raw values and filter them. They do NOT decide state transitions.
+*   **Hardware Sensors**: Passive observers of physical signals. They inherit from `HardwareSensor`, process raw values, and apply EMA filtering. They **never** contain machine logic.
 *   **Decouplers**: `IRawSource` separates the sensor's physical measurement from its logical representation.
-*   **Blockers**: Manage a specific startup gate. They do NOT maintain permanent history (Issue #7).
+*   **Logic Components**: Derived calculators (like `BoilerTemperature`) or state orchestrators (like `ShotTimer`). They live in `lib/Logic`, use `HardwareSensor` values as inputs, and **publish** results to the `ISensorRegistry`.
+*   **Blockers**: Manage a specific startup gate.
 
 ## 3. Dependency Injection (DI) & The Factory
 **The Rule**: High-level logic modules MUST NOT instantiate their own dependencies. 
@@ -21,10 +22,12 @@ These principles define the structural integrity of the codebase. Adhering to th
 *   **MachineFactory**: This is the single source of truth for Dependency Injection. It wires the concrete hardware to the abstract logic.
 *   **Testable DI**: By injecting dependencies (like `ISensor*`) into constructors, we enable the `native` test suite to swap real hardware for stubs (`SensorStub`) instantly.
 
-## 4. Coordinator-Logic Pattern
-**The Rule**: Sensors and Switches are passive data pipes. Behavior logic must reside in `Logic/` orchestrators.
+## 4. Coordinator-Logic Pattern (Registry Producers)
+**The Rule**: Sensors and Switches are passive data pipes. Behavior logic must reside in `Logic/` orchestrators which act as **Registry Producers**.
 
-*   **Why**: By moving "Machine Logic" (like detecting a shot start or a boiler cycle) into separate classes, we can test it 100% in the `native` environment without ever touching an ESP32 or a display.
+*   **The Pattern**: Instead of components being "polled" by the UI, logic modules coordinate hardware and **push** high-level machine data (`ShotTimer`, `TaredWeight`) into the `ISensorRegistry`.
+*   **Benefit**: The UI remains completely decoupled. It pulls from the Registry by a `TypeTag`, oblivious to whether the data came from a physical pin or a complex logical calculation.
+*   **Verification**: This enables 100% test coverage in `native` by verifying that the correct data is "deposited" into the Registry during the update loop.
 
 ## 2. Passive UI (One-Way Data Flow)
 **The Rule**: UI Widgets are "Passive Consumers." They should only display data provided to them.
