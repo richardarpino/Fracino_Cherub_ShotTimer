@@ -2,7 +2,7 @@
 #define SCALE_LOGIC_H
 
 #include "../Interfaces/ISwitch.h"
-#include "../Sensors/Hardware/ShotTimer.h"
+#include "../Sensors/Virtual/ManualPumpTimer.h"
 #include "../Sensors/Virtual/TaredWeight.h"
 
 /**
@@ -11,13 +11,13 @@
  */
 class ScaleLogic {
 public:
-    ScaleLogic(ISwitch* pump, ShotTimer* timer, TaredWeight* weight);
+    ScaleLogic(ISwitch* pump, ManualPumpTimer* timer, TaredWeight* weight);
 
     void update();
 
 private:
     ISwitch* _pump;
-    ShotTimer* _timer;
+    ManualPumpTimer* _timer;
     TaredWeight* _weight;
 };
 

@@ -1,6 +1,6 @@
 #include <unity.h>
 #include "Hardware/BoilerPressure.h"
-#include "Hardware/ShotTimer.h"
+#include "Virtual/ManualPumpTimer.h"
 #include "Hardware/WeightSensor.h"
 #include "Hardware/HardwareSwitch.h"
 #include "ScaleLogic.h"
@@ -42,23 +42,26 @@ void test_shot_timer_logic() {
     MockRawSource mock;
     HardwareSwitch pumpHw(&mock, true);
     DebouncedSwitch pumpSw(&pumpHw, 150);
-    ShotTimer timer(10.0);
+    ManualPumpTimer timer;
     ScaleLogic logic(&pumpSw, &timer, nullptr);
     
     setMillis(0);
     mock.setRawValue(HIGH); pumpSw.update(); logic.update();
     
     setMillis(1000);
-    mock.setRawValue(LOW); pumpSw.update(); logic.update();
-    
-    setMillis(6000);
-    mock.setRawValue(HIGH); pumpSw.update(); logic.update();
-    TEST_ASSERT_EQUAL_FLOAT(0.0f, timer.getReading().value);
+    mock.setRawValue(LOW); pumpSw.update(); logic.update(); // Start
     
     setMillis(7000);
-    mock.setRawValue(LOW); pumpSw.update(); logic.update();
-    setMillis(19000); pumpSw.update(); logic.update(); 
-    mock.setRawValue(HIGH); setMillis(19200); pumpSw.update(); logic.update();
+    mock.setRawValue(HIGH); pumpSw.update(); logic.update(); // Stop after 6s
+    
+    // In the simplified version, the 10s rule is GONE. 
+    // So it should show 6.0s now.
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 6.0f, timer.getReading().value);
+    
+    setMillis(8000);
+    mock.setRawValue(LOW); pumpSw.update(); logic.update(); // Start again
+    setMillis(20000); pumpSw.update(); logic.update(); 
+    mock.setRawValue(HIGH); setMillis(20200); pumpSw.update(); logic.update(); // Stop after 12s
     
     TEST_ASSERT_FLOAT_WITHIN(0.2f, 12.0f, timer.getReading().value);
 }

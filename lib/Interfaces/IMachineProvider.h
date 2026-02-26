@@ -15,7 +15,6 @@ struct MachineConfig {
     const char* wifiSsid;
     const char* wifiPassword;
     unsigned long debounceMs;
-    float minShotDuration;
 };
 
 class ITheme;
@@ -28,7 +27,7 @@ public:
     virtual ~ISensorProvider() = default;
     virtual ISensor* getBoilerPressure() = 0;
     virtual ISensor* getBoilerTemp() = 0;
-    virtual ISensor* getShotTimer() = 0;
+    virtual ISensor* getManualPumpTimer() = 0;
 };
 
 /**

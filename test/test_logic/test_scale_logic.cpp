@@ -1,5 +1,5 @@
 #include <unity.h>
-#include "Hardware/ShotTimer.h"
+#include "Virtual/ManualPumpTimer.h"
 #include "Hardware/HardwareSwitch.h"
 #include "Virtual/DebouncedSwitch.h"
 #include "Virtual/TaredWeight.h"
@@ -15,7 +15,7 @@ void test_scale_logic() {
     HardwareSwitch pumpHw(&mockPin, true); // Active LOW
     DebouncedSwitch pumpSw(&pumpHw, 150);
     
-    ShotTimer timer(0.5); // 0.5s min duration for test
+    ManualPumpTimer timer; 
     
     MockRawSource weightMock;
     WeightSensor weightSensor(&weightMock, 0.001f);
@@ -52,7 +52,7 @@ void test_scale_logic_edge_consumption() {
     MockRawSource mockPin;
     HardwareSwitch pumpHw(&mockPin, true);
     DebouncedSwitch pumpSw(&pumpHw, 150);
-    ShotTimer timer(0.5);
+    ManualPumpTimer timer;
     ScaleLogic logic(&pumpSw, &timer, nullptr);
 
     setMillis(0);

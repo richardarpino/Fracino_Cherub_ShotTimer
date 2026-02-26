@@ -8,7 +8,7 @@
 #include "../Sensors/Virtual/DebouncedSwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Virtual/BoilerTemperature.h"
-#include "../Sensors/Hardware/ShotTimer.h"
+#include "../Sensors/Virtual/ManualPumpTimer.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Services/WarmingUpBlocker.h"
@@ -33,7 +33,7 @@ public:
     // ISensorProvider
     BoilerPressure* getBoilerPressure() override { return &_boilerPressure; }
     BoilerTemperature* getBoilerTemp() override { return &_boilerTemp; }
-    ShotTimer* getShotTimer() override { return &_shotTimer; }
+    ManualPumpTimer* getManualPumpTimer() override { return &_manualPumpTimer; }
 
     // ISwitchProvider
     DebouncedSwitch* getPump() override { return &_pumpSw; }
@@ -62,7 +62,7 @@ private:
     // Sensors
     BoilerPressure _boilerPressure;
     BoilerTemperature _boilerTemp;
-    ShotTimer _shotTimer;
+    ManualPumpTimer _manualPumpTimer;
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;

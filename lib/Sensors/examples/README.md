@@ -7,7 +7,7 @@ Continuous data streams visualized across different widgets and themes.
 
 - [**BoilerPressure**](BoilerPressure/README.md) - Visualizing BoilerPressure data.
 - [**BoilerTemperature**](BoilerTemperature/README.md) - Visualizing BoilerTemperature data.
-- [**ShotTimer**](ShotTimer/README.md) - Visualizing ShotTimer data.
+- [**ManualPumpTimer**](ManualPumpTimer/README.md) - Visualizing ManualPumpTimer data.
 - [**WeightSensor**](WeightSensor/README.md) - Visualizing WeightSensor data.
 - [**TaredWeight**](TaredWeight/README.md) - Visualizing TaredWeight data.
 

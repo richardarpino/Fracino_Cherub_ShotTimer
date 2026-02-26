@@ -12,7 +12,7 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
-#include "../../lib/Sensors/Hardware/ShotTimer.cpp"
+#include "../../lib/Sensors/Virtual/ManualPumpTimer.h"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
@@ -97,7 +97,7 @@ void test_generate_examples() {
     std::vector<SensorInfo> sensors = {
         {"BoilerPressure", bp},
         {"BoilerTemperature", new BoilerTemperature(bp)},
-        {"ShotTimer", new ShotTimer(10.0)},
+        {"ManualPumpTimer", new ManualPumpTimer()},
         {"WeightSensor", ws},
         {"TaredWeight", new TaredWeight(ws)}
     };

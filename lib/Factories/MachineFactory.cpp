@@ -4,7 +4,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     : _config(config),
       _pressureADC(pressurePin),
       _pumpInput(pumpPin),
-      _buttonRightInput(buttonPin),
+      _buttonRightInput(buttonRightPin),
       _buttonLeftInput(buttonLeftPin),
       _pumpHw(&_pumpInput, true),
       _pumpSw(&_pumpHw, config.debounceMs),
@@ -14,7 +14,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _buttonLeftSw(&_buttonLeftHw, config.debounceMs),
       _boilerPressure(&_pressureADC, pressureScalar),
       _boilerTemp(&_boilerPressure),
-      _shotTimer(config.minShotDuration),
+      _manualPumpTimer(),
       _wifi(nullptr),
       _ota(nullptr),
       _warmingUpBlocker(nullptr) {
