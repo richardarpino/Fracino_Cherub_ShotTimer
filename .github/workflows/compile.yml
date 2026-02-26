@@ -42,5 +42,20 @@ jobs:
       - name: Run PlatformIO Native Tests
         run: pio test -e native
 
+      - name: Run PlatformIO Simulator (Gallery Generation)
+        run: pio test -e simulator
+
+      - name: Check for Documentation Drift
+        run: |
+          if [ -n "$(git status --porcelain lib/Sensors/examples/)" ]; then
+            echo "❌ Documentation Drift Detected!"
+            echo "Visual changes were made but not committed to the gallery."
+            echo "Please run 'pio test -e simulator' locally and commit the modified BMPs."
+            git status lib/Sensors/examples/
+            exit 1
+          else
+            echo "✅ Documentation Gallery is in sync."
+          fi
+
       - name: Run PlatformIO Build
         run: pio run -e lilygo-t-display
