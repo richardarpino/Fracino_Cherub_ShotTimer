@@ -28,6 +28,6 @@ void ShotMonitor::update() {
         _registry->publish<ShotTimeTag>(_timer->getReading());
     }
 
-    // Publish last valid duration (No filtering logic yet - this will fail the tests)
+    // Publish last valid duration (filtered by 10s rule)
     _registry->publish<LastValidShotTag>(Reading(_lastValidDuration, "SECS", "LAST SHOT", 1, false));
 }

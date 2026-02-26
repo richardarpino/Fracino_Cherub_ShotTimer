@@ -49,7 +49,7 @@ public:
     BoilerPressure* getBoilerPressure() { return &_boilerPressure; }
     WeightSensor* getWeightSensor() { return &_weightSensor; }
     BoilerTemperature* getBoilerTemp() { return &_boilerTemp; }
-    ManualPumpTimer* getShotTimer() { return &_manualPumpTimer; }
+    ManualPumpTimer* getManualPumpTimer() { return &_manualPumpTimer; }
     TaredWeight* getTaredWeight() { return &_taredWeight; }
 
 private:

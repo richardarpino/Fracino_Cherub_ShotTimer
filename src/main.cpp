@@ -27,7 +27,7 @@ MachineFactory factory(config);
 
 // --- Coordination & Logic ---
 StartupLogic startupLogic(&factory);
-ShotMonitor shotMonitor(factory.getPump(), factory.getShotTimer(), factory.getRegistry());
+ShotMonitor shotMonitor(factory.getPump(), factory.getManualPumpTimer(), factory.getRegistry());
 BoilerMonitor boilerMonitor(factory.getBoilerTemp(), factory.getRegistry());
 ScaleLogic scaleLogic(factory.getPump(), factory.getTaredWeight(), factory.getRegistry()); 
 
