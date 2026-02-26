@@ -1,10 +1,10 @@
 #include "StatusWidget.h"
 #include <Arduino.h>
 
-StatusWidget::StatusWidget(ISensor* sensor) 
-    : _container(nullptr), _label(nullptr), _sensor(sensor), _messageTimeout(0) {}
+StatusWidgetBase::StatusWidgetBase() 
+    : _container(nullptr), _label(nullptr), _messageTimeout(0) {}
 
-lv_obj_t* StatusWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+lv_obj_t* StatusWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_pad_all(_container, 2, 0);
@@ -19,42 +19,20 @@ lv_obj_t* StatusWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     lv_label_set_long_mode(_label, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_align(_label, LV_TEXT_ALIGN_CENTER, 0);
     
-    // Auto-detect font size based on grid columns
     const lv_font_t* font = (cols == 1) ? &lv_font_montserrat_20 : &lv_font_montserrat_12;
     lv_obj_set_style_text_font(_label, font, 0);
     
     return _container;
 }
 
-void StatusWidget::setText(const char* text) {
+void StatusWidgetBase::setText(const char* text) {
     if (_label) lv_label_set_text(_label, text);
 }
 
-void StatusWidget::refresh() {
-    // Only pull from sensor if no manual message is currently "locked"
-    if (_sensor && millis() > _messageTimeout) {
-        Reading r = _sensor->getReading();
-        setText(r.label.c_str());
-        
-        // Semantic Styling: Turn red if in error state
-        if (r.isError) {
-            lv_obj_set_style_bg_color(_container, _alertBgColor, 0);
-            lv_obj_set_style_text_color(_label, _errorColor, 0);
-        } else {
-            lv_obj_set_style_bg_color(_container, _bgColor, 0);
-            lv_obj_set_style_text_color(_label, _textColor, 0);
-        }
-    }
-}
-
-void StatusWidget::update(const Reading& reading) {
-    // No more update guards. Seniors choose what to display.
-    
-    // Manual push (usually from ScreenLayout::showMessage or showInfo)
+void StatusWidgetBase::update(const Reading& reading) {
     if (reading.label.length() > 0) {
         setText(reading.label.c_str());
         
-        // Also handle styling for manual pushes (usually not errors, but let's be consistent)
         if (reading.isError) {
             lv_obj_set_style_bg_color(_container, _alertBgColor, 0);
             lv_obj_set_style_text_color(_label, _errorColor, 0);
@@ -63,13 +41,15 @@ void StatusWidget::update(const Reading& reading) {
             lv_obj_set_style_text_color(_label, _textColor, 0);
         }
 
-        // Lock the display for 3 seconds to prevent immediate overwrite by refresh()
+        // If this was a manual push (external update), lock it
+        // Note: subclasses handle the semantic distinction via refresh() check
         _messageTimeout = millis() + 3000;
+    } else {
+        // Handle empty reading case if needed
     }
 }
 
-void StatusWidget::applyTheme(ITheme* theme) {
-    // Helper lambda (duplicate, but simple enough)
+void StatusWidgetBase::applyTheme(ITheme* theme) {
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F; r = (r * 255) / 31;
         uint8_t g = (c >> 5) & 0x3F;  g = (g * 255) / 63;
@@ -78,7 +58,7 @@ void StatusWidget::applyTheme(ITheme* theme) {
     };
 
     _bgColor = toLvColor(theme->getBackgroundColor());
-    _textColor = toLvColor(theme->getLabelColor()); // Use label color for status text
+    _textColor = toLvColor(theme->getLabelColor()); 
     _errorColor = toLvColor(theme->getAlertTextColor());
     _alertBgColor = toLvColor(theme->getAlertBackgroundColor());
 

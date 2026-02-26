@@ -8,6 +8,8 @@
 #include "../_common/stubs/Arduino.cpp"
 #include "../../lib/Services/WiFiService.h"
 #include "../../lib/Services/WiFiService.cpp"
+#include "Logic/SensorDispatcher.h"
+#include "Logic/SensorDispatcher.cpp"
 #include "Logic/StartupLogic.h"
 #include "Logic/StartupLogic.cpp"
 #include <stdio.h>

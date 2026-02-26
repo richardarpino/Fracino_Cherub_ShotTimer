@@ -2,7 +2,7 @@
 #include "SensorWidget.h"
 #include "StatusWidget.h"
 
-ScreenLayout::ScreenLayout() : _grid(nullptr), _widgets(), _currentTheme(nullptr), _nextSlot(0) {}
+ScreenLayout::ScreenLayout() : _grid(nullptr), _widgets(), _registry(nullptr), _currentTheme(nullptr), _nextSlot(0) {}
 
 void ScreenLayout::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     _grid = parent;
@@ -57,6 +57,7 @@ void ScreenLayout::addWidget(IWidget* widget) {
     lv_obj_set_grid_cell(root, LV_GRID_ALIGN_STRETCH, col, 1, LV_GRID_ALIGN_STRETCH, row, 1);
 
     if (_currentTheme) widget->applyTheme(_currentTheme);
+    if (_registry) widget->setRegistry(_registry);
 
     _widgets.push_back(widget);
     _nextSlot++;
@@ -71,7 +72,7 @@ void ScreenLayout::update() {
 void ScreenLayout::showMessage(const String& text) {
     for (auto* w : _widgets) {
         if (w->isStatusWidget()) {
-            StatusWidget* sw = static_cast<StatusWidget*>(w);
+            StatusWidgetBase* sw = static_cast<StatusWidgetBase*>(w);
             Reading r(0, "", text, 0, false);
             sw->update(r);
             return; // Found the status area
@@ -92,4 +93,11 @@ void ScreenLayout::applyTheme(ITheme* theme) {
     uint8_t b = c & 0x1F;         b = (b * 255) / 31;
     
     lv_obj_set_style_bg_color(_grid, lv_color_make(r, g, b), 0);
+}
+
+void ScreenLayout::setRegistry(ISensorRegistry* registry) {
+    _registry = registry;
+    for (auto* w : _widgets) {
+        w->setRegistry(registry);
+    }
 }
