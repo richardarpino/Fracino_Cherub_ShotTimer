@@ -67,8 +67,10 @@ void test_scale_logic_edge_consumption() {
     setMillis(1000);
     mockPin.setRawValue(LOW);
     
-    // 2. ScaleLogic update will now internally call pumpSw.update()
+    // 2. ScaleLogic update used to internally call pumpSw.update()
+    // In the new architecture, it's called centrally.
     setMillis(1001); 
+    pumpSw.update();
     logic.update();
 
     // Verify it just ran without crashing - timer verification moved to ShotMonitor

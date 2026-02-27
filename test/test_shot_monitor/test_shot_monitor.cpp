@@ -20,15 +20,17 @@ void test_shot_monitor_purging_filter() {
 
     setMillis(0);
     mockPin.setRawValue(HIGH); // Pump OFF
+    pumpSw.update();
     monitor.update();
 
-    // 1. A short "Purge" shot (5 seconds)
     setMillis(1000);
     mockPin.setRawValue(LOW); // Pump ON
+    pumpSw.update();
     monitor.update();
     
     setMillis(6000);
     mockPin.setRawValue(HIGH); // Pump OFF
+    pumpSw.update();
     monitor.update();
 
     // LastValidShotTag should still be 0.0 because it was < 10s
@@ -45,15 +47,17 @@ void test_shot_monitor_persistence() {
 
     setMillis(0);
     mockPin.setRawValue(HIGH);
+    pumpSw.update();
     monitor.update();
 
-    // 1. A valid shot (25 seconds)
     setMillis(1000);
     mockPin.setRawValue(LOW);
+    pumpSw.update();
     monitor.update();
     
     setMillis(26000);
     mockPin.setRawValue(HIGH);
+    pumpSw.update();
     monitor.update();
 
     // Should be 25.0
@@ -62,10 +66,12 @@ void test_shot_monitor_persistence() {
     // 2. A subsequent purge (5 seconds)
     setMillis(30000);
     mockPin.setRawValue(LOW);
+    pumpSw.update();
     monitor.update();
     
     setMillis(35000);
     mockPin.setRawValue(HIGH);
+    pumpSw.update();
     monitor.update();
 
     // Should STILL be 25.0 (Persistence of last good shot)

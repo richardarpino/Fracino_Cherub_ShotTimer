@@ -13,7 +13,6 @@ void ThemeManager::addTheme(ITheme* theme) {
 void ThemeManager::update() {
     if (!_themeButton || !_display || _themes.empty()) return;
 
-    _themeButton->update();
     if (_themeButton->justStarted()) {
         _currentIndex = (_currentIndex + 1) % _themes.size();
         _display->setTheme(_themes[_currentIndex]);

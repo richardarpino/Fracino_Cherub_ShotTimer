@@ -41,7 +41,7 @@ void setupMainDashboard() {
   layout->addWidget(new SensorWidget<BoilerPressureTag>()); 
   layout->addWidget(new SensorWidget<BoilerTempTag>());     
   layout->addWidget(new StatusWidget<ShotTimeTag>());       
-  layout->addWidget(new SensorWidget<ShotTimeTag>());       
+  layout->addWidget(new SensorWidget<LastValidShotTag>());  // Restored business requirement
 }
 
 void setup() {
@@ -67,22 +67,34 @@ void loop() {
   lv_timer_handler();
   delay(5);
 
-  // Startup Transition
+  // 1. Hardware Poll Pass - REFRESH ALL INPUTS ONCE PER FRAME
+  factory.getPump()->update();
+  factory.getButtonLeft()->update();
+  factory.getButtonRight()->update();
+  
+  WiFiService* wifi = factory.getWiFiSwitch();
+  if (wifi) wifi->update();
+  
+  OTAService* ota = factory.getOTASwitch();
+  if (ota) ota->update();
+
+  WarmingUpBlocker* warmer = factory.getWarmingUpBlocker();
+  if (warmer) warmer->update();
+
+  // 2. Logic Poll Pass - FREEZE MACHINE STATE
+  factory.getRegistry()->update();
+
+  // 3. Orchestrator Pass - REACT TO FROZEN STATE
+  startupLogic.update();
   if (startupLogic.justStarted()) {
     setupMainDashboard();
   }
-
-  // Orchestrators handle their own constituent polling
-  startupLogic.update();
-
-  // Centralized sensor update - "freezes" machine state for this frame
-  factory.getRegistry()->update();
-
-  // All widgets pull their own data from their assigned sensors
-  shotDisplay.update();
 
   themeManager.update();
   shotMonitor.update();
   boilerMonitor.update();
   scaleLogic.update();
+
+  // 4. UI Pass - RENDER STATE
+  shotDisplay.update();
 }

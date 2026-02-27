@@ -6,8 +6,6 @@ ScaleLogic::ScaleLogic(ISwitch* pump, TaredWeight* weight, ISensorRegistry* regi
 void ScaleLogic::update() {
     if (!_pump || !_registry) return;
 
-    _pump->update();
-
     if (_pump->justStarted()) {
         if (_weight) _weight->tare();
     }

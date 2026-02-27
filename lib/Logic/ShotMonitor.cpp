@@ -6,8 +6,6 @@ ShotMonitor::ShotMonitor(ISwitch* pump, ManualPumpTimer* timer, ISensorRegistry*
 void ShotMonitor::update() {
     if (!_pump || !_registry) return;
 
-    _pump->update();
-
     if (_pump->justStarted()) {
         if (_timer) _timer->start();
     }

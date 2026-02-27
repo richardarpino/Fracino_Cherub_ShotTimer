@@ -39,13 +39,9 @@ void StartupLogic::update() {
     }
     if (!_wifi) return;
 
-    // Logic Ownership: Orchestrator polls its constituents
-    _wifi->update();
-    IBlocker* ota = _provider->getOTASwitch();
-    if (ota) ota->update();
+    // Logic Ownership: Orchestrator NO LONGER polls its constituents
+    // They are updated centrally in the main loop.
     
-    if (_warmingUp) _warmingUp->update();
-
     // Preserve previous active state for edge detection
     _lastActive = _isActive;
 
