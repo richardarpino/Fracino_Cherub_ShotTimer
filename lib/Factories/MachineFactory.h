@@ -4,8 +4,8 @@
 #include "../Interfaces/IMachineProvider.h"
 #include "../Hardware/ADCRawSource.h"
 #include "../Hardware/DigitalRawSource.h"
-#include "../Sensors/Hardware/HardwareSwitch.h"
-#include "../Sensors/Virtual/DebouncedSwitch.h"
+#include "../Sensors/Hardware/DigitalSensor.h"
+#include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Hardware/WeightSensor.h"
 #include "../Logic/BoilerTemperature.h"
@@ -37,13 +37,13 @@ public:
     ISensorRegistry* getRegistry() override { return &_dispatcher; }
 
     // ISwitchProvider
-    DebouncedSwitch* getPump() override { return &_pumpSw; }
+    ISwitch* getPump() override { return &_pumpRegSw; }
     WiFiService* getWiFiSwitch() override;
     OTAService* getOTASwitch() override { return _ota; }
     OTAService* createOTA() override;
     WarmingUpBlocker* getWarmingUpBlocker() override;
-    ISwitch* getButtonRight() override { return &_buttonRightSw; }
-    ISwitch* getButtonLeft() override { return &_buttonLeftSw; }
+    ISwitch* getButtonRight() override { return &_buttonRightRegSw; }
+    ISwitch* getButtonLeft() override { return &_buttonLeftRegSw; }
 
     // Component Access for Orchestrators
     BoilerPressure* getBoilerPressure() { return &_boilerPressure; }
@@ -59,13 +59,15 @@ private:
     DigitalRawSource _buttonRightInput;
     DigitalRawSource _buttonLeftInput;
 
-    // Switches
-    HardwareSwitch _pumpHw;
-    DebouncedSwitch _pumpSw;
-    HardwareSwitch _buttonRightHw;
-    DebouncedSwitch _buttonRightSw;
-    HardwareSwitch _buttonLeftHw;
-    DebouncedSwitch _buttonLeftSw;
+    // Hardware Input Sensors (Publish to Registry)
+    DigitalSensor _pumpSensor;
+    DigitalSensor _buttonRightSensor;
+    DigitalSensor _buttonLeftSensor;
+
+    // Registry-Connected Switches (Consume from Registry)
+    RegistrySwitch<PumpTag> _pumpRegSw;
+    RegistrySwitch<ButtonRightTag> _buttonRightRegSw;
+    RegistrySwitch<ButtonLeftTag> _buttonLeftRegSw;
 
     // Physical Sensors (Registered with Dispatcher)
     BoilerPressure _boilerPressure;

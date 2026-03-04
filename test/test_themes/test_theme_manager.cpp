@@ -1,7 +1,11 @@
 #include <unity.h>
 #include "../../lib/Logic/ThemeManager.h"
+#include "../../lib/Logic/ThemeManager.cpp"
 #include "../../lib/Themes/IThemeable.h"
+#include "../../lib/Themes/ITheme.h"
 #include "../../lib/Themes/DefaultTheme.h"
+#include "Logic/SensorDispatcher.h"
+#include "Logic/SensorDispatcher.cpp"
 #include "../_common/stubs/Arduino.h"
 
 class ThemeableStub : public IThemeable {
@@ -19,25 +23,10 @@ private:
     int _setCount = 0;
 };
 
-class MockSwitch : public ISwitch {
-public:
-    void update() override {}
-    bool isActive() const override { return _active; }
-    bool justStarted() const override { return _started; }
-    bool justStopped() const override { return false; }
-    
-    void setActive(bool active) { _active = active; }
-    void setStarted(bool started) { _started = started; }
-
-private:
-    bool _active = false;
-    bool _started = false;
-};
-
 void test_theme_manager_initial_theme() {
+    SensorDispatcher registry;
     ThemeableStub display;
-    MockSwitch button;
-    ThemeManager manager(&display, &button);
+    ThemeManager manager(&display, &registry);
 
     DefaultTheme theme;
     manager.addTheme(&theme);
@@ -48,9 +37,9 @@ void test_theme_manager_initial_theme() {
 }
 
 void test_theme_manager_switching() {
+    SensorDispatcher registry;
     ThemeableStub display;
-    MockSwitch button;
-    ThemeManager manager(&display, &button);
+    ThemeManager manager(&display, &registry);
 
     DefaultTheme theme1;
     DefaultTheme theme2;
@@ -60,8 +49,9 @@ void test_theme_manager_switching() {
     // Initial state
     TEST_ASSERT_EQUAL_PTR(&theme1, display.lastTheme());
 
-    // Press button (Simulate edge)
-    button.setStarted(true);
+    // Press button (Simulate edge via Registry)
+    registry.publish<ButtonRightTag>(Reading(1.0f, "", "ON", 0, false));
+    registry.update();
     manager.update();
 
     TEST_ASSERT_EQUAL_PTR(&theme2, display.lastTheme());

@@ -3,29 +3,21 @@
 SensorDispatcher::SensorDispatcher() {}
 
 void SensorDispatcher::update() {
-    for (size_t i = 0; i < _sensors.size(); ++i) {
-        if (_sensors[i]) {
-            _cache[i] = _sensors[i]->getReading();
+    for (auto const& [name, sensor] : _sensors) {
+        if (sensor) {
+            _cache[name] = sensor->getReading();
         }
     }
 }
 
-Reading SensorDispatcher::getReadingByIndex(int index) {
-    if (index < 0 || (size_t)index >= _cache.size()) {
+Reading SensorDispatcher::getReadingByName(const char* name) {
+    auto it = _cache.find(name);
+    if (it == _cache.end()) {
         return Reading(0.0f, "", "", 1, true); 
     }
-    return _cache[index];
+    return it->second;
 }
 
-void SensorDispatcher::setReadingByIndex(int index, Reading reading) {
-    ensureCapacity(index);
-    _cache[index] = reading;
-}
-
-
-void SensorDispatcher::ensureCapacity(int index) {
-    if ((size_t)index >= _sensors.size()) {
-        _sensors.resize(index + 1, nullptr);
-        _cache.resize(index + 1, Reading(0.0f, "", "", 1, true));
-    }
+void SensorDispatcher::setReadingByName(const char* name, Reading reading) {
+    _cache[name] = reading;
 }

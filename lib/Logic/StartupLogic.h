@@ -4,12 +4,15 @@
 #include "../Interfaces/SensorTypes.h"
 #include "../Interfaces/ISwitch.h"
 #include "../Interfaces/IBlocker.h"
+#include "../Interfaces/ISensorRegistry.h"
+#include "../Interfaces/SensorTags.h"
+#include "../Sensors/Registry/RegistrySwitch.h"
 
 class ISwitchProvider;
 
 class StartupLogic : public IBlocker {
 public:
-    StartupLogic(ISwitchProvider* provider, unsigned long holdDurationMs = 3000);
+    StartupLogic(ISwitchProvider* provider, ISensorRegistry* registry, unsigned long holdDurationMs = 3000);
     
     void update() override;
     
@@ -28,9 +31,14 @@ private:
         READY
     };
 
+    RegistrySwitch<WiFiTag> _wifiSwitch;
+    RegistrySwitch<OTATag> _otaSwitch;
+    RegistrySwitch<WarmingUpTag> _warmingUpSwitch;
+    
     IBlocker* _wifi;
     IBlocker* _warmingUp;
     ISwitchProvider* _provider;
+    ISensorRegistry* _registry;
     State _state;
     bool _isActive;
     bool _justStarted;

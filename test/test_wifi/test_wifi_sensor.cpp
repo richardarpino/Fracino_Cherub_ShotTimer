@@ -3,11 +3,14 @@
 #include "../_common/stubs/WiFi.cpp"
 #include "../../lib/Services/WiFiService.h"
 #include "../../lib/Services/WiFiService.cpp"
+#include "Logic/SensorDispatcher.h"
+#include "Logic/SensorDispatcher.cpp"
 #include "../../lib/Interfaces/IBlocker.h"
 
 void test_wifi_blocker_reporting() {
+    SensorDispatcher registry;
     WiFi.setStatus(WL_IDLE_STATUS);
-    WiFiService service("dummy", "dummy");
+    WiFiService service(&registry, "dummy", "dummy");
     IBlocker* blocker = (IBlocker*)&service;
     
     // Process should be indeterminate/connecting
@@ -22,10 +25,14 @@ void test_wifi_blocker_reporting() {
     TEST_ASSERT_EQUAL_STRING("CONNECTED: 192.168.1.50", blocker->getStatus().message.c_str());
     TEST_ASSERT_TRUE(blocker->isActive());
     TEST_ASSERT_EQUAL_FLOAT(100.0f, blocker->getStatus().progress);
+    
+    // Verify registry publishing
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, registry.getLatest<WiFiTag>().value);
 }
 
 void test_wifi_blocker_failure() {
-    WiFiService service("dummy", "dummy");
+    SensorDispatcher registry;
+    WiFiService service(&registry, "dummy", "dummy");
     IBlocker* blocker = (IBlocker*)&service;
     WiFi.setStatus(WL_CONNECT_FAILED);
     
@@ -33,10 +40,14 @@ void test_wifi_blocker_failure() {
     TEST_ASSERT_EQUAL_STRING("CONNECTION FAILED", blocker->getStatus().message.c_str());
     TEST_ASSERT_TRUE(blocker->getStatus().isFailed);
     TEST_ASSERT_FALSE(blocker->isActive());
+    
+    // Verify registry publishing
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, registry.getLatest<WiFiTag>().value);
 }
 
 void test_wifi_construction_starts_wifi() {
-    WiFiService service("TestSSID", "TestPass");
+    SensorDispatcher registry;
+    WiFiService service(&registry, "TestSSID", "TestPass");
 
     TEST_ASSERT_TRUE(WiFi.wasBeginCalled());
     TEST_ASSERT_EQUAL_STRING("TestSSID", WiFi.getSsid());
@@ -44,7 +55,8 @@ void test_wifi_construction_starts_wifi() {
 }
 
 void test_wifi_switch_behavior() {
-    WiFiService service("dummy", "dummy");
+    SensorDispatcher registry;
+    WiFiService service(&registry, "dummy", "dummy");
     ISwitch* sw = (ISwitch*)&service;
 
     WiFi.setStatus(WL_DISCONNECTED);

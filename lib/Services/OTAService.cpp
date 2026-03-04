@@ -1,7 +1,10 @@
 #include "OTAService.h"
 
-OTAService::OTAService(const char* hostname) 
-    : _hostname(hostname), _isActive(false), _isError(false), _progress(0) {
+OTAService::OTAService(ISensorRegistry* registry, const char* hostname) 
+    : _hostname(hostname), _isActive(false), _isError(false), _progress(0), _registry(registry) {
+    if (_registry) {
+        _registry->publish<OTATag>(Reading(0.0f, "", "OFF", 0, false));
+    }
 #ifdef ARDUINO
     ArduinoOTA.setHostname(_hostname);
     
@@ -43,6 +46,10 @@ void OTAService::update() {
         ArduinoOTA.handle();
     }
 #endif
+
+    if (_registry) {
+        _registry->publish<OTATag>(Reading(_isActive ? 1.0f : 0.0f, "", _isActive ? "ON" : "OFF", 0, _isError));
+    }
 }
 
 BlockerStatus OTAService::getStatus() const {

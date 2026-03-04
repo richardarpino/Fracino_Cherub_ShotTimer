@@ -1,27 +1,20 @@
 #include <unity.h>
 #include "MachineFactory.h"
+#include "MachineFactory.cpp"
 #include "ThemeManager.h"
+#include "ThemeManager.cpp"
 #include "../../test/_common/stubs/SensorStub.h"
 #include "../../test/_common/stubs/BlockerStub.h"
 #include "../../test/_common/stubs/Arduino.cpp"
 #include "../../test/_common/stubs/WiFi.cpp"
+#include "Logic/SensorDispatcher.h"
+#include "Logic/SensorDispatcher.cpp"
 
-// Mock Display for ThemeManager
+// Mock Display
 class MockDisplay : public IThemeable {
 public:
     ITheme* currentTheme = nullptr;
     void setTheme(ITheme* theme) override { currentTheme = theme; }
-};
-
-// Simple Mock Switch
-class MockSwitch : public ISwitch {
-public:
-    bool active = false;
-    bool started = false;
-    void update() override {}
-    bool isActive() const override { return active; }
-    bool justStarted() const override { return started; }
-    bool justStopped() const override { return false; }
 };
 
 // Mock Theme
@@ -34,10 +27,10 @@ public:
     uint16_t getAlertBackgroundColor() override { return 0; }
 };
 
-void test_theme_manager_uses_switch_edge() {
+void test_theme_manager_uses_registry_edge() {
+    SensorDispatcher registry;
     MockDisplay display;
-    MockSwitch themeButton;
-    ThemeManager manager(&display, &themeButton);
+    ThemeManager manager(&display, &registry);
 
     MockTheme theme1, theme2;
     manager.addTheme(&theme1);
@@ -46,13 +39,14 @@ void test_theme_manager_uses_switch_edge() {
     // Initial state
     TEST_ASSERT_EQUAL_PTR(&theme1, display.currentTheme);
 
-    // Simulate press (edge)
-    themeButton.started = true;
+    // Simulate press (edge via registry)
+    registry.publish<ButtonRightTag>(Reading(1.0f, "", "ON", 0, false));
+    registry.update();
     manager.update();
     TEST_ASSERT_EQUAL_PTR(&theme2, display.currentTheme);
 
-    // Simulate held (no edge)
-    themeButton.started = false;
+    // Simulate held (no change in registry state)
+    registry.update();
     manager.update();
     TEST_ASSERT_EQUAL_PTR(&theme2, display.currentTheme);
 }
@@ -73,7 +67,7 @@ void test_factory_provides_dual_buttons() {
 
 int main() {
     UNITY_BEGIN();
-    RUN_TEST(test_theme_manager_uses_switch_edge);
+    RUN_TEST(test_theme_manager_uses_registry_edge);
     RUN_TEST(test_factory_provides_dual_buttons);
     return UNITY_END();
 }

@@ -19,7 +19,7 @@ public:
 
     template<typename T>
     Reading getLatest() {
-        return getReadingByIndex(getTypeIndex<T>());
+        return getReadingByName(T::NAME);
     }
 
     /**
@@ -28,7 +28,7 @@ public:
      */
     template<typename T>
     void publish(Reading reading) {
-        setReadingByIndex(getTypeIndex<T>(), reading);
+        setReadingByName(T::NAME, reading);
     }
 
     /**
@@ -41,20 +41,8 @@ public:
 
 protected:
     // Internal bridging to allow templates to work with virtual methods
-    virtual Reading getReadingByIndex(int index) = 0;
-    virtual void setReadingByIndex(int index, Reading reading) = 0;
-    
-    // Static type-to-index mapping trick
-    static int getNextIndex() {
-        static int nextIndex = 0;
-        return nextIndex++;
-    }
-
-    template<typename T>
-    static int getTypeIndex() {
-        static int index = getNextIndex();
-        return index;
-    }
+    virtual Reading getReadingByName(const char* name) = 0;
+    virtual void setReadingByName(const char* name, Reading reading) = 0;
 };
 
 #endif

@@ -33,9 +33,8 @@ The project is split into three distinct layers to make it maintainable and test
 
 ### 🔌 Layer 1: Hardware & Interfaces (`lib/Interfaces` & `lib/Sensors/Hardware`)
 Everything that measures or detects a physical signal.
-- **`HardwareSensor`**: Root base class for all physical sensors (e.g., `BoilerPressure`). Enforces pasivity and EMA filtering.
+- **`HardwareSensor`**: Root base class for all physical sensors (e.g., `BoilerPressure`, `DigitalSensor`). Enforces passivity and EMA filtering.
 - **`IRawSource`**: Abstract interface for physical ADCs/GPIOs.
-- **Switches**: Binary states with edge detection (`HardwareSwitch`, `DebouncedSwitch`).
 
 ### 🧠 Layer 2: Logic Modules (`lib/Logic`)
 The **"Brain"** of the machine. It processes hardware signals into machine-domain data.

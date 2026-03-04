@@ -2,8 +2,9 @@
 #include "../Interfaces/IMachineProvider.h"
 #include "../Interfaces/IBlocker.h"
 
-StartupLogic::StartupLogic(ISwitchProvider* provider, unsigned long holdDurationMs) 
-    : _wifi(nullptr), _warmingUp(nullptr), _provider(provider), _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
+StartupLogic::StartupLogic(ISwitchProvider* provider, ISensorRegistry* registry, unsigned long holdDurationMs) 
+    : _wifiSwitch(registry), _otaSwitch(registry), _warmingUpSwitch(registry), _wifi(nullptr), _warmingUp(nullptr), _provider(provider), _registry(registry),
+      _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
 
 BlockerStatus StartupLogic::getStatus() const {
     if (!_wifi) return BlockerStatus("Startup", "INITIALIZING...", -1.0f, false);
@@ -31,7 +32,7 @@ BlockerStatus StartupLogic::getStatus() const {
 }
 
 void StartupLogic::update() {
-    if (!_provider) return;
+    if (!_provider || !_registry) return;
 
     // Lazily obtain WiFi on first update (triggers instantiation/hardware start)
     if (!_wifi) {
@@ -39,22 +40,23 @@ void StartupLogic::update() {
     }
     if (!_wifi) return;
 
-    // Logic Ownership: Orchestrator NO LONGER polls its constituents
-    // They are updated centrally in the main loop.
-    
+    _wifiSwitch.update();
+    _otaSwitch.update();
+    _warmingUpSwitch.update();
+
     // Preserve previous active state for edge detection
     _lastActive = _isActive;
 
     switch (_state) {
         case State::SEARCHING_WIFI:
-            if (_wifi->isActive()) {
+            if (_wifiSwitch.isActive()) {
                 _startTime = millis();
                 _state = State::WIFI_STABLE;
             }
             break;
 
         case State::WIFI_STABLE:
-            if (!_wifi->isActive()) {
+            if (!_wifiSwitch.isActive()) {
                 _state = State::SEARCHING_WIFI;
                 _startTime = 0;
             } else if (millis() - _startTime >= _holdDurationMs) {
@@ -64,11 +66,10 @@ void StartupLogic::update() {
             break;
 
         case State::OTA_STARTING:
-            if (!_wifi->isActive()) {
+            if (!_wifiSwitch.isActive()) {
                 _state = State::SEARCHING_WIFI;
             } else {
-                IBlocker* ota = _provider->getOTASwitch();
-                if (ota && ota->isActive()) {
+                if (_otaSwitch.isActive()) {
                     _warmingUp = _provider->getWarmingUpBlocker();
                     _state = State::WARMING_UP;
                 }
@@ -76,16 +77,16 @@ void StartupLogic::update() {
             break;
 
         case State::WARMING_UP:
-            if (!_wifi->isActive()) {
+            if (!_wifiSwitch.isActive()) {
                 _state = State::SEARCHING_WIFI;
-            } else if (_warmingUp && _warmingUp->isActive()) {
+            } else if (_warmingUpSwitch.isActive()) {
                 _state = State::READY;
                 _isActive = true;
             }
             break;
 
         case State::READY:
-            if (!_wifi->isActive()) {
+            if (!_wifiSwitch.isActive()) {
                 _isActive = false;
                 _state = State::SEARCHING_WIFI;
             }
@@ -100,4 +101,3 @@ void StartupLogic::update() {
 bool StartupLogic::isActive() const { return _isActive; }
 bool StartupLogic::justStarted() const { return _justStarted; }
 bool StartupLogic::justStopped() const { return _justStopped; }
-

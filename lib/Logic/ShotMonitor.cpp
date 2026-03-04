@@ -1,31 +1,32 @@
 #include "ShotMonitor.h"
 
-ShotMonitor::ShotMonitor(ISwitch* pump, ManualPumpTimer* timer, ISensorRegistry* registry)
-    : _pump(pump), _timer(timer), _registry(registry), _lastValidDuration(0.0f) {}
+ShotMonitor::ShotMonitor(ManualPumpTimer* timer, ISensorRegistry* registry)
+    : _pump(registry), _timer(timer), _registry(registry), _lastValidDuration(0.0f) {}
 
 void ShotMonitor::update() {
-    if (!_pump || !_registry) return;
+    if (!_registry) return;
 
-    if (_pump->justStarted()) {
+    _pump.update();
+
+    if (_pump.justStarted()) {
         if (_timer) _timer->start();
     }
 
-    if (_pump->justStopped()) {
+    if (_pump.justStopped()) {
         if (_timer) {
-            _timer->stop();
-            // Business Rule: Shots < 10s are purges, discard them for "Last Good Shot"
             float duration = _timer->getReading().value;
+            _timer->stop();
+            
+            // Issue #10: Filter purges (< 10s)
             if (duration >= 10.0f) {
                 _lastValidDuration = duration;
             }
         }
     }
 
-    // Publish current duration
+    // Always publish derived results to the Registry
     if (_timer) {
         _registry->publish<ShotTimeTag>(_timer->getReading());
     }
-
-    // Publish last valid duration (filtered by 10s rule)
     _registry->publish<LastValidShotTag>(Reading(_lastValidDuration, "SECS", "LAST SHOT", 1, false));
 }

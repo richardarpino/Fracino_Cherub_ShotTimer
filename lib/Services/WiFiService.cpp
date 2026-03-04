@@ -1,7 +1,12 @@
 #include "WiFiService.h"
 
-WiFiService::WiFiService(const char* ssid, const char* password) 
-    : _ssid(ssid), _password(password), _isBegun(ssid != nullptr), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false) {
+WiFiService::WiFiService(ISensorRegistry* registry, const char* ssid, const char* password) 
+    : _ssid(ssid), _password(password), _isBegun(ssid != nullptr), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _registry(registry) {
+    // Note: Registry storing wifi state as a logical reading
+    if (_registry) {
+        _registry->publish<WiFiTag>(Reading(0.0f, "", "DISCONNECTED", 0, false));
+    }
+    
     if (_isBegun) {
         WiFi.disconnect(true);
         WiFi.mode(WIFI_STA);
@@ -17,6 +22,10 @@ void WiFiService::update() {
     _justStarted = _isActive && !_lastActive;
     _justStopped = !_isActive && _lastActive;
     _lastActive = _isActive;
+
+    if (_registry) {
+        _registry->publish<WiFiTag>(Reading(_isActive ? 1.0f : 0.0f, "", _isActive ? "CONNECTED" : "DISCONNECTED", 0, status == WL_CONNECT_FAILED));
+    }
 }
 
 BlockerStatus WiFiService::getStatus() const {

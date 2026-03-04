@@ -1,13 +1,14 @@
 #include "WarmingUpBlocker.h"
 #include "../Utils/StringUtils.h"
 
-WarmingUpBlocker::WarmingUpBlocker(HardwareSensor* pressureSensor, unsigned long timeoutMs)
-    : _pressureSensor(pressureSensor), _lastPressure(0.0f), 
+WarmingUpBlocker::WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pressureSensor, unsigned long timeoutMs)
+    : _registry(registry), _pressureSensor(pressureSensor), _lastPressure(0.0f), 
       _startTime(millis()), _timeoutMs(timeoutMs), 
       _isFinished(false), _wasFinished(false),
       _lastRoundedReading(-1.0f) {
-    // Start with the first move (ramp up)
-    _moves.push_back({});
+    if (_registry) {
+        _registry->publish<WarmingUpTag>(Reading(0.0f, "", "WARMING UP", 0, false));
+    }
 }
 
 void WarmingUpBlocker::update() {
@@ -18,7 +19,6 @@ void WarmingUpBlocker::update() {
     // Timeout check
     if (millis() - _startTime >= _timeoutMs) {
         _isFinished = true;
-        return;
     }
 
     if (!_pressureSensor) return;
@@ -29,6 +29,10 @@ void WarmingUpBlocker::update() {
     processHistory(currentPressure);
 
     _lastPressure = currentPressure;
+
+    if (_registry) {
+        _registry->publish<WarmingUpTag>(Reading(_isFinished ? 1.0f : 0.0f, "", _isFinished ? "READY" : "WARMING UP", 0, false));
+    }
 }
 
 void WarmingUpBlocker::processHistory(float pressure) {
@@ -37,6 +41,10 @@ void WarmingUpBlocker::processHistory(float pressure) {
     
     // Only process if it's a distinct 0.1 bar step
     if (rounded == _lastRoundedReading) return;
+
+    if (_moves.empty()) {
+        _moves.push_back({});
+    }
 
     // Handle Warm Start Bypass:
     // If first move, empty, and already pressurized
@@ -91,10 +99,10 @@ void WarmingUpBlocker::processHistory(float pressure) {
 
 BlockerStatus WarmingUpBlocker::getStatus() const {
     if (isActive()) {
-        return BlockerStatus("Warming Up...", "WARM", 100.0f, false);
+        return BlockerStatus("Ready", "WARM", 100.0f, false);
     }
 
-    int cycleCount = (_moves.size() - 1) / 2;
+    int cycleCount = _moves.empty() ? 0 : ((_moves.size() - 1) / 2);
     char buf[64];
     int displayCycle = (cycleCount < TARGET_CYCLES) ? (cycleCount + 1) : TARGET_CYCLES;
     
@@ -113,6 +121,8 @@ float WarmingUpBlocker::getProgress() const {
     // Total expected moves = 1 (Initial Ramp) + 2 * TARGET_CYCLES (Down/Up cycles)
     const int totalMoves = 1 + (2 * TARGET_CYCLES); // e.g., 7
     
+    if (_moves.empty()) return 0.0f;
+
     // We treat the current move as partial progress
     // If we have started Move N (index N-1), we are at least N/7 through.
     float moveProgress = ((float)_moves.size() / (float)totalMoves) * 100.0f;

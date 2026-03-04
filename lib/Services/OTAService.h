@@ -9,9 +9,12 @@
 // No-op for native
 #endif
 
+#include "../Interfaces/ISensorRegistry.h"
+#include "../Interfaces/SensorTags.h"
+
 class OTAService : public IBlocker {
 public:
-    OTAService(const char* hostname);
+    OTAService(ISensorRegistry* registry, const char* hostname);
     
     // IBlocker implementation
     BlockerStatus getStatus() const override;
@@ -22,7 +25,7 @@ public:
     bool justStarted() const override { return _justStarted; }
     bool justStopped() const override { return _justStopped; }
 
-private:
+    ISensorRegistry* _registry;
     const char* _hostname;
     bool _isActive = false;
     bool _lastActive = false;

@@ -1,9 +1,9 @@
 #ifndef SHOT_MONITOR_H
 #define SHOT_MONITOR_H
 
-#include "../Interfaces/ISwitch.h"
 #include "../Interfaces/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
+#include "../Sensors/Registry/RegistrySwitch.h"
 #include "ManualPumpTimer.h"
 
 /**
@@ -12,12 +12,12 @@
  */
 class ShotMonitor {
 public:
-    ShotMonitor(ISwitch* pump, ManualPumpTimer* timer, ISensorRegistry* registry);
+    ShotMonitor(ManualPumpTimer* timer, ISensorRegistry* registry);
 
     void update();
 
 private:
-    ISwitch* _pump;
+    RegistrySwitch<PumpTag> _pump;
     ManualPumpTimer* _timer;
     ISensorRegistry* _registry;
     float _lastValidDuration;

@@ -1,9 +1,9 @@
 #ifndef SCALE_LOGIC_H
 #define SCALE_LOGIC_H
 
-#include "../Interfaces/ISwitch.h"
 #include "../Interfaces/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
+#include "../Sensors/Registry/RegistrySwitch.h"
 #include "TaredWeight.h"
 
 /**
@@ -12,12 +12,12 @@
  */
 class ScaleLogic {
 public:
-    ScaleLogic(ISwitch* pump, TaredWeight* weight, ISensorRegistry* registry);
+    ScaleLogic(TaredWeight* weight, ISensorRegistry* registry);
 
     void update();
 
 private:
-    ISwitch* _pump;
+    RegistrySwitch<PumpTag> _pump;
     TaredWeight* _weight;
     ISensorRegistry* _registry;
 };

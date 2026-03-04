@@ -26,13 +26,13 @@ MachineConfig config = {
 MachineFactory factory(config);
 
 // --- Coordination & Logic ---
-StartupLogic startupLogic(&factory);
-ShotMonitor shotMonitor(factory.getPump(), factory.getManualPumpTimer(), factory.getRegistry());
+StartupLogic startupLogic(&factory, factory.getRegistry());
+ShotMonitor shotMonitor(factory.getManualPumpTimer(), factory.getRegistry());
 BoilerMonitor boilerMonitor(factory.getBoilerTemp(), factory.getRegistry());
-ScaleLogic scaleLogic(factory.getPump(), factory.getTaredWeight(), factory.getRegistry()); 
+ScaleLogic scaleLogic(factory.getTaredWeight(), factory.getRegistry()); 
 
 ShotDisplay shotDisplay;
-ThemeManager themeManager(&shotDisplay, factory.getButtonRight());
+ThemeManager themeManager(&shotDisplay, factory.getRegistry());
 
 void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
@@ -40,8 +40,8 @@ void setupMainDashboard() {
 
   layout->addWidget(new SensorWidget<BoilerPressureTag>()); 
   layout->addWidget(new SensorWidget<BoilerTempTag>());     
-  layout->addWidget(new StatusWidget<ShotTimeTag>());       
-  layout->addWidget(new SensorWidget<LastValidShotTag>());  // Restored business requirement
+  layout->addWidget(new SensorWidget<ShotTimeTag>());       
+  layout->addWidget(new SensorWidget<LastValidShotTag>());  
 }
 
 void setup() {
@@ -60,17 +60,20 @@ void setup() {
   // Startup Layout (1x1)
   shotDisplay.resetLayout(1, 1);
   shotDisplay.getLayout()->addWidget(new BlockerWidget(&startupLogic));
-  startupLogic.update(); // Initial poll
 }
 
 void loop() {
   lv_timer_handler();
   delay(5);
 
-  // 1. Hardware Poll Pass - REFRESH ALL INPUTS ONCE PER FRAME
-  factory.getPump()->update();
-  factory.getButtonLeft()->update();
-  factory.getButtonRight()->update();
+  // 1. Hardware Poll Pass - REFRESH ALL INPUTS once per frame
+  // This updates the raw buffers/physical pin states
+  // In our new model, the Registry handles the hardware polling!
+  // Wait, does it? MachineFactory provides sensors to the Dispatcher.
+  // Dispatcher::update() calls sensor->getReading() for all provided sensors.
+  
+  // BUT we still need to call update() on the "services" (WiFi, OTA, Warmer) 
+  // because they ARE the sensors/publishers.
   
   WiFiService* wifi = factory.getWiFiSwitch();
   if (wifi) wifi->update();
@@ -82,9 +85,12 @@ void loop() {
   if (warmer) warmer->update();
 
   // 2. Logic Poll Pass - FREEZE MACHINE STATE
+  // This calls getReading() on all Physical Sensors (BoilerPressure, etc.) 
+  // AND DigitalSensors (Pump, Buttons).
   factory.getRegistry()->update();
 
   // 3. Orchestrator Pass - REACT TO FROZEN STATE
+  // Each orchestrator maintains its own RegistrySwitch which pulls from the above freeze.
   startupLogic.update();
   if (startupLogic.justStarted()) {
     setupMainDashboard();

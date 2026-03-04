@@ -43,7 +43,7 @@ void StatusWidgetBase::update(const Reading& reading) {
 
         // If this was a manual push (external update), lock it
         // Note: subclasses handle the semantic distinction via refresh() check
-        _messageTimeout = millis() + 3000;
+        _messageTimeout = 0;
     } else {
         // Handle empty reading case if needed
     }

@@ -9,9 +9,12 @@
 #include "../../test/_common/stubs/WiFi.h"
 #endif
 
+#include "../Interfaces/ISensorRegistry.h"
+#include "../Interfaces/SensorTags.h"
+
 class WiFiService : public IBlocker {
 public:
-    WiFiService(const char* ssid = nullptr, const char* password = nullptr);
+    WiFiService(ISensorRegistry* registry, const char* ssid = nullptr, const char* password = nullptr);
     
     // IBlocker Implementation
     BlockerStatus getStatus() const override;
@@ -23,7 +26,8 @@ public:
     bool justStopped() const override { return _justStopped; }
 
 private:
-   const char* _ssid;
+    ISensorRegistry* _registry;
+    const char* _ssid;
    const char* _password;
    bool _isBegun;
    bool _isActive;

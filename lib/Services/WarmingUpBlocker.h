@@ -6,9 +6,12 @@
 
 #include <vector>
 
+#include "../Interfaces/ISensorRegistry.h"
+#include "../Interfaces/SensorTags.h"
+
 class WarmingUpBlocker : public IBlocker {
 public:
-    WarmingUpBlocker(HardwareSensor* pressureSensor, unsigned long timeoutMs = 600000);
+    WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pressureSensor, unsigned long timeoutMs = 600000);
     // IBlocker Implementation
     BlockerStatus getStatus() const override;
 
@@ -19,7 +22,7 @@ public:
     bool justStarted() const override;
     bool justStopped() const override;
 
-private:
+    ISensorRegistry* _registry;
     HardwareSensor* _pressureSensor;
     float _lastPressure;
     unsigned long _startTime;

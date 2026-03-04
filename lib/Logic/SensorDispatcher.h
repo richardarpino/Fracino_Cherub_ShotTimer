@@ -3,7 +3,8 @@
 
 #include "../Interfaces/ISensorRegistry.h"
 #include "../Interfaces/HardwareSensor.h"
-#include <vector>
+#include <map>
+#include <string>
 
 /**
  * Concrete implementation of the Sensor Registry.
@@ -18,25 +19,21 @@ public:
      */
     template<typename T>
     void provide(HardwareSensor* sensor) {
-        int index = getTypeIndex<T>();
-        ensureCapacity(index);
-        _sensors[index] = sensor;
+        _sensors[T::NAME] = sensor;
     }
 
     void update() override;
 
 protected:
-    Reading getReadingByIndex(int index) override;
-    void setReadingByIndex(int index, Reading reading) override;
+    Reading getReadingByName(const char* name) override;
+    void setReadingByName(const char* name, Reading reading) override;
 
 private:
-    void ensureCapacity(int index);
-
-    // List of physical sensors mapped by their Type-Index
-    std::vector<HardwareSensor*> _sensors;
+    // List of physical sensors mapped by their Type-Name
+    std::map<std::string, HardwareSensor*> _sensors;
     
     // Cache of the latest readings, updated once per update() call
-    std::vector<Reading> _cache;
+    std::map<std::string, Reading> _cache;
 };
 
 #endif

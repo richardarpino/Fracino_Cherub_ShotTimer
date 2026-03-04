@@ -22,8 +22,8 @@ The orchestrators (Coordinators). Process-specific behavior that combines multip
 
 ### 🌡️ `Sensors/`
 Data acquisition components.
-- **`Hardware/`**: Concrete sensors like `BoilerPressure` and `WeightSensor`.
-- **`Virtual/`**: Logic-based decorators like `DebouncedSwitch` or `EMAFilter`.
+- **`Hardware/`**: Concrete sensors like `BoilerPressure`, `WeightSensor`, and `DigitalSensor`.
+- **`Virtual/`**: Logic-based decorators like `RegistrySwitch` or `EMAFilter`.
 
 ### 🛰️ `Services/`
 System-level lifecycle managers and transient startup gates.

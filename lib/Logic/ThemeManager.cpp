@@ -1,7 +1,7 @@
 #include "ThemeManager.h"
 
-ThemeManager::ThemeManager(IThemeable* display, ISwitch* themeButton)
-    : _display(display), _themeButton(themeButton), _currentIndex(0) {}
+ThemeManager::ThemeManager(IThemeable* display, ISensorRegistry* registry)
+    : _display(display), _registry(registry), _themeButton(registry), _currentIndex(0) {}
 
 void ThemeManager::addTheme(ITheme* theme) {
     if (_themes.empty() && _display) {
@@ -11,9 +11,10 @@ void ThemeManager::addTheme(ITheme* theme) {
 }
 
 void ThemeManager::update() {
-    if (!_themeButton || !_display || _themes.empty()) return;
+    if (!_display || _themes.empty() || !_registry) return;
 
-    if (_themeButton->justStarted()) {
+    _themeButton.update();
+    if (_themeButton.justStarted()) {
         _currentIndex = (_currentIndex + 1) % _themes.size();
         _display->setTheme(_themes[_currentIndex]);
     }

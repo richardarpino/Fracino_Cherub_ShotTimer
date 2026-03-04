@@ -1,10 +1,7 @@
 #include <unity.h>
 #include "Logic/ScaleLogic.h"
 #include "Logic/ScaleLogic.cpp"
-#include "Logic/ManualPumpTimer.h"
-#include "Logic/BoilerTemperature.h"
-#include "Hardware/HardwareSwitch.h"
-#include "Sensors/Virtual/DebouncedSwitch.h"
+#include "Sensors/Hardware/DigitalSensor.h"
 #include "Logic/TaredWeight.h"
 #include "Hardware/WeightSensor.h"
 #include "Logic/SensorDispatcher.h"
@@ -15,65 +12,61 @@
 
 void test_scale_logic() {
     MockRawSource mockPin;
-    HardwareSwitch pumpHw(&mockPin, true); // Active LOW
-    DebouncedSwitch pumpSw(&pumpHw, 150);
-    
-    ManualPumpTimer timer; 
+    DigitalSensor pumpSensor(&mockPin, true, 0); // Active LOW, 0ms debounce for tests
     
     MockRawSource weightMock;
     WeightSensor weightSensor(&weightMock, 0.001f);
     TaredWeight taredWeight(&weightSensor);
 
     SensorDispatcher registry;
-    ScaleLogic logic(&pumpSw, &taredWeight, &registry);
+    registry.provide<PumpTag>(&pumpSensor);
+    
+    ScaleLogic logic(&taredWeight, &registry);
 
     setMillis(0);
     mockPin.setRawValue(HIGH); // Pump OFF
     weightMock.setRawValue(5000); // 5g on scale
     
-    for(int i=1; i<100; i++) {
-        setMillis(i);
-        taredWeight.getReading();
-    }
+    registry.update();
+    logic.update();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, taredWeight.getReading().value);
 
     setMillis(1000);
     mockPin.setRawValue(LOW); // Pump ON
-    pumpSw.update();
+    registry.update();
     logic.update();
 
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, taredWeight.getReading().value);
     
     setMillis(2000);
     mockPin.setRawValue(HIGH); // Pump OFF
-    pumpSw.update();
+    registry.update();
     logic.update();
-
-    // Note: Timer verification moved to test_shot_monitor
 }
 
 void test_scale_logic_edge_consumption() {
     MockRawSource mockPin;
-    HardwareSwitch pumpHw(&mockPin, true);
-    DebouncedSwitch pumpSw(&pumpHw, 150);
+    DigitalSensor pumpSensor(&mockPin, true, 0); // 0ms debounce for tests
     SensorDispatcher registry;
-    ScaleLogic logic(&pumpSw, nullptr, &registry);
+    registry.provide<PumpTag>(&pumpSensor);
+    
+    ScaleLogic logic(nullptr, &registry);
 
     setMillis(0);
     mockPin.setRawValue(HIGH);
+    registry.update();
     logic.update();
 
     // 1. Pump starts
     setMillis(1000);
     mockPin.setRawValue(LOW);
     
-    // 2. ScaleLogic update used to internally call pumpSw.update()
-    // In the new architecture, it's called centrally.
-    setMillis(1001); 
-    pumpSw.update();
+    // In the new architecture, we call registry.update() centrally.
+    registry.update();
     logic.update();
 
-    // Verify it just ran without crashing - timer verification moved to ShotMonitor
+    // The logic successfully processed the frame. 
+    // Further verification of edge persistence is in test_registry_switch.
 }
 
 int main(int argc, char **argv) {

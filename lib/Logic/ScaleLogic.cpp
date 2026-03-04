@@ -1,12 +1,14 @@
 #include "ScaleLogic.h"
 
-ScaleLogic::ScaleLogic(ISwitch* pump, TaredWeight* weight, ISensorRegistry* registry)
-    : _pump(pump), _weight(weight), _registry(registry) {}
+ScaleLogic::ScaleLogic(TaredWeight* weight, ISensorRegistry* registry)
+    : _pump(registry), _weight(weight), _registry(registry) {}
 
 void ScaleLogic::update() {
-    if (!_pump || !_registry) return;
+    if (!_registry) return;
 
-    if (_pump->justStarted()) {
+    _pump.update();
+
+    if (_pump.justStarted()) {
         if (_weight) _weight->tare();
     }
 

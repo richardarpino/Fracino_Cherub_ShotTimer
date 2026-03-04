@@ -6,14 +6,14 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _pumpInput(pumpPin),
       _buttonRightInput(buttonRightPin),
       _buttonLeftInput(buttonLeftPin),
-      _pumpHw(&_pumpInput, true),
-      _pumpSw(&_pumpHw, config.debounceMs),
-      _buttonRightHw(&_buttonRightInput, true),
-      _buttonRightSw(&_buttonRightHw, config.debounceMs),
-      _buttonLeftHw(&_buttonLeftInput, true),
-      _buttonLeftSw(&_buttonLeftHw, config.debounceMs),
+      _pumpSensor(&_pumpInput, true, config.debounceMs),
+      _buttonRightSensor(&_buttonRightInput, true, config.debounceMs),
+      _buttonLeftSensor(&_buttonLeftInput, true, config.debounceMs),
+      _pumpRegSw(&_dispatcher),
+      _buttonRightRegSw(&_dispatcher),
+      _buttonLeftRegSw(&_dispatcher),
       _boilerPressure(&_pressureADC, pressureScalar),
-      _weightSensor(nullptr), // TODO: Wire actual weight source if available
+      _weightSensor(nullptr), 
       _boilerTemp(&_boilerPressure),
       _manualPumpTimer(),
       _taredWeight(&_weightSensor),
@@ -23,17 +23,17 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
 
-    // ONLY Physical Sensors are registered for polling
+    // Register Hardware Sensors for central polling
+    _dispatcher.provide<PumpTag>(&_pumpSensor);
+    _dispatcher.provide<ButtonRightTag>(&_buttonRightSensor);
+    _dispatcher.provide<ButtonLeftTag>(&_buttonLeftSensor);
     _dispatcher.provide<BoilerPressureTag>(&_boilerPressure);
     _dispatcher.provide<WeightTag>(&_weightSensor);
-    
-    // Logical Components (BoilerTemp, ShotTime, TaredWeight) 
-    // are NOT registered here. They are pushed by ScaleLogic.
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {
     if (!_wifi) {
-        _wifi = new WiFiService(_config.wifiSsid, _config.wifiPassword);
+        _wifi = new WiFiService(&_dispatcher, _config.wifiSsid, _config.wifiPassword);
     }
     return _wifi;
 }
@@ -46,14 +46,14 @@ MachineFactory::~MachineFactory() {
 
 OTAService* MachineFactory::createOTA() {
     if (!_ota) {
-        _ota = new OTAService(_config.otaHostname);
+        _ota = new OTAService(&_dispatcher, _config.otaHostname);
     }
     return _ota;
 }
 
 WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
     if (!_warmingUpBlocker) {
-        _warmingUpBlocker = new WarmingUpBlocker(&_boilerPressure);
+        _warmingUpBlocker = new WarmingUpBlocker(&_dispatcher, &_boilerPressure);
     }
     return _warmingUpBlocker;
 }

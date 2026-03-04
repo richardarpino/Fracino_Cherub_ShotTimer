@@ -42,7 +42,7 @@ public:
     }
 
     void refresh() override {
-        if (_registry && millis() > _messageTimeout) {
+        if (_registry) {
             update(_registry->getLatest<T>());
         }
     }
