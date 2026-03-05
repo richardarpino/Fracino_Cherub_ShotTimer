@@ -114,6 +114,19 @@ struct LastValidShotTag : public BaseTelemetryTag {
     }
 };
 
+struct HeatingCycleTag : public BaseTelemetryTag {
+    static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::COUNTER;
+    static constexpr const char* NAME = "HeatingCycles";
+    static SensorMetadata getMetadata() {
+        return SensorMetadata(
+            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
+            Reading(3.0f, "", "READY", 0, false, QUANTITY),
+            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
+            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
+        );
+    }
+};
+
 struct PumpTag : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::BOOLEAN;
     static constexpr const char* NAME = "Pump";

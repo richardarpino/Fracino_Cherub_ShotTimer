@@ -4,6 +4,7 @@
 #include "../../Interfaces/ISwitch.h"
 #include "../../Interfaces/ISensorRegistry.h"
 #include "../../Interfaces/SensorTags.h"
+#include <cstring>
 
 /**
  * Reactive Trigger that turns continuous sensor data into a discrete binary state.
@@ -13,7 +14,7 @@ template<typename TTag>
 class ThresholdSwitch : public ISwitch {
 public:
     ThresholdSwitch(ISensorRegistry* registry, float threshold, float hysteresis = 0.0f, 
-                    ThresholdMode mode = ThresholdMode::ABOVE, String expectedUnit = "")
+                    ThresholdMode mode = ThresholdMode::ABOVE, const char* expectedUnit = "")
         : _registry(registry), _threshold(threshold), _hysteresis(hysteresis), 
           _mode(mode), _expectedUnit(expectedUnit), 
           _isActive(false), _lastActive(false) {}
@@ -31,7 +32,7 @@ public:
         }
 
         // 2. Validation: Unit Mismatch (If expectedUnit is set)
-        if (_expectedUnit.length() > 0 && reading.unit != _expectedUnit) {
+        if (_expectedUnit != nullptr && _expectedUnit[0] != '\0' && strcmp(reading.unit, _expectedUnit) != 0) {
             _isActive = false;
             return;
         }
@@ -61,7 +62,7 @@ private:
     float _threshold;
     float _hysteresis;
     ThresholdMode _mode;
-    String _expectedUnit;
+    const char* _expectedUnit;
     bool _isActive;
     bool _lastActive;
 };

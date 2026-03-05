@@ -3,6 +3,7 @@
 
 #include "../Interfaces/IBlocker.h"
 #include "../Interfaces/HardwareSensor.h"
+#include "../Logic/Triggers/ThresholdSwitch.h"
 
 #include <vector>
 
@@ -12,6 +13,7 @@
 class WarmingUpBlocker : public IBlocker {
 public:
     WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pressureSensor, unsigned long timeoutMs = 600000);
+    virtual ~WarmingUpBlocker();
     // IBlocker Implementation
     StatusMessage getStatus() const override;
 
@@ -29,6 +31,10 @@ public:
     unsigned long _timeoutMs;
     bool _isFinished;
     bool _wasFinished;
+    int _totalCompletedCycles;
+    const int MAX_HISTORY_MOVES = 11; // 1 initial + 5 cycles (up/down)
+
+    ThresholdSwitch<HeatingCycleTag>* _cycleTrigger;
 
     // Dimensional History
     std::vector<std::vector<float>> _moves;

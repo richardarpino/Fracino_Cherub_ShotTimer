@@ -96,11 +96,41 @@ void test_timeout() {
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
 }
 
+void test_warming_up_memory_limit() {
+    SensorDispatcher registry;
+    SensorStub pressureSensor;
+    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    
+    // Start at 0 to avoid Warm Start bypass
+    pressureSensor.setReading(Reading(0.0f, "BAR", "BOILER", 1, false));
+    blocker.update();
+
+    // Simulate 20 heating cycles
+    for (int cycle = 1; cycle <= 20; cycle++) {
+        // Ramp Up
+        for (int i = 8; i <= 12; i++) {
+            pressureSensor.setReading(Reading(i / 10.0f, "BAR", "BOILER", 1, false));
+            blocker.update();
+        }
+        // Ramp Down
+        for (int i = 12; i >= 8; i--) {
+            pressureSensor.setReading(Reading(i / 10.0f, "BAR", "BOILER", 1, false));
+            blocker.update();
+        }
+    }
+
+    // RED: Currently it will grow to 41 moves (1 initial + 20*2)
+    // After fix: It should be capped (e.g., at 11 moves for 5 cycles + 1 initial ramp)
+    printf("DEBUG: _moves.size() = %zu\n", blocker._moves.size());
+    TEST_ASSERT_LESS_THAN(20, blocker._moves.size());
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_initial_state);
     RUN_TEST(test_zigzag_extrema_detection);
     RUN_TEST(test_warm_startup);
     RUN_TEST(test_timeout);
+    RUN_TEST(test_warming_up_memory_limit);
     return UNITY_END();
 }

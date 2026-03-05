@@ -3,21 +3,26 @@
 
 WarmingUpBlocker::WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pressureSensor, unsigned long timeoutMs)
     : _registry(registry), _pressureSensor(pressureSensor), _lastPressure(0.0f), 
-      _startTime(millis()), _timeoutMs(timeoutMs), 
-      _isFinished(false), _wasFinished(false),
+      _startTime(millis()), _timeoutMs(timeoutMs),       _isFinished(false), _wasFinished(false),
+       _totalCompletedCycles(0),
       _lastRoundedReading(-1.0f) {
+    _cycleTrigger = new ThresholdSwitch<HeatingCycleTag>(_registry, (float)TARGET_CYCLES, 0.0f, ThresholdMode::ABOVE);
     if (_registry) {
         _registry->publish<WarmingUpTag>(StatusMessage("Heating", "WARMING UP", 0.0f, false));
     }
 }
 
+WarmingUpBlocker::~WarmingUpBlocker() {
+    if (_cycleTrigger) delete _cycleTrigger;
+}
+
 void WarmingUpBlocker::update() {
     _wasFinished = _isFinished;
     
-    if (_isFinished) return;
+    // if (_isFinished) return;
 
     // Timeout check
-    if (millis() - _startTime >= _timeoutMs) {
+    if (!_isFinished && millis() - _startTime >= _timeoutMs) {
         _isFinished = true;
     }
 
@@ -32,6 +37,14 @@ void WarmingUpBlocker::update() {
 
     if (_registry) {
         _registry->publish<WarmingUpTag>(getStatus());
+        _registry->publish<HeatingCycleTag>(Reading((float)_totalCompletedCycles, "", "CYCLES", 0, false, PhysicalQuantity::COUNTER));
+    }
+
+    if (_cycleTrigger) {
+        _cycleTrigger->update();
+        if (_cycleTrigger->isActive()) {
+            _isFinished = true;
+        }
     }
 }
 
@@ -81,20 +94,23 @@ void WarmingUpBlocker::processHistory(float pressure) {
     if (roundingUp != wasRising && currentMove.size() >= 1) {
         // Start a new dimension
         _moves.push_back({rounded});
+        
+        // If we just flipped to UP (move index is even: 2, 4, 6...)
+        // Cycle is completed when an UP trend begins
+        if (_moves.size() % 2 != 0 && _moves.size() > 1) {
+            _totalCompletedCycles++;
+        }
+
+        // Trimming: Keep Move 0 (initial) and the last N cycles
+        if (_moves.size() > (size_t)MAX_HISTORY_MOVES) {
+            // Remove the oldest Down/Up pair (moves 1 and 2)
+            _moves.erase(_moves.begin() + 1, _moves.begin() + 3);
+        }
     } else {
         currentMove.push_back(rounded);
     }
 
     _lastRoundedReading = rounded;
-
-    // Cycle check: (moves.size() - 1) / 2
-    // Move 0: Initial
-    // Move 1: Fall
-    // Move 2: Rise (Cycle 1 Confirmed)
-    int cycleCount = (_moves.size() - 1) / 2;
-    if (cycleCount >= TARGET_CYCLES) {
-        _isFinished = true;
-    }
 }
 
 StatusMessage WarmingUpBlocker::getStatus() const {
@@ -102,8 +118,7 @@ StatusMessage WarmingUpBlocker::getStatus() const {
         return StatusMessage("Ready", "WARM", 100.0f, false);
     }
 
-    int cycleCount = _moves.empty() ? 0 : ((_moves.size() - 1) / 2);
-    int displayCycle = (cycleCount < TARGET_CYCLES) ? (cycleCount + 1) : TARGET_CYCLES;
+    int displayCycle = (_totalCompletedCycles < TARGET_CYCLES) ? (_totalCompletedCycles + 1) : TARGET_CYCLES;
     
     char valBuf[16];
     StringUtils::formatFloat1(valBuf, sizeof(valBuf), _lastPressure);
@@ -118,13 +133,14 @@ float WarmingUpBlocker::getProgress() const {
 
     // Progress is based on moves (80%) and time (20% fallback)
     // Total expected moves = 1 (Initial Ramp) + 2 * TARGET_CYCLES (Down/Up cycles)
-    const int totalMoves = 1 + (2 * TARGET_CYCLES); // e.g., 7
+    // Total expected moves = 1 (Initial Ramp) + 2 * TARGET_CYCLES (Down/Up cycles)
+    const int totalExpectedMoves = 1 + (2 * TARGET_CYCLES); 
     
     if (_moves.empty()) return 0.0f;
 
-    // We treat the current move as partial progress
-    // If we have started Move N (index N-1), we are at least N/7 through.
-    float moveProgress = ((float)_moves.size() / (float)totalMoves) * 100.0f;
+    // We use the total perceived moves (initial + 2*cycles + 1 if currently falling)
+    // Actually, simpler: progress based on _totalCompletedCycles
+    float moveProgress = ((float)_totalCompletedCycles / (float)TARGET_CYCLES) * 100.0f;
     
     unsigned long elapsed = millis() - _startTime;
     float timeProgress = (float)elapsed / (float)_timeoutMs * 100.0f;

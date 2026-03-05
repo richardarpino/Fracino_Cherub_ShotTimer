@@ -27,7 +27,8 @@ enum class PhysicalQuantity {
     TIME,
     POWER,        // 0-100% or 0.0-1.0
     SIGNAL_LEVEL, // dBm
-    BOOLEAN       // Pump, Buttons, etc.
+    BOOLEAN,      // Pump, Buttons, etc.
+    COUNTER       // Heating cycles, etc.
 };
 
 /**
