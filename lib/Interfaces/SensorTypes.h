@@ -16,17 +16,41 @@ struct RawReading {
 };
 
 /**
+ * Physical categories for sensor data.
+ * Used for unit-safe comparisons and triggers.
+ */
+enum class PhysicalQuantity {
+    NONE,
+    TEMPERATURE,
+    PRESSURE,
+    WEIGHT,
+    TIME,
+    POWER,        // 0-100% or 0.0-1.0
+    SIGNAL_LEVEL, // dBm
+    BOOLEAN       // Pump, Buttons, etc.
+};
+
+/**
+ * Trigger direction for ThresholdSwitch.
+ */
+enum class ThresholdMode {
+    ABOVE,
+    BELOW
+};
+
+/**
  * Processed domain measurement (e.g. 1.2 Bar, 120 C)
  */
 struct Reading {
     float value;
+    PhysicalQuantity quantity;
     String unit;
     String label;
     int precision;
     bool isError;
 
-    Reading(float v = 0.0f, String u = "", String l = "", int p = 1, bool error = false) 
-        : value(v), unit(u), label(l), precision(p), isError(error) {}
+    Reading(float v = 0.0f, String u = "", String l = "", int p = 1, bool error = false, PhysicalQuantity q = PhysicalQuantity::NONE) 
+        : value(v), quantity(q), unit(u), label(l), precision(p), isError(error) {}
 };
 
 /**
