@@ -15,8 +15,8 @@ void test_initial_state() {
     
     TEST_ASSERT_FALSE(blocker.isActive());
     StatusMessage status = blocker.getStatus();
-    TEST_ASSERT_EQUAL_STRING("Warming Up...", status.title.c_str());
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.0bar", status.message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Warming Up...", status.title);
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.0bar", status.message);
     TEST_ASSERT_FLOAT_WITHIN(0.01, 0.0f, status.progress);
 }
 
@@ -31,7 +31,7 @@ void test_zigzag_extrema_detection() {
         pressureSensor.setReading(Reading(p, "BAR", "BOILER", 1, false));
         blocker.update();
     }
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 1.1bar", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 1.1bar", blocker.getStatus().message);
 
     // 2. First Drop: 1.1 -> 0.8 (First Valley)
     for (int i = 11; i >= 8; i--) {
@@ -39,7 +39,7 @@ void test_zigzag_extrema_detection() {
         pressureSensor.setReading(Reading(p, "BAR", "BOILER", 1, false));
         blocker.update();
     }
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.8bar", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.8bar", blocker.getStatus().message);
 
     // 3. Second Heat: 0.8 -> 1.2 (Second Peak)
     for (int i = 8; i <= 12; i++) {
@@ -49,13 +49,13 @@ void test_zigzag_extrema_detection() {
     }
     pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false));
     blocker.update();
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 2, currently 1.1bar", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 2, currently 1.1bar", blocker.getStatus().message);
 
     // 4. Third Heat (Cycle 2 Completed)
     pressureSensor.setReading(Reading(0.8f, "BAR", "BOILER", 1, false)); blocker.update();
     pressureSensor.setReading(Reading(1.2f, "BAR", "BOILER", 1, false)); blocker.update();
     pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false)); blocker.update();
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 3, currently 1.1bar", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 3, currently 1.1bar", blocker.getStatus().message);
 
     // 5. Fourth Heat (Cycle 3 Completed -> FINISHED)
     pressureSensor.setReading(Reading(0.8f, "BAR", "BOILER", 1, false)); blocker.update();
@@ -63,7 +63,7 @@ void test_zigzag_extrema_detection() {
     pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false)); blocker.update();
 
     TEST_ASSERT_TRUE(blocker.isActive());
-    TEST_ASSERT_EQUAL_STRING("WARM", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("WARM", blocker.getStatus().message);
     
     // Verify registry publishing (Using .progress)
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);

@@ -34,6 +34,7 @@ private:
    bool _justStarted;
    bool _justStopped;
    bool _lastActive;
+   mutable char _statusBuffer[64];
 };
 
 #endif

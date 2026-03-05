@@ -29,7 +29,7 @@ void test_startup_factory_coordination() {
     // 1. Initial State: SEARCHING_WIFI
     registry.update(); // Initial poll
     logic.update(); 
-    TEST_ASSERT_EQUAL_STRING("WiFi", logic.getStatus().title.c_str());
+    TEST_ASSERT_EQUAL_STRING("WiFi", logic.getStatus().title);
     
     // 2. Connect WiFi
     WiFi.setStatus(WL_CONNECTED);
@@ -45,7 +45,7 @@ void test_startup_factory_coordination() {
     registry.update();
     logic.update();
     TEST_ASSERT_TRUE(factory.otaCreated());
-    TEST_ASSERT_EQUAL_STRING("OTA STUB", logic.getStatus().title.c_str());
+    TEST_ASSERT_EQUAL_STRING("OTA STUB", logic.getStatus().title);
     TEST_ASSERT_FALSE(logic.isActive()); 
 
     // 4. OTA Ready (Listening) -> Transitions to WARMING_UP state
@@ -54,14 +54,14 @@ void test_startup_factory_coordination() {
     warmingUp.setTitle("Warming Up...");
     registry.update();
     logic.update();
-    TEST_ASSERT_EQUAL_STRING("Warming Up...", logic.getStatus().title.c_str());
+    TEST_ASSERT_EQUAL_STRING("Warming Up...", logic.getStatus().title);
     TEST_ASSERT_FALSE(logic.isActive()); 
     
     // 5. Warming Up Finished -> READY state
     registry.publish<WarmingUpTag>(StatusMessage("Ready", "READY", 100.0f, false));
     registry.update();
     logic.update();
-    TEST_ASSERT_EQUAL_STRING("Ready", logic.getStatus().title.c_str());
+    TEST_ASSERT_EQUAL_STRING("Ready", logic.getStatus().title);
     
     TEST_ASSERT_TRUE(logic.isActive());
     TEST_ASSERT_TRUE(logic.justStarted());

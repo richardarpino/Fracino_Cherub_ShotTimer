@@ -33,6 +33,7 @@ public:
     // Dimensional History
     std::vector<std::vector<float>> _moves;
     float _lastRoundedReading;
+    mutable char _statusBuffer[64];
 
     const int TARGET_CYCLES = 3;
     float getProgress() const;

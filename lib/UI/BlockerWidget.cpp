@@ -39,8 +39,8 @@ void BlockerWidget::refresh() {
     if (!_blocker) return;
 
     StatusMessage status = _blocker->getStatus();
-    lv_label_set_text(_title_label, status.title.c_str());
-    lv_label_set_text(_status_label, status.message.c_str());
+    lv_label_set_text(_title_label, status.title);
+    lv_label_set_text(_status_label, status.message);
 
     if (status.progress >= 0) {
         lv_obj_clear_flag(_bar, LV_OBJ_FLAG_HIDDEN);

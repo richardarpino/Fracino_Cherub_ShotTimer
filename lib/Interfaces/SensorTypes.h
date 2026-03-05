@@ -44,12 +44,12 @@ enum class ThresholdMode {
 struct Reading {
     float value;
     PhysicalQuantity quantity;
-    String unit;
-    String label;
+    const char* unit;
+    const char* label;
     int precision;
     bool isError;
 
-    Reading(float v = 0.0f, String u = "", String l = "", int p = 1, bool error = false, PhysicalQuantity q = PhysicalQuantity::NONE) 
+    Reading(float v = 0.0f, const char* u = "", const char* l = "", int p = 1, bool error = false, PhysicalQuantity q = PhysicalQuantity::NONE) 
         : value(v), quantity(q), unit(u), label(l), precision(p), isError(error) {}
 };
 
@@ -81,12 +81,12 @@ struct SensorMetadata {
  * Structured status for a process or service.
  */
 struct StatusMessage {
-    String title;    // e.g., "Warming Up..."
-    String message;  // e.g., "Heating Cycle 2, currently 0.8bar"
+    const char* title;    // e.g., "Warming Up..."
+    const char* message;  // e.g., "Heating Cycle 2, currently 0.8bar"
     float progress;  // 0.0 - 100.0, -1.0 for indeterminate
     bool isFailed;
 
-    StatusMessage(String t = "", String m = "", float p = -1.0f, bool f = false) 
+    StatusMessage(const char* t = "", const char* m = "", float p = -1.0f, bool f = false) 
         : title(t), message(m), progress(p), isFailed(f) {}
 };
 

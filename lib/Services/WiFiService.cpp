@@ -24,21 +24,23 @@ void WiFiService::update() {
     _lastActive = _isActive;
 
     if (_registry) {
-        _registry->publish<WiFiTag>(StatusMessage("WiFi", _isActive ? "CONNECTED" : "DISCONNECTED", _isActive ? 100.0f : -1.0f, status == WL_CONNECT_FAILED));
+        _registry->publish<WiFiTag>(getStatus());
     }
 }
 
 StatusMessage WiFiService::getStatus() const {
     wl_status_t status = WiFi.status();
-    String msg = "CONNECTING...";
+    const char* title = "WiFi";
+    const char* msg = "CONNECTING...";
     bool failed = (status == WL_CONNECT_FAILED);
     float progress = _isActive ? 100.0f : -1.0f;
 
     if (_isActive) {
-        msg = "CONNECTED: " + WiFi.localIP().toString();
+        snprintf(_statusBuffer, sizeof(_statusBuffer), "CONNECTED: %s", WiFi.localIP().toString().c_str());
+        msg = _statusBuffer;
     } else if (failed) {
         msg = "CONNECTION FAILED";
     }
 
-    return StatusMessage("WiFi", msg, progress, failed);
+    return StatusMessage(title, msg, progress, failed);
 }

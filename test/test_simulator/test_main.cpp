@@ -98,10 +98,10 @@ template<typename Tag>
 BlockerInfo createServiceEntry(std::string name, IBlocker* b = nullptr) {
     ServiceMetadata meta = Tag::getMetadata();
     std::vector<BlockerInfo::State> states = {
-        {"Pending", std::string(meta.pending.title.c_str()), std::string(meta.pending.message.c_str()), meta.pending.progress, meta.pending.isFailed},
-        {"Active", std::string(meta.active.title.c_str()), std::string(meta.active.message.c_str()), meta.active.progress, meta.active.isFailed},
-        {"Ready", std::string(meta.ready.title.c_str()), std::string(meta.ready.message.c_str()), meta.ready.progress, meta.ready.isFailed},
-        {"Failed", std::string(meta.failed.title.c_str()), std::string(meta.failed.message.c_str()), meta.failed.progress, meta.failed.isFailed}
+        {"Pending", std::string(meta.pending.title), std::string(meta.pending.message), meta.pending.progress, meta.pending.isFailed},
+        {"Active", std::string(meta.active.title), std::string(meta.active.message), meta.active.progress, meta.active.isFailed},
+        {"Ready", std::string(meta.ready.title), std::string(meta.ready.message), meta.ready.progress, meta.ready.isFailed},
+        {"Failed", std::string(meta.failed.title), std::string(meta.failed.message), meta.failed.progress, meta.failed.isFailed}
     };
     return { name, b, states };
 }

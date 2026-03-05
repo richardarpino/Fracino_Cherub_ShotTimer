@@ -17,7 +17,7 @@ public:
     void reset();
     
     void addWidget(IWidget* widget);
-    void showMessage(const String& text);
+    void showMessage(const char* text);
     void setRegistry(class ISensorRegistry* registry);
 
 private:

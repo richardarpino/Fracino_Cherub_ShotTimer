@@ -22,8 +22,8 @@ public:
     bool justStopped() const override { return _justStopped; }
 
     void setActive(bool active) { _active = active; }
-    void setTitle(String title) { _title = title; }
-    void setMessage(String message) { _message = message; }
+    void setTitle(const char* title) { _title = title; }
+    void setMessage(const char* message) { _message = message; }
     void setProgress(float progress) { _progress = progress; }
     void setFailed(bool failed) { _failed = failed; }
     bool updateCalled() const { return _updateCalled; }
@@ -34,8 +34,8 @@ private:
     bool _lastActive = false;
     bool _justStarted = false;
     bool _justStopped = false;
-    String _title = "STUB";
-    String _message = "STUB MSG";
+    const char* _title = "STUB";
+    const char* _message = "STUB MSG";
     bool _failed = false;
     float _progress = 0;
 };

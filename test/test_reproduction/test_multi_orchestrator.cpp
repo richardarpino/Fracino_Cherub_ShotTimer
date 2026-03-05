@@ -51,7 +51,7 @@ void test_reproduction_edge_loss_multi_orchestrator() {
     monitor.update();
 
     // Verification: Monitor started the timer
-    TEST_ASSERT_EQUAL_STRING("RUNNING", timer.getReading().label.c_str());
+    TEST_ASSERT_EQUAL_STRING("RUNNING", timer.getReading().label);
 }
 
 int main(int argc, char **argv) {

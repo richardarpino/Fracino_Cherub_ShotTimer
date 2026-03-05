@@ -64,7 +64,7 @@ void ShotDisplay::update() {
 void ShotDisplay::showInfo(const String& topText, const String& bottomText) {
     if (_layout) {
         String combined = topText + "\n" + bottomText;
-        _layout->showMessage(combined);
+        _layout->showMessage(combined.c_str());
     }
 }
 

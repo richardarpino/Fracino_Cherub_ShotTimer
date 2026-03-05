@@ -69,7 +69,7 @@ void ScreenLayout::update() {
     }
 }
 
-void ScreenLayout::showMessage(const String& text) {
+void ScreenLayout::showMessage(const char* text) {
     for (auto* w : _widgets) {
         if (w->isStatusWidget()) {
             StatusWidgetBase* sw = static_cast<StatusWidgetBase*>(w);

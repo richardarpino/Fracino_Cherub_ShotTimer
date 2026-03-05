@@ -28,7 +28,7 @@ void test_dispatcher_provides_latest_reading() {
     Reading r = dispatcher.getLatest<BoilerPressureTag>();
     
     TEST_ASSERT_EQUAL_FLOAT(1.5f, r.value);
-    TEST_ASSERT_EQUAL_STRING("bar", r.unit.c_str());
+    TEST_ASSERT_EQUAL_STRING("bar", r.unit);
     TEST_ASSERT_FALSE(r.isError);
 }
 
@@ -70,7 +70,7 @@ void test_dispatcher_provides_latest_status() {
     // RED: This should return StatusMessage in the future
     StatusMessage s = dispatcher.getLatest<WiFiTag>();
     
-    TEST_ASSERT_EQUAL_STRING("CONNECTED", s.message.c_str());
+    TEST_ASSERT_EQUAL_STRING("CONNECTED", s.message);
     TEST_ASSERT_EQUAL_FLOAT(100.0f, s.progress);
 }
 

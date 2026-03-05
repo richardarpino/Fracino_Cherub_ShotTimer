@@ -30,8 +30,8 @@ void StatusWidgetBase::setText(const char* text) {
 }
 
 void StatusWidgetBase::update(const Reading& reading) {
-    if (reading.label.length() > 0) {
-        setText(reading.label.c_str());
+    if (reading.label && reading.label[0] != '\0') {
+        setText(reading.label);
         
         if (reading.isError) {
             lv_obj_set_style_bg_color(_container, _alertBgColor, 0);
@@ -48,8 +48,8 @@ void StatusWidgetBase::update(const Reading& reading) {
 }
 
 void StatusWidgetBase::update(const StatusMessage& status) {
-    if (status.message.length() > 0) {
-        setText(status.message.c_str());
+    if (status.message && status.message[0] != '\0') {
+        setText(status.message);
         
         if (status.isFailed) {
             lv_obj_set_style_bg_color(_container, _alertBgColor, 0);

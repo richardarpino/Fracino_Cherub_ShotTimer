@@ -14,7 +14,7 @@ public:
 
     Reading getReading() {
         float time = _isRunning ? (millis() - _startTime) / 1000.0f : _lastDuration;
-        String status = _isRunning ? "RUNNING" : "READY";
+        const char* status = _isRunning ? "RUNNING" : "READY";
         return Reading(time, "SECS", status, 1, false);
     }
 

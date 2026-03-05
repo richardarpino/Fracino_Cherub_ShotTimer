@@ -103,15 +103,14 @@ StatusMessage WarmingUpBlocker::getStatus() const {
     }
 
     int cycleCount = _moves.empty() ? 0 : ((_moves.size() - 1) / 2);
-    char buf[64];
     int displayCycle = (cycleCount < TARGET_CYCLES) ? (cycleCount + 1) : TARGET_CYCLES;
     
     char valBuf[16];
     StringUtils::formatFloat1(valBuf, sizeof(valBuf), _lastPressure);
     
-    snprintf(buf, sizeof(buf), "Heating Cycle %d, currently %sbar", displayCycle, valBuf);
+    snprintf(_statusBuffer, sizeof(_statusBuffer), "Heating Cycle %d, currently %sbar", displayCycle, valBuf);
     
-    return StatusMessage("Warming Up...", String(buf), getProgress(), false);
+    return StatusMessage("Warming Up...", _statusBuffer, getProgress(), false);
 }
 
 float WarmingUpBlocker::getProgress() const {
