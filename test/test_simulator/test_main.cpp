@@ -94,6 +94,18 @@ DocEntry createEntry(std::string name, HardwareSensor* hw = nullptr) {
     };
 }
 
+template<typename Tag>
+BlockerInfo createServiceEntry(std::string name, IBlocker* b = nullptr) {
+    ServiceMetadata meta = Tag::getMetadata();
+    std::vector<BlockerInfo::State> states = {
+        {"Pending", std::string(meta.pending.title.c_str()), std::string(meta.pending.message.c_str()), meta.pending.progress, meta.pending.isFailed},
+        {"Active", std::string(meta.active.title.c_str()), std::string(meta.active.message.c_str()), meta.active.progress, meta.active.isFailed},
+        {"Ready", std::string(meta.ready.title.c_str()), std::string(meta.ready.message.c_str()), meta.ready.progress, meta.ready.isFailed},
+        {"Failed", std::string(meta.failed.title.c_str()), std::string(meta.failed.message.c_str()), meta.failed.progress, meta.failed.isFailed}
+    };
+    return { name, b, states };
+}
+
 void test_generate_examples() {
     HeadlessDriver::init(240, 135);
     
@@ -118,33 +130,9 @@ void test_generate_examples() {
     SensorDispatcher dispatcher;
 
     std::vector<BlockerInfo> blockers = {
-        {
-            "WiFiService", 
-            new WiFiService(),
-            {
-                {"Connecting", "WiFi", "CONNECTING...", -1.0f, false},
-                {"Connected", "WiFi", "CONNECTED: 192.168.1.50", 100.0f, false},
-                {"Failed", "WiFi", "CONNECTION FAILED", -1.0f, true}
-            }
-        },
-        {
-            "OTAService",
-            new OTAService("test"),
-            {
-                {"Ready", "OTA Update", "LISTENING...", 100.0f, false},
-                {"Updating", "OTA Update", "UPDATING: 42%", 42.0f, false},
-                {"Error", "OTA Update", "UPDATE FAILED", 0.0f, true}
-            }
-        },
-        {
-            "WarmingUpBlocker",
-            nullptr,
-            {
-                {"Stage1", "Warming Up...", "Heating Cycle 1, currently 0.1bar", 5.0f, false},
-                {"Stage2", "Warming Up...", "Heating Cycle 2, currently 0.8bar", 45.0f, false},
-                {"Warm", "Warming Up...", "WARM", 100.0f, false}
-            }
-        }
+        createServiceEntry<WiFiTag>("WiFiService", new WiFiService(&dispatcher)),
+        createServiceEntry<OTATag>("OTAService", new OTAService(&dispatcher, "test")),
+        createServiceEntry<WarmingUpTag>("WarmingUpBlocker", nullptr)
     };
 
     ensure_dir("lib/Sensors/examples");
@@ -301,8 +289,8 @@ void test_generate_examples() {
         blockerReadme << "# " << bInfo.name << " Documentation" << "\n\n";
         
         blockerReadme << "## BlockerWidget" << "\n";
-        blockerReadme << "| Theme | " << bInfo.states[0].name << " | " << bInfo.states[1].name << " | " << bInfo.states[2].name << " |" << "\n";
-        blockerReadme << "| :--- | :---: | :---: | :---: |" << "\n";
+        blockerReadme << "| Theme | Pending | Active | Ready | Failed |" << "\n";
+        blockerReadme << "| :--- | :---: | :---: | :---: | :---: |" << "\n";
 
         for (auto& themeInfo : themes) {
             blockerReadme << "| " << themeInfo.name << " ";

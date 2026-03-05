@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include "IWidget.h"
 #include "../Interfaces/ISensorRegistry.h"
+#include "../Interfaces/SensorTypes.h"
 
 /**
  * Base class for Status UI logic.
@@ -16,6 +17,7 @@ public:
 
     lv_obj_t* init(lv_obj_t* parent, uint8_t cols, uint8_t rows) override;
     void update(const Reading& reading) override;
+    void update(const StatusMessage& status) override;
     void applyTheme(ITheme* theme) override;
     
     bool isStatusWidget() override { return true; }

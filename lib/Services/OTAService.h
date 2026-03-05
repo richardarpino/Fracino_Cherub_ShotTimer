@@ -17,7 +17,7 @@ public:
     OTAService(ISensorRegistry* registry, const char* hostname);
     
     // IBlocker implementation
-    BlockerStatus getStatus() const override;
+    StatusMessage getStatus() const override;
 
     // ISwitch implementation
     void update() override;

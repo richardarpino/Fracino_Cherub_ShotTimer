@@ -13,8 +13,8 @@ public:
     }
     
     // IBlocker Implementation
-    BlockerStatus getStatus() const override { 
-        return BlockerStatus(_title, _message, _progress, _failed); 
+    StatusMessage getStatus() const override { 
+        return StatusMessage(_title, _message, _progress, _failed); 
     }
     
     bool isActive() const override { return _active; }

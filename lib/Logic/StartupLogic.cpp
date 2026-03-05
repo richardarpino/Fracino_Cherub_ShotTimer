@@ -6,8 +6,8 @@ StartupLogic::StartupLogic(ISwitchProvider* provider, ISensorRegistry* registry,
     : _wifiSwitch(registry), _otaSwitch(registry), _warmingUpSwitch(registry), _wifi(nullptr), _warmingUp(nullptr), _provider(provider), _registry(registry),
       _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
 
-BlockerStatus StartupLogic::getStatus() const {
-    if (!_wifi) return BlockerStatus("Startup", "INITIALIZING...", -1.0f, false);
+StatusMessage StartupLogic::getStatus() const {
+    if (!_wifi) return StatusMessage("Startup", "INITIALIZING...", -1.0f, false);
 
     switch (_state) {
         case State::SEARCHING_WIFI:
@@ -15,19 +15,19 @@ BlockerStatus StartupLogic::getStatus() const {
             return _wifi->getStatus();
         
         case State::OTA_STARTING: {
-            if (!_provider) return BlockerStatus("OTA", "ERROR", -1.0f, true);
+            if (!_provider) return StatusMessage("OTA", "ERROR", -1.0f, true);
             IBlocker* ota = _provider->getOTASwitch();
-            return ota ? ota->getStatus() : BlockerStatus("OTA", "STARTING...", -1.0f, false);
+            return ota ? ota->getStatus() : StatusMessage("OTA", "STARTING...", -1.0f, false);
         }
 
         case State::WARMING_UP:
-            return _warmingUp ? _warmingUp->getStatus() : BlockerStatus("Warming Up", "STARTING...", -1.0f, false);
+            return _warmingUp ? _warmingUp->getStatus() : StatusMessage("Warming Up", "STARTING...", -1.0f, false);
 
         case State::READY:
-            return BlockerStatus("Ready", "SYSTEM OK", 100.0f, false);
+            return StatusMessage("Ready", "SYSTEM OK", 100.0f, false);
 
         default:
-            return BlockerStatus("Startup", "BUSY", -1.0f, false);
+            return StatusMessage("Startup", "BUSY", -1.0f, false);
     }
 }
 

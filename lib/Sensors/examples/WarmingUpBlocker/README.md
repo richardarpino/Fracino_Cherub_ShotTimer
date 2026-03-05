@@ -1,8 +1,8 @@
 # WarmingUpBlocker Documentation
 
 ## BlockerWidget
-| Theme | Stage1 | Stage2 | Warm |
-| :--- | :---: | :---: | :---: |
-| Default | ![Stage1](../1x1/warmingupblocker-blocker-default-stage1.bmp) | ![Stage2](../1x1/warmingupblocker-blocker-default-stage2.bmp) | ![Warm](../1x1/warmingupblocker-blocker-default-warm.bmp) |
-| Candy | ![Stage1](../1x1/warmingupblocker-blocker-candy-stage1.bmp) | ![Stage2](../1x1/warmingupblocker-blocker-candy-stage2.bmp) | ![Warm](../1x1/warmingupblocker-blocker-candy-warm.bmp) |
-| Christmas | ![Stage1](../1x1/warmingupblocker-blocker-christmas-stage1.bmp) | ![Stage2](../1x1/warmingupblocker-blocker-christmas-stage2.bmp) | ![Warm](../1x1/warmingupblocker-blocker-christmas-warm.bmp) |
+| Theme | Pending | Active | Ready | Failed |
+| :--- | :---: | :---: | :---: | :---: |
+| Default | ![Pending](../1x1/warmingupblocker-blocker-default-pending.bmp) | ![Active](../1x1/warmingupblocker-blocker-default-active.bmp) | ![Ready](../1x1/warmingupblocker-blocker-default-ready.bmp) | ![Failed](../1x1/warmingupblocker-blocker-default-failed.bmp) |
+| Candy | ![Pending](../1x1/warmingupblocker-blocker-candy-pending.bmp) | ![Active](../1x1/warmingupblocker-blocker-candy-active.bmp) | ![Ready](../1x1/warmingupblocker-blocker-candy-ready.bmp) | ![Failed](../1x1/warmingupblocker-blocker-candy-failed.bmp) |
+| Christmas | ![Pending](../1x1/warmingupblocker-blocker-christmas-pending.bmp) | ![Active](../1x1/warmingupblocker-blocker-christmas-active.bmp) | ![Ready](../1x1/warmingupblocker-blocker-christmas-ready.bmp) | ![Failed](../1x1/warmingupblocker-blocker-christmas-failed.bmp) |

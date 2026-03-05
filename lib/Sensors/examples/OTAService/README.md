@@ -1,8 +1,8 @@
 # OTAService Documentation
 
 ## BlockerWidget
-| Theme | Ready | Updating | Error |
-| :--- | :---: | :---: | :---: |
-| Default | ![Ready](../1x1/otaservice-blocker-default-ready.bmp) | ![Updating](../1x1/otaservice-blocker-default-updating.bmp) | ![Error](../1x1/otaservice-blocker-default-error.bmp) |
-| Candy | ![Ready](../1x1/otaservice-blocker-candy-ready.bmp) | ![Updating](../1x1/otaservice-blocker-candy-updating.bmp) | ![Error](../1x1/otaservice-blocker-candy-error.bmp) |
-| Christmas | ![Ready](../1x1/otaservice-blocker-christmas-ready.bmp) | ![Updating](../1x1/otaservice-blocker-christmas-updating.bmp) | ![Error](../1x1/otaservice-blocker-christmas-error.bmp) |
+| Theme | Pending | Active | Ready | Failed |
+| :--- | :---: | :---: | :---: | :---: |
+| Default | ![Pending](../1x1/otaservice-blocker-default-pending.bmp) | ![Active](../1x1/otaservice-blocker-default-active.bmp) | ![Ready](../1x1/otaservice-blocker-default-ready.bmp) | ![Failed](../1x1/otaservice-blocker-default-failed.bmp) |
+| Candy | ![Pending](../1x1/otaservice-blocker-candy-pending.bmp) | ![Active](../1x1/otaservice-blocker-candy-active.bmp) | ![Ready](../1x1/otaservice-blocker-candy-ready.bmp) | ![Failed](../1x1/otaservice-blocker-candy-failed.bmp) |
+| Christmas | ![Pending](../1x1/otaservice-blocker-christmas-pending.bmp) | ![Active](../1x1/otaservice-blocker-christmas-active.bmp) | ![Ready](../1x1/otaservice-blocker-christmas-ready.bmp) | ![Failed](../1x1/otaservice-blocker-christmas-failed.bmp) |

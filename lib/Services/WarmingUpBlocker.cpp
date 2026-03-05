@@ -7,7 +7,7 @@ WarmingUpBlocker::WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pr
       _isFinished(false), _wasFinished(false),
       _lastRoundedReading(-1.0f) {
     if (_registry) {
-        _registry->publish<WarmingUpTag>(Reading(0.0f, "", "WARMING UP", 0, false));
+        _registry->publish<WarmingUpTag>(StatusMessage("Heating", "WARMING UP", 0.0f, false));
     }
 }
 
@@ -31,7 +31,7 @@ void WarmingUpBlocker::update() {
     _lastPressure = currentPressure;
 
     if (_registry) {
-        _registry->publish<WarmingUpTag>(Reading(_isFinished ? 1.0f : 0.0f, "", _isFinished ? "READY" : "WARMING UP", 0, false));
+        _registry->publish<WarmingUpTag>(getStatus());
     }
 }
 
@@ -97,9 +97,9 @@ void WarmingUpBlocker::processHistory(float pressure) {
     }
 }
 
-BlockerStatus WarmingUpBlocker::getStatus() const {
+StatusMessage WarmingUpBlocker::getStatus() const {
     if (isActive()) {
-        return BlockerStatus("Ready", "WARM", 100.0f, false);
+        return StatusMessage("Ready", "WARM", 100.0f, false);
     }
 
     int cycleCount = _moves.empty() ? 0 : ((_moves.size() - 1) / 2);
@@ -111,7 +111,7 @@ BlockerStatus WarmingUpBlocker::getStatus() const {
     
     snprintf(buf, sizeof(buf), "Heating Cycle %d, currently %sbar", displayCycle, valBuf);
     
-    return BlockerStatus("Warming Up...", String(buf), getProgress(), false);
+    return StatusMessage("Warming Up...", String(buf), getProgress(), false);
 }
 
 float WarmingUpBlocker::getProgress() const {

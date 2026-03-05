@@ -1,8 +1,8 @@
 # WiFiService Documentation
 
 ## BlockerWidget
-| Theme | Connecting | Connected | Failed |
-| :--- | :---: | :---: | :---: |
-| Default | ![Connecting](../1x1/wifiservice-blocker-default-connecting.bmp) | ![Connected](../1x1/wifiservice-blocker-default-connected.bmp) | ![Failed](../1x1/wifiservice-blocker-default-failed.bmp) |
-| Candy | ![Connecting](../1x1/wifiservice-blocker-candy-connecting.bmp) | ![Connected](../1x1/wifiservice-blocker-candy-connected.bmp) | ![Failed](../1x1/wifiservice-blocker-candy-failed.bmp) |
-| Christmas | ![Connecting](../1x1/wifiservice-blocker-christmas-connecting.bmp) | ![Connected](../1x1/wifiservice-blocker-christmas-connected.bmp) | ![Failed](../1x1/wifiservice-blocker-christmas-failed.bmp) |
+| Theme | Pending | Active | Ready | Failed |
+| :--- | :---: | :---: | :---: | :---: |
+| Default | ![Pending](../1x1/wifiservice-blocker-default-pending.bmp) | ![Active](../1x1/wifiservice-blocker-default-active.bmp) | ![Ready](../1x1/wifiservice-blocker-default-ready.bmp) | ![Failed](../1x1/wifiservice-blocker-default-failed.bmp) |
+| Candy | ![Pending](../1x1/wifiservice-blocker-candy-pending.bmp) | ![Active](../1x1/wifiservice-blocker-candy-active.bmp) | ![Ready](../1x1/wifiservice-blocker-candy-ready.bmp) | ![Failed](../1x1/wifiservice-blocker-candy-failed.bmp) |
+| Christmas | ![Pending](../1x1/wifiservice-blocker-christmas-pending.bmp) | ![Active](../1x1/wifiservice-blocker-christmas-active.bmp) | ![Ready](../1x1/wifiservice-blocker-christmas-ready.bmp) | ![Failed](../1x1/wifiservice-blocker-christmas-failed.bmp) |

@@ -18,12 +18,22 @@ public:
 
     void update() override {
         if (!_registry) return;
-        
         _lastIsActive = _isActive;
-        Reading r = _registry->getLatest<TTag>();
-        _isActive = (r.value > 0.5f) && !r.isError;
+        updateInternal(typename TTag::DataType{});
     }
 
+private:
+    void updateInternal(Reading) {
+        Reading data = _registry->template getLatest<TTag>();
+        _isActive = (data.value > 0.5f) && !data.isError;
+    }
+
+    void updateInternal(StatusMessage) {
+        StatusMessage data = _registry->template getLatest<TTag>();
+        _isActive = (data.progress >= 100.0f) && !data.isFailed;
+    }
+
+public:
     bool isActive() const override { return _isActive; }
     bool justStarted() const override { return _isActive && !_lastIsActive; }
     bool justStopped() const override { return !_isActive && _lastIsActive; }

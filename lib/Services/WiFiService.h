@@ -17,7 +17,7 @@ public:
     WiFiService(ISensorRegistry* registry, const char* ssid = nullptr, const char* password = nullptr);
     
     // IBlocker Implementation
-    BlockerStatus getStatus() const override;
+    StatusMessage getStatus() const override;
 
     // ISwitch Implementation
     void update() override;

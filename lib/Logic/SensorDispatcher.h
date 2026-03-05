@@ -27,6 +27,8 @@ public:
 protected:
     Reading getReadingByName(const char* name) override;
     void setReadingByName(const char* name, Reading reading) override;
+    StatusMessage getStatusByName(const char* name) override;
+    void setStatusByName(const char* name, StatusMessage status) override;
 
 private:
     // List of physical sensors mapped by their Type-Name
@@ -34,6 +36,9 @@ private:
     
     // Cache of the latest readings, updated once per update() call
     std::map<std::string, Reading> _cache;
+
+    // Cache of the latest status messages
+    std::map<std::string, StatusMessage> _statusCache;
 };
 
 #endif

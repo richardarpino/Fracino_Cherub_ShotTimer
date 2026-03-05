@@ -1,10 +1,18 @@
 #include <unity.h>
+#include <type_traits>
 #include "SensorDispatcher.h"
 #include "Logic/SensorDispatcher.cpp"
 #include "SensorTags.h"
 #include "../_common/stubs/SensorStub.h"
 #include "../_common/stubs/Arduino.h"
 #include "../_common/stubs/Arduino.cpp"
+
+// RED: These checks will fail to compile because tags don't inherit from these yet
+// and the base classes themselves don't exist.
+// RED: These checks will fail to compile because tags don't inherit from these yet
+// and the base classes themselves don't exist.
+static_assert(std::is_base_of_v<BaseTelemetryTag, BoilerPressureTag>, "Must be TelemetryTag");
+static_assert(std::is_base_of_v<BaseServiceTag, WiFiTag>, "Must be ServiceTag");
 
 void test_dispatcher_provides_latest_reading() {
     SensorDispatcher dispatcher;
@@ -53,6 +61,17 @@ void test_dispatcher_unregistered_tag_returns_invalid() {
     Reading r = dispatcher.getLatest<WeightTag>();
     
     TEST_ASSERT_TRUE(r.isError);
+}
+
+void test_dispatcher_provides_latest_status() {
+    SensorDispatcher dispatcher;
+    dispatcher.publish<WiFiTag>(StatusMessage("WiFi", "CONNECTED", 100.0f, false));
+    
+    // RED: This should return StatusMessage in the future
+    StatusMessage s = dispatcher.getLatest<WiFiTag>();
+    
+    TEST_ASSERT_EQUAL_STRING("CONNECTED", s.message.c_str());
+    TEST_ASSERT_EQUAL_FLOAT(100.0f, s.progress);
 }
 
 // --- Widget-Registry Integration Tests ---
@@ -134,6 +153,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_dispatcher_provides_latest_reading);
     RUN_TEST(test_dispatcher_ensures_synchronization);
     RUN_TEST(test_dispatcher_unregistered_tag_returns_invalid);
+    RUN_TEST(test_dispatcher_provides_latest_status);
     RUN_TEST(test_widget_logic_pulls_correct_tag);
     RUN_TEST(test_widget_logic_reflects_registry_sync);
     RUN_TEST(test_widget_logic_supports_late_binding);

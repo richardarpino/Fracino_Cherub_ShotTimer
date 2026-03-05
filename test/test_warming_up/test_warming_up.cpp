@@ -14,7 +14,7 @@ void test_initial_state() {
     WarmingUpBlocker blocker(&registry, &pressureSensor);
     
     TEST_ASSERT_FALSE(blocker.isActive());
-    BlockerStatus status = blocker.getStatus();
+    StatusMessage status = blocker.getStatus();
     TEST_ASSERT_EQUAL_STRING("Warming Up...", status.title.c_str());
     TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.0bar", status.message.c_str());
     TEST_ASSERT_FLOAT_WITHIN(0.01, 0.0f, status.progress);
@@ -65,8 +65,8 @@ void test_zigzag_extrema_detection() {
     TEST_ASSERT_TRUE(blocker.isActive());
     TEST_ASSERT_EQUAL_STRING("WARM", blocker.getStatus().message.c_str());
     
-    // Verify registry publishing
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, registry.getLatest<WarmingUpTag>().value);
+    // Verify registry publishing (Using .progress)
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
 }
 
 void test_warm_startup() {
@@ -78,7 +78,7 @@ void test_warm_startup() {
     blocker.update();
     
     TEST_ASSERT_TRUE(blocker.isActive());
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, registry.getLatest<WarmingUpTag>().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
 }
 
 void test_timeout() {
@@ -93,7 +93,7 @@ void test_timeout() {
     setMillis(600000);
     blocker.update();
     TEST_ASSERT_TRUE(blocker.isActive());
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, registry.getLatest<WarmingUpTag>().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
 }
 
 int main(int argc, char **argv) {

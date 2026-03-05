@@ -38,7 +38,7 @@ lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
 void BlockerWidget::refresh() {
     if (!_blocker) return;
 
-    BlockerStatus status = _blocker->getStatus();
+    StatusMessage status = _blocker->getStatus();
     lv_label_set_text(_title_label, status.title.c_str());
     lv_label_set_text(_status_label, status.message.c_str());
 

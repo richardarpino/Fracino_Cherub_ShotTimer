@@ -4,7 +4,7 @@ WiFiService::WiFiService(ISensorRegistry* registry, const char* ssid, const char
     : _ssid(ssid), _password(password), _isBegun(ssid != nullptr), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _registry(registry) {
     // Note: Registry storing wifi state as a logical reading
     if (_registry) {
-        _registry->publish<WiFiTag>(Reading(0.0f, "", "DISCONNECTED", 0, false));
+        _registry->publish<WiFiTag>(StatusMessage("WiFi", "DISCONNECTED", -1.0f, false));
     }
     
     if (_isBegun) {
@@ -24,11 +24,11 @@ void WiFiService::update() {
     _lastActive = _isActive;
 
     if (_registry) {
-        _registry->publish<WiFiTag>(Reading(_isActive ? 1.0f : 0.0f, "", _isActive ? "CONNECTED" : "DISCONNECTED", 0, status == WL_CONNECT_FAILED));
+        _registry->publish<WiFiTag>(StatusMessage("WiFi", _isActive ? "CONNECTED" : "DISCONNECTED", _isActive ? 100.0f : -1.0f, status == WL_CONNECT_FAILED));
     }
 }
 
-BlockerStatus WiFiService::getStatus() const {
+StatusMessage WiFiService::getStatus() const {
     wl_status_t status = WiFi.status();
     String msg = "CONNECTING...";
     bool failed = (status == WL_CONNECT_FAILED);
@@ -40,5 +40,5 @@ BlockerStatus WiFiService::getStatus() const {
         msg = "CONNECTION FAILED";
     }
 
-    return BlockerStatus("WiFi", msg, progress, failed);
+    return StatusMessage("WiFi", msg, progress, failed);
 }

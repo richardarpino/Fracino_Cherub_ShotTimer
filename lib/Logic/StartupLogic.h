@@ -17,7 +17,7 @@ public:
     void update() override;
     
     // IBlocker implementation
-    BlockerStatus getStatus() const override;
+    StatusMessage getStatus() const override;
     bool isActive() const override;
     bool justStarted() const override;
     bool justStopped() const override;

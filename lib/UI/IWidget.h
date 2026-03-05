@@ -9,7 +9,8 @@ class IWidget {
 public:
     virtual ~IWidget() {}
     virtual lv_obj_t* init(lv_obj_t* parent, uint8_t cols, uint8_t rows) = 0;
-    virtual void update(const Reading& reading) = 0;
+    virtual void update(const Reading& reading) {}
+    virtual void update(const StatusMessage& status) {}
     virtual void setMetadata(const SensorMetadata& meta) {} // Default No-Op
     virtual void refresh() = 0;
     virtual void applyTheme(ITheme* theme) = 0;

@@ -4,11 +4,25 @@
 #include "SensorTypes.h"
 
 /**
+ * Base for continuous telemetry (Pressure, Temp, Weight)
+ */
+struct BaseTelemetryTag {
+    using DataType = Reading;
+};
+
+/**
+ * Base for discrete system processes (WiFi, OTA, Warming Up)
+ */
+struct BaseServiceTag {
+    using DataType = StatusMessage;
+};
+
+/**
  * Logical Tags for the Sensor Registry.
  * These are empty structs used purely as type markers.
  * Every Tag MUST have a unique static NAME for registry indexing.
  */
-struct BoilerPressureTag {
+struct BoilerPressureTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "BoilerPressure";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -20,7 +34,7 @@ struct BoilerPressureTag {
     }
 };
 
-struct BoilerTempTag {
+struct BoilerTempTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "BoilerTemp";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -32,7 +46,7 @@ struct BoilerTempTag {
     }
 };
 
-struct ShotTimeTag {
+struct ShotTimeTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "ShotTime";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -44,7 +58,7 @@ struct ShotTimeTag {
     }
 };
 
-struct WeightTag {
+struct WeightTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "Weight";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -56,7 +70,7 @@ struct WeightTag {
     }
 };
 
-struct TaredWeightTag {
+struct TaredWeightTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "TaredWeight";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -68,7 +82,7 @@ struct TaredWeightTag {
     }
 };
 
-struct WiFiStrengthTag {
+struct WiFiStrengthTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "WiFiStrength";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -80,7 +94,7 @@ struct WiFiStrengthTag {
     }
 };
 
-struct LastValidShotTag {
+struct LastValidShotTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "LastValidShot";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -92,7 +106,7 @@ struct LastValidShotTag {
     }
 };
 
-struct PumpTag {
+struct PumpTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "Pump";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -104,7 +118,7 @@ struct PumpTag {
     }
 };
 
-struct ButtonRightTag {
+struct ButtonRightTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "ButtonRight";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -116,7 +130,7 @@ struct ButtonRightTag {
     }
 };
 
-struct ButtonLeftTag {
+struct ButtonLeftTag : public BaseTelemetryTag {
     static constexpr const char* NAME = "ButtonLeft";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
@@ -128,38 +142,38 @@ struct ButtonLeftTag {
     }
 };
 
-struct WiFiTag {
+struct WiFiTag : public BaseServiceTag {
     static constexpr const char* NAME = "WiFi";
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "", "DISCONNECTED", 0, false),
-            Reading(1.0f, "", "CONNECTED", 0, false),
-            Reading(0.0f, "", "DISCONNECTED", 0, false),
-            Reading(0.0f, "", "ERR", 0, true)
+    static ServiceMetadata getMetadata() {
+        return ServiceMetadata(
+            StatusMessage("WiFi", "CONNECTING...", -1.0f, false),        // pending
+            StatusMessage("WiFi", "AUTHENTICATING...", -1.0f, false),  // active
+            StatusMessage("WiFi", "CONNECTED: 192.168.1.50", 100.0f, false), // ready
+            StatusMessage("WiFi", "CONNECTION FAILED", -1.0f, true)      // failed
         );
     }
 };
 
-struct OTATag {
+struct OTATag : public BaseServiceTag {
     static constexpr const char* NAME = "OTA";
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "", "OFF", 0, false),
-            Reading(1.0f, "", "ON", 0, false),
-            Reading(0.0f, "", "OFF", 0, false),
-            Reading(0.0f, "", "ERR", 0, true)
+    static ServiceMetadata getMetadata() {
+        return ServiceMetadata(
+            StatusMessage("OTA Update", "LISTENING...", 100.0f, false),  // pending
+            StatusMessage("OTA Update", "UPDATING: 42%", 42.0f, false),   // active
+            StatusMessage("OTA Update", "UPDATE COMPLETE", 100.0f, false),// ready
+            StatusMessage("OTA Update", "UPDATE FAILED", 0.0f, true)      // failed
         );
     }
 };
 
-struct WarmingUpTag {
+struct WarmingUpTag : public BaseServiceTag {
     static constexpr const char* NAME = "WarmingUp";
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "", "WARMING UP", 0, false),
-            Reading(1.0f, "", "READY", 0, false),
-            Reading(0.0f, "", "WARMING UP", 0, false),
-            Reading(0.0f, "", "ERR", 0, true)
+    static ServiceMetadata getMetadata() {
+        return ServiceMetadata(
+            StatusMessage("Warming Up...", "Heating Cycle 1...", 5.0f, false), // pending
+            StatusMessage("Warming Up...", "Heating Cycle 2...", 45.0f, false),// active
+            StatusMessage("Warming Up...", "WARM", 100.0f, false),             // ready
+            StatusMessage("Warming Up...", "WARMUP TIMEOUT", 0.0f, true)       // failed
         );
     }
 };

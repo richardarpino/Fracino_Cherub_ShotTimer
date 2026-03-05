@@ -49,9 +49,18 @@ public:
 
     void refresh() override {
         if (_registry) {
-            setMetadata(_registry->getMetadata<T>());
-            update(_registry->getLatest<T>());
+            refreshInternal(typename T::DataType{});
         }
+    }
+
+private:
+    void refreshInternal(Reading) {
+        setMetadata(_registry->getMetadata<T>());
+        update(_registry->template getLatest<T>());
+    }
+
+    void refreshInternal(StatusMessage) {
+        update(_registry->template getLatest<T>());
     }
 
 private:

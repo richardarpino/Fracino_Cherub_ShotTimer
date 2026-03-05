@@ -3,7 +3,7 @@
 OTAService::OTAService(ISensorRegistry* registry, const char* hostname) 
     : _hostname(hostname), _isActive(false), _isError(false), _progress(0), _registry(registry) {
     if (_registry) {
-        _registry->publish<OTATag>(Reading(0.0f, "", "OFF", 0, false));
+        _registry->publish<OTATag>(StatusMessage("OTA", "OFF", 0.0f, false));
     }
 #ifdef ARDUINO
     ArduinoOTA.setHostname(_hostname);
@@ -48,11 +48,11 @@ void OTAService::update() {
 #endif
 
     if (_registry) {
-        _registry->publish<OTATag>(Reading(_isActive ? 1.0f : 0.0f, "", _isActive ? "ON" : "OFF", 0, _isError));
+        _registry->publish<OTATag>(StatusMessage("OTA", _isActive ? "ON" : "OFF", _progress, _isError));
     }
 }
 
-BlockerStatus OTAService::getStatus() const {
+StatusMessage OTAService::getStatus() const {
     String msg = "OTA INACTIVE";
     if (_isError) {
         msg = "UPDATE FAILED";
@@ -62,5 +62,5 @@ BlockerStatus OTAService::getStatus() const {
         msg = "LISTENING...";
     }
     
-    return BlockerStatus("OTA Update", msg, _progress, _isError);
+    return StatusMessage("OTA Update", msg, _progress, _isError);
 }

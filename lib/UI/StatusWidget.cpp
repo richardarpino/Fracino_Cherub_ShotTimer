@@ -44,8 +44,20 @@ void StatusWidgetBase::update(const Reading& reading) {
         // If this was a manual push (external update), lock it
         // Note: subclasses handle the semantic distinction via refresh() check
         _messageTimeout = 0;
-    } else {
-        // Handle empty reading case if needed
+    }
+}
+
+void StatusWidgetBase::update(const StatusMessage& status) {
+    if (status.message.length() > 0) {
+        setText(status.message.c_str());
+        
+        if (status.isFailed) {
+            lv_obj_set_style_bg_color(_container, _alertBgColor, 0);
+            lv_obj_set_style_text_color(_label, _errorColor, 0);
+        } else {
+            lv_obj_set_style_bg_color(_container, _bgColor, 0);
+            lv_obj_set_style_text_color(_label, _textColor, 0);
+        }
     }
 }
 

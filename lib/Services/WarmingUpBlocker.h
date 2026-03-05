@@ -13,7 +13,7 @@ class WarmingUpBlocker : public IBlocker {
 public:
     WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pressureSensor, unsigned long timeoutMs = 600000);
     // IBlocker Implementation
-    BlockerStatus getStatus() const override;
+    StatusMessage getStatus() const override;
 
     void update() override;
 
