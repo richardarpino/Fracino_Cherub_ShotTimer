@@ -1,9 +1,9 @@
 #include "OTAService.h"
 
 OTAService::OTAService(ISensorRegistry* registry, const char* hostname) 
-    : _hostname(hostname), _isActive(false), _isError(false), _progress(0), _registry(registry) {
+    : _hostname(hostname), _isActive(false), _isError(false), _progress(100.0f), _registry(registry) {
     if (_registry) {
-        _registry->publish<OTATag>(StatusMessage("OTA", "OFF", 0.0f, false));
+        _registry->publish<OTATag>(StatusMessage("OTA", "OFF", 100.0f, false));
     }
 #ifdef ARDUINO
     ArduinoOTA.setHostname(_hostname);
@@ -33,6 +33,7 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
 #else
     // Native mock: just mark as immediately active for simplicity in smoke tests
     _isActive = true; 
+    _progress = 100.0f;
 #endif
 }
 
