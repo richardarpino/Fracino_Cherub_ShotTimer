@@ -6,6 +6,7 @@
 
 // Simple mock for SensorTags if needed, but we can use real ones
 struct MockPumpTag {
+    using DataType = Reading;
     static constexpr const char* NAME = "MockPump";
     static SensorMetadata getMetadata() {
         return SensorMetadata(

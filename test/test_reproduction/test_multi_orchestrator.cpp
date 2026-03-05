@@ -19,7 +19,7 @@
  */
 void test_reproduction_edge_loss_multi_orchestrator() {
     MockRawSource mockPin;
-    DigitalSensor pumpSensor(&mockPin, true);
+    DigitalSensor pumpSensor(&mockPin, true, 0);
     ManualPumpTimer timer;
     SensorDispatcher registry;
     
