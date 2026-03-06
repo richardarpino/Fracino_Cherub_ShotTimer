@@ -47,6 +47,7 @@ public:
     }
 
     void update() override;
+    bool hasProcessor(const char* name) override;
 
 protected:
     void triggerResolution(const char* name) override;

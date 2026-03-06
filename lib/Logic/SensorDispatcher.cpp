@@ -43,6 +43,10 @@ void SensorDispatcher::setStatusByName(const char* name, StatusMessage status) {
     _cache[name] = Reading(status.progress, "", status.message, 0, status.isFailed);
 }
 
+bool SensorDispatcher::hasProcessor(const char* name) {
+    return _processors.find(name) != _processors.end();
+}
+
 void SensorDispatcher::attachProcessorInternal(const char* targetTagName, ITagProcessor* processor) {
     _processors[targetTagName] = processor;
 }

@@ -81,6 +81,11 @@ public:
         attachProcessorInternal(T::NAME, processor);
     }
 
+    /**
+     * Checks if a specific tag has a registered processor.
+     */
+    virtual bool hasProcessor(const char* name) = 0;
+
 protected:
     // Internal tag-dispatching helpers
     template<typename T>
