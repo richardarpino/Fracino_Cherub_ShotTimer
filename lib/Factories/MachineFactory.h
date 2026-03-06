@@ -10,7 +10,7 @@
 #include "../Sensors/Hardware/WeightSensor.h"
 #include "../Logic/BoilerTemperature.h"
 #include "../Logic/ManualPumpTimer.h"
-#include "../Logic/TaredWeight.h"
+#include "../Logic/Processors/TaredWeightProcessor.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
@@ -52,7 +52,7 @@ public:
     WeightSensor* getWeightSensor() { return &_weightSensor; }
     BoilerTemperature* getBoilerTemp() { return &_boilerTemp; }
     ManualPumpTimer* getManualPumpTimer() { return &_manualPumpTimer; }
-    TaredWeight* getTaredWeight() { return &_taredWeight; }
+    TaredWeightProcessor* getTaredWeight() { return &_taredWeight; }
 
 private:
     SensorDispatcher _dispatcher;
@@ -80,7 +80,7 @@ private:
     // Logical Components (Published to Dispatcher via ScaleLogic)
     BoilerTemperature _boilerTemp;
     ManualPumpTimer _manualPumpTimer;
-    TaredWeight _taredWeight;
+    TaredWeightProcessor _taredWeight;
 
     WiFiService* _wifi;
     OTAService* _ota;

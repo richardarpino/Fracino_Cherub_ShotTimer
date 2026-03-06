@@ -12,10 +12,8 @@ class ManualPumpTimer {
 public:
     ManualPumpTimer() : _startTime(0), _isRunning(false), _lastDuration(0.0) {}
 
-    Reading getReading() {
-        float time = _isRunning ? (millis() - _startTime) / 1000.0f : _lastDuration;
-        const char* status = _isRunning ? "RUNNING" : "READY";
-        return Reading(time, "SECS", status, 1, false);
+    float getReading() {
+        return _isRunning ? (millis() - _startTime) / 1000.0f : _lastDuration;
     }
 
 

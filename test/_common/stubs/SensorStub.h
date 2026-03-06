@@ -7,12 +7,12 @@
 class SensorStub : public HardwareSensor {
 public:
     SensorStub() : HardwareSensor(nullptr) {}
-    void setReading(const Reading& reading) { _reading = reading; }
-    Reading getReading() override { return _reading; }
+    void setReading(float value) { _value = value; }
+    float getReading() override { return _value; }
     void update() {}
 
 private:
-    Reading _reading = Reading(0.0f, "UNIT", "LABEL", 1, false);
+    float _value = 0.0f;
 };
 
 #endif

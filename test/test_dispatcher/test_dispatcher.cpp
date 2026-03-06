@@ -18,7 +18,7 @@ void test_dispatcher_provides_latest_reading() {
     SensorDispatcher dispatcher;
     SensorStub pressureSensor;
     
-    pressureSensor.setReading(Reading(1.5f, "bar", "PRESSURE", 1, false));
+    pressureSensor.setReading(1.5f);
     
     // Wire the concrete sensor to the logical Tag
     dispatcher.provide<BoilerPressureReading>(&pressureSensor);
@@ -39,13 +39,13 @@ void test_dispatcher_ensures_synchronization() {
     dispatcher.provide<BoilerPressureReading>(&pressureSensor);
     
     // First update
-    pressureSensor.setReading(Reading(1.0f, "bar", "PRESSURE", 1, false));
+    pressureSensor.setReading(1.0f);
     dispatcher.update();
     
     Reading r1 = dispatcher.getLatest<BoilerPressureReading>();
     
     // Change sensor value WITHOUT calling dispatcher.update()
-    pressureSensor.setReading(Reading(2.0f, "bar", "PRESSURE", 1, false));
+    pressureSensor.setReading(2.0f);
     
     Reading r2 = dispatcher.getLatest<BoilerPressureReading>();
     
@@ -118,8 +118,8 @@ void test_widget_logic_pulls_correct_tag() {
     SensorStub pressureSensor;
     SensorStub tempSensor;
 
-    pressureSensor.setReading(Reading(1.5f, "bar", "P", 1, false));
-    tempSensor.setReading(Reading(95.0f, "C", "T", 1, false));
+    pressureSensor.setReading(1.5f);
+    tempSensor.setReading(95.0f);
 
     registry.provide<BoilerPressureReading>(&pressureSensor);
     registry.provide<BoilerTempReading>(&tempSensor);
@@ -139,11 +139,11 @@ void test_widget_logic_reflects_registry_sync() {
 
     MockRegistryWidget<BoilerPressureReading> widget(&registry);
 
-    sensor.setReading(Reading(1.0f, "bar", "P", 1, false));
+    sensor.setReading(1.0f);
     registry.update();
     Reading r1 = widget.getLatest();
 
-    sensor.setReading(Reading(2.0f, "bar", "P", 1, false));
+    sensor.setReading(2.0f);
     // Notice: NO registry.update() here
     Reading r2 = widget.getLatest();
 
@@ -154,7 +154,7 @@ void test_widget_logic_reflects_registry_sync() {
 void test_widget_logic_supports_late_binding() {
     SensorDispatcher registry;
     SensorStub sensor;
-    sensor.setReading(Reading(3.14f, "x", "L", 2, false));
+    sensor.setReading(3.14f);
     registry.provide<BoilerPressureReading>(&sensor);
     registry.update();
 

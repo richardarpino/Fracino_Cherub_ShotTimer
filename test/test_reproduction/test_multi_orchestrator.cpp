@@ -50,8 +50,11 @@ void test_reproduction_edge_loss_multi_orchestrator() {
     setMillis(1001);
     monitor.update();
 
+    // Move time forward slightly to ensure non-zero duration
+    setMillis(1002);
+
     // Verification: Monitor started the timer
-    TEST_ASSERT_EQUAL_STRING("RUNNING", timer.getReading().label);
+    TEST_ASSERT_TRUE(timer.getReading() > 0.0f);
 }
 
 int main(int argc, char **argv) {

@@ -35,7 +35,7 @@
 
 // Headers for virtual sensors
 #include "../../lib/Logic/BoilerTemperature.h"
-#include "../../lib/Logic/TaredWeight.h"
+#include "../../lib/Logic/Processors/TaredWeightProcessor.h"
 
 void setUp(void) {}
 void tearDown(void) {}

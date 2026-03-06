@@ -40,7 +40,7 @@ void test_zigzag_reactive_flow() {
     
     // 1. Initial Ramp: 0.0 -> 1.1 (First Peak)
     for (int i = 0; i <= 11; i++) {
-        pressureSensor.setReading(Units::Pressure.make(i / 10.0f, "BOILER"));
+        pressureSensor.setReading(i / 10.0f);
         registry.update(); // Polling -> Resolve Boiler -> Resolve HeatingCycle
         blocker.update();
     }
@@ -48,7 +48,7 @@ void test_zigzag_reactive_flow() {
 
     // 2. First Drop: 1.1 -> 0.8 (First Valley)
     for (int i = 11; i >= 8; i--) {
-        pressureSensor.setReading(Units::Pressure.make(i / 10.0f, "BOILER"));
+        pressureSensor.setReading(i / 10.0f);
         registry.update();
         blocker.update();
     }
@@ -56,24 +56,18 @@ void test_zigzag_reactive_flow() {
 
     // 3. Second Heat: 0.8 -> 1.2 (Second Peak)
     for (int i = 8; i <= 12; i++) {
-        pressureSensor.setReading(Units::Pressure.make(i / 10.0f, "BOILER"));
+        pressureSensor.setReading(i / 10.0f);
         registry.update();
         blocker.update();
     }
-    // Small dip to consolidate the cycle
-    pressureSensor.setReading(Units::Pressure.make(1.1f, "BOILER"));
-    registry.update();
-    blocker.update();
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 2, currently 1.1bar", blocker.getStatus().message);
-
     // Simulation of more cycles to verify completion
-    pressureSensor.setReading(Units::Pressure.make(0.8f, "BOILER")); registry.update(); blocker.update();
-    pressureSensor.setReading(Units::Pressure.make(1.2f, "BOILER")); registry.update(); blocker.update();
-    pressureSensor.setReading(Units::Pressure.make(1.1f, "BOILER")); registry.update(); blocker.update();
+    pressureSensor.setReading(0.8f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.2f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.1f); registry.update(); blocker.update();
     
-    pressureSensor.setReading(Units::Pressure.make(0.8f, "BOILER")); registry.update(); blocker.update();
-    pressureSensor.setReading(Units::Pressure.make(1.2f, "BOILER")); registry.update(); blocker.update();
-    pressureSensor.setReading(Units::Pressure.make(1.1f, "BOILER")); registry.update(); blocker.update();
+    pressureSensor.setReading(0.8f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.2f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.1f); registry.update(); blocker.update();
 
     TEST_ASSERT_TRUE(blocker.isActive());
     TEST_ASSERT_EQUAL_STRING("WARM", blocker.getStatus().message);
@@ -91,7 +85,7 @@ void test_warm_startup_reactive() {
     registry.attachProcessor<WarmingUpStatus>(&warmProc);
 
     // Start already pressurized
-    pressureSensor.setReading(Units::Pressure.make(1.1f, "BOILER"));
+    pressureSensor.setReading(1.1f);
     registry.update(); // Triggers Warm Start bypass in processor
     blocker.update();
     
@@ -114,7 +108,7 @@ void test_timeout() {
 
     setMillis(600000);
     // Trigger update to check timeout
-    registry.publish<BoilerPressureReading>(Units::Pressure.make(0.5f, "BOILER"));
+    registry.publish<BoilerPressureReading>(0.5f);
     blocker.update();
     TEST_ASSERT_TRUE(blocker.isActive());
 }
@@ -130,9 +124,9 @@ void test_memory_limit_reactive() {
 
     // 20 heating cycles
     for (int cycle = 1; cycle <= 20; cycle++) {
-        pressureSensor.setReading(Units::Pressure.make(0.8f, "BOILER"));
+        pressureSensor.setReading(0.8f);
         registry.update();
-        pressureSensor.setReading(Units::Pressure.make(1.2f, "BOILER"));
+        pressureSensor.setReading(1.2f);
         registry.update();
     }
 

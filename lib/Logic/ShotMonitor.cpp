@@ -14,7 +14,7 @@ void ShotMonitor::update() {
 
     if (_pump.justStopped()) {
         if (_timer) {
-            float duration = _timer->getReading().value;
+            float duration = _timer->getReading();
             _timer->stop();
             
             // Issue #10: Filter purges (< 10s)

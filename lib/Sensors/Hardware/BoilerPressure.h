@@ -11,7 +11,7 @@ public:
           _lastSampleTime(0), _scalar(scalar) {}
 
     // ISensor Implementation
-    Reading getReading() override {
+    float getReading() override {
         unsigned long now = millis();
         
         // Only sample hardware once per millisecond
@@ -24,7 +24,7 @@ public:
             _lastSampleTime = now;
         }
 
-        return Reading(getStableDisplayValue());
+        return getStableDisplayValue();
     }
 
 

@@ -13,13 +13,13 @@ public:
         : HardwareSensor(source, 0.1f, 0.1f), _gramsPerUnit(gramsPerUnit) {}
 
     // ISensor Implementation
-    Reading getReading() override {
+    float getReading() override {
         if (_source) {
             RawReading raw = _source->read();
             float currentGrams = raw.value * _gramsPerUnit;
             updateFilter(currentGrams);
         }
-        return Reading(getStableDisplayValue());
+        return getStableDisplayValue();
     }
 
 

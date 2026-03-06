@@ -17,8 +17,8 @@ public:
           _lastDebounceTime(0),
           _debouncedActive(false) {}
 
-    Reading getReading() override {
-        if (!_source) return Reading(0.0f, "", "ERR", 0, true);
+    float getReading() override {
+        if (!_source) return 0.0f;
         
         RawReading deviceRaw = _source->read();
         bool currentRawActive = _activeLow ? (deviceRaw.value == 0) : (deviceRaw.value != 0);
@@ -34,9 +34,8 @@ public:
         }
 
         _lastRawActive = currentRawActive;
-        float value = _debouncedActive ? 1.0f : 0.0f;
         
-        return Reading(value);
+        return _debouncedActive ? 1.0f : 0.0f;
     }
 
 private:

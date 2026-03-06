@@ -4,7 +4,7 @@
 #include "../Interfaces/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
 #include "../Sensors/Registry/RegistrySwitch.h"
-#include "TaredWeight.h"
+#include "Processors/TaredWeightProcessor.h"
 
 /**
  * Coordination module for scale-related machine behavior.
@@ -12,13 +12,13 @@
  */
 class ScaleLogic {
 public:
-    ScaleLogic(TaredWeight* weight, ISensorRegistry* registry);
+    ScaleLogic(TaredWeightProcessor* weight, ISensorRegistry* registry);
 
     void update();
 
 private:
     RegistrySwitch<PumpReading> _pump;
-    TaredWeight* _weight;
+    TaredWeightProcessor* _weight;
     ISensorRegistry* _registry;
 };
 

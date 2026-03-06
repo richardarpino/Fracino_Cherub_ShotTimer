@@ -2,7 +2,7 @@
 #include "Logic/ScaleLogic.h"
 #include "Logic/ScaleLogic.cpp"
 #include "Sensors/Hardware/DigitalSensor.h"
-#include "Logic/TaredWeight.h"
+#include "Logic/Processors/TaredWeightProcessor.h"
 #include "Hardware/WeightSensor.h"
 #include "Logic/SensorDispatcher.h"
 #include "Logic/SensorDispatcher.cpp"
@@ -15,11 +15,15 @@ void test_scale_logic() {
     DigitalSensor pumpSensor(&mockPin, true, 0); // Active LOW, 0ms debounce for tests
     
     MockRawSource weightMock;
+    // Use alpha=1.0 for deterministic tests (no filtering)
     WeightSensor weightSensor(&weightMock, 0.001f);
-    TaredWeight taredWeight(&weightSensor);
+    weightSensor.setFilterAlpha(1.0f); 
 
     SensorDispatcher registry;
+    TaredWeightProcessor taredWeight(&registry);
+    
     registry.provide<PumpReading>(&pumpSensor);
+    registry.provide<WeightReading>(&weightSensor); // Register the base weight
     
     ScaleLogic logic(&taredWeight, &registry);
 
@@ -29,19 +33,26 @@ void test_scale_logic() {
     
     registry.update();
     logic.update();
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, taredWeight.getReading().value);
+    
+    // Verify via Registry
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 5.0f, registry.getLatest<TaredWeightReading>().value);
 
     setMillis(1000);
     mockPin.setRawValue(LOW); // Pump ON
     registry.update();
     logic.update();
 
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, taredWeight.getReading().value);
+    // After Pump ON, it should tare to 0.0
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, registry.getLatest<TaredWeightReading>().value);
     
     setMillis(2000);
     mockPin.setRawValue(HIGH); // Pump OFF
+    weightMock.setRawValue(7000); // Add 2g
     registry.update();
     logic.update();
+
+    // Should show 2.0g (7.0 - 5.0 offset)
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 2.0f, registry.getLatest<TaredWeightReading>().value);
 }
 
 void test_scale_logic_edge_consumption() {

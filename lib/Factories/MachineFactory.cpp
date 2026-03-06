@@ -16,7 +16,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _weightSensor(nullptr), 
       _boilerTemp(&_boilerPressure),
       _manualPumpTimer(),
-      _taredWeight(&_weightSensor),
+      _taredWeight(&_dispatcher),
       _wifi(nullptr),
       _ota(nullptr),
       _warmingUpBlocker(nullptr),
