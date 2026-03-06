@@ -9,7 +9,8 @@ void WarmingUpBlocker::update() {
     
     if (_registry) {
         StatusMessage status = _registry->getLatest<WarmingUpStatus>();
-        _isFinished = (status.progress >= 100.0f);
+        // FAIL-SAFE: Unblock if ready (100%), or if failed, or if tag is missing (-1.0f)
+        _isFinished = (status.progress >= 100.0f || status.isFailed || status.progress < 0.0f);
     }
 }
 
