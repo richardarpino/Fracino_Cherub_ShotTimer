@@ -24,7 +24,7 @@ public:
             _lastSampleTime = now;
         }
 
-        return Reading(getStableDisplayValue(), "BAR", "BOILER", 1, false);
+        return Reading(getStableDisplayValue());
     }
 
 

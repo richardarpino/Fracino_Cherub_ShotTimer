@@ -36,7 +36,7 @@ public:
         _lastRawActive = currentRawActive;
         float value = _debouncedActive ? 1.0f : 0.0f;
         
-        return Reading(value, "", _debouncedActive ? "ON" : "OFF", 0, false);
+        return Reading(value);
     }
 
 private:

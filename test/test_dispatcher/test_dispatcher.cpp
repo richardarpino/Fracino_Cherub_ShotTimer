@@ -76,6 +76,23 @@ void test_dispatcher_provides_latest_status() {
     TEST_ASSERT_EQUAL_FLOAT(100.0f, s.progress);
 }
 
+void test_dispatcher_raw_float_publication() {
+    SensorDispatcher dispatcher;
+    
+    // Publish raw float for BoilerPressureReading (metadata unit: bar, precision: 1)
+    dispatcher.publish<BoilerPressureReading>(1.23f);
+    
+    Reading r = dispatcher.getLatest<BoilerPressureReading>();
+    TEST_ASSERT_EQUAL_FLOAT(1.23f, r.value);
+    TEST_ASSERT_EQUAL_STRING("bar", r.unit);
+    TEST_ASSERT_EQUAL(1, r.precision);
+    
+    // Verify formatting follows metadata precision
+    char buf[16];
+    r.format(buf, sizeof(buf));
+    TEST_ASSERT_EQUAL_STRING("1.2bar", buf); // Rounded/formatted to 1 decimal
+}
+
 // --- Widget-Registry Integration Tests ---
 
 template<typename Tag>
@@ -156,6 +173,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_dispatcher_ensures_synchronization);
     RUN_TEST(test_dispatcher_unregistered_tag_returns_invalid);
     RUN_TEST(test_dispatcher_provides_latest_status);
+    RUN_TEST(test_dispatcher_raw_float_publication);
     RUN_TEST(test_widget_logic_pulls_correct_tag);
     RUN_TEST(test_widget_logic_reflects_registry_sync);
     RUN_TEST(test_widget_logic_supports_late_binding);

@@ -35,6 +35,32 @@ public:
         resolveDerived(typename T::Children{});
     }
 
+    /**
+     * Publishes a raw numeric value, automatically wrapping it in a Reading
+     * using the Tag's metadata (units, precision, quantity).
+     */
+    template<typename T>
+    void publish(float value, bool isError = false) {
+        SensorMetadata meta = T::getMetadata();
+        Reading r;
+        
+        // Use DSL-standard metadata (units, precision, quantity)
+        r.unit = meta.init.unit;
+        r.precision = meta.init.precision;
+        r.quantity = meta.init.quantity;
+        r.value = value;
+        r.isError = isError;
+
+        // Custom labels for Boolean states
+        if (r.quantity == PhysicalQuantity::BOOLEAN) {
+            r.label = (value > 0.5f) ? meta.high.label : meta.low.label;
+        } else {
+            r.label = meta.init.label;
+        }
+
+        publish<T>(r);
+    }
+
 protected:
     template<typename... Ts>
     void resolveDerived(TagList<Ts...>) {

@@ -11,7 +11,7 @@ void HeatingCycleProcessor::update() {
     processHistory(pressure.value);
     
     // Publish derived state
-    _registry->publish<HeatingCycleReading>(Reading((float)_totalCompletedCycles, "", "CYCLES", 0, false, PhysicalQuantity::COUNTER));
+    _registry->publish<HeatingCycleReading>((float)_totalCompletedCycles);
 }
 
 void HeatingCycleProcessor::processHistory(float pressure) {

@@ -19,7 +19,7 @@ public:
             float currentGrams = raw.value * _gramsPerUnit;
             updateFilter(currentGrams);
         }
-        return Reading(getStableDisplayValue(), "g", "WEIGHT", 1, false);
+        return Reading(getStableDisplayValue());
     }
 
 

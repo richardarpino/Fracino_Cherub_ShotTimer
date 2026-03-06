@@ -30,7 +30,10 @@ public:
         HardwareSensor* s;
         PollTask(SensorDispatcher* dispatcher, HardwareSensor* sensor) : d(dispatcher), s(sensor) {}
         void run() override { 
-            if (s) d->publish<T>(s->getReading()); 
+            if (s) {
+                Reading r = s->getReading();
+                d->publish<T>(r.value, r.isError);
+            }
         }
     };
 
