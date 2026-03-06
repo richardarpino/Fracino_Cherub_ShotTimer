@@ -17,6 +17,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _taredWeight(&_dispatcher),
       _boilerTempProc(&_dispatcher),
       _shotMonitorProc(&_dispatcher),
+      _safetyProc(&_dispatcher),
       _wifi(nullptr),
       _ota(nullptr),
       _warmingUpBlocker(nullptr),
@@ -38,6 +39,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
     _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
     _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
+    _dispatcher.attachProcessor<BoilerSafetyStatus>(&_safetyProc);
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {

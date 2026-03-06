@@ -61,6 +61,7 @@ void test_registry_integrity_wave2() {
     MockProc shotProc;
     MockProc weightProc;
     MockProc warmingProc;
+    MockProc safetyProc;
 
     // These represent the attachProcessor calls in MachineFactory
     registry.attachProcessor<HeatingCycleReading>(&heatingProc);
@@ -68,6 +69,7 @@ void test_registry_integrity_wave2() {
     registry.attachProcessor<ShotTimeReading>(&shotProc);
     registry.attachProcessor<TaredWeightReading>(&weightProc);
     registry.attachProcessor<WarmingUpStatus>(&warmingProc);
+    registry.attachProcessor<BoilerSafetyStatus>(&safetyProc);
 
     std::set<std::string> verified;
 

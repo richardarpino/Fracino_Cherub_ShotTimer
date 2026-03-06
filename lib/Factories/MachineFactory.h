@@ -11,6 +11,7 @@
 #include "../Logic/Processors/TaredWeightProcessor.h"
 #include "../Logic/Processors/BoilerTemperatureProcessor.h"
 #include "../Logic/Processors/ShotMonitorProcessor.h"
+#include "../Logic/Processors/BoilerSafetyProcessor.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
@@ -76,6 +77,7 @@ private:
     TaredWeightProcessor _taredWeight;
     BoilerTemperatureProcessor _boilerTempProc;
     ShotMonitorProcessor _shotMonitorProc;
+    BoilerSafetyProcessor _safetyProc;
 
     WiFiService* _wifi;
     OTAService* _ota;

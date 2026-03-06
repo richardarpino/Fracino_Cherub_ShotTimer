@@ -36,6 +36,7 @@ struct ButtonLeftReading;
 struct WiFiStatus;
 struct OTAStatus;
 struct WarmingUpStatus;
+struct BoilerSafetyStatus;
 
 /**
  * Logical Tags for the Sensor Registry.
@@ -54,7 +55,7 @@ struct HeatingCycleReading : public BaseTelemetryTag {
 struct BoilerPressureReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::PRESSURE;
     static constexpr const char* NAME = "BoilerPressure";
-    using Children = TagList<HeatingCycleReading, BoilerTempReading>;
+    using Children = TagList<HeatingCycleReading, BoilerTempReading, BoilerSafetyStatus>;
     static SensorMetadata getMetadata() {
         return Units::Pressure.range("BOILER", 0.0f, 3.0f);
     }
@@ -185,6 +186,18 @@ struct WarmingUpStatus : public BaseServiceTag {
             StatusMessage("Warming Up...", "Heating Cycle 2...", 45.0f, false),// active
             StatusMessage("Warming Up...", "WARM", 100.0f, false),             // ready
             StatusMessage("Warming Up...", "WARMUP TIMEOUT", 0.0f, true)       // failed
+        );
+    }
+};
+
+struct BoilerSafetyStatus : public BaseServiceTag {
+    static constexpr const char* NAME = "BoilerSafety";
+    static ServiceMetadata getMetadata() {
+        return ServiceMetadata(
+            StatusMessage("Pressure", "OK", 0.0f, false),                // pending
+            StatusMessage("Pressure", "DANGER: HIGH", 100.0f, false),    // active
+            StatusMessage("Pressure", "OVER PRESSURE", 100.0f, true),    // ready/failed
+            StatusMessage("Pressure", "SENSOR ERR", 0.0f, true)          // failed
         );
     }
 };
