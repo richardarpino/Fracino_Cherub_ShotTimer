@@ -38,10 +38,10 @@ void setupMainDashboard() {
   shotDisplay.resetLayout(2, 2);
   ScreenLayout* layout = shotDisplay.getLayout();
 
-  layout->addWidget(new SensorWidget<BoilerPressureTag>()); 
-  layout->addWidget(new SensorWidget<BoilerTempTag>());     
-  layout->addWidget(new SensorWidget<ShotTimeTag>());       
-  layout->addWidget(new SensorWidget<LastValidShotTag>());  
+  layout->addWidget(new SensorWidget<BoilerPressureReading>()); 
+  layout->addWidget(new SensorWidget<BoilerTempReading>());     
+  layout->addWidget(new SensorWidget<ShotTimeReading>());       
+  layout->addWidget(new SensorWidget<LastValidShotReading>());  
 }
 
 void setup() {

@@ -46,3 +46,10 @@ void SensorDispatcher::setStatusByName(const char* name, StatusMessage status) {
 void SensorDispatcher::attachProcessorInternal(const char* targetTagName, ITagProcessor* processor) {
     _processors[targetTagName] = processor;
 }
+
+void SensorDispatcher::triggerResolution(const char* name) {
+    auto it = _processors.find(name);
+    if (it != _processors.end()) {
+        it->second->update();
+    }
+}

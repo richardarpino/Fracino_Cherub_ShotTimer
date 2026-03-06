@@ -6,6 +6,12 @@
 #include <initializer_list>
 
 /**
+ * Utility for defining lists of tags at compile-time.
+ */
+template<typename... T>
+struct TagList {};
+
+/**
  * Raw hardware data (e.g. ADC reading, digital state)
  */
 struct RawReading {

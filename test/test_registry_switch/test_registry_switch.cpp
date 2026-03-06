@@ -5,7 +5,7 @@
 #include "Sensors/Registry/RegistrySwitch.h" // Does not exist yet
 
 // Simple mock for SensorTags if needed, but we can use real ones
-struct MockPumpTag {
+struct MockPumpReading {
     using DataType = Reading;
     using Children = TagList<>;
     static constexpr const char* NAME = "MockPump";
@@ -23,18 +23,18 @@ void test_registry_switch_independent_edges() {
     SensorDispatcher registry;
     
     // Two switches consuming from the same tag
-    RegistrySwitch<MockPumpTag> switchA(&registry);
-    RegistrySwitch<MockPumpTag> switchB(&registry);
+    RegistrySwitch<MockPumpReading> switchA(&registry);
+    RegistrySwitch<MockPumpReading> switchB(&registry);
 
     // 1. Initial State
-    registry.publish<MockPumpTag>(Reading(0.0f, "", "OFF", 0, false));
+    registry.publish<MockPumpReading>(Reading(0.0f, "", "OFF", 0, false));
     switchA.update();
     switchB.update();
     TEST_ASSERT_FALSE(switchA.isActive());
     TEST_ASSERT_FALSE(switchB.isActive());
 
     // 2. Transition to ON
-    registry.publish<MockPumpTag>(Reading(1.0f, "", "ON", 0, false));
+    registry.publish<MockPumpReading>(Reading(1.0f, "", "ON", 0, false));
     
     // Update A
     switchA.update();
@@ -49,7 +49,7 @@ void test_registry_switch_independent_edges() {
     TEST_ASSERT_TRUE(switchB.justStarted());
 
     // 3. Transition to OFF
-    registry.publish<MockPumpTag>(Reading(0.0f, "", "OFF", 0, false));
+    registry.publish<MockPumpReading>(Reading(0.0f, "", "OFF", 0, false));
     switchB.update();
     TEST_ASSERT_FALSE(switchB.isActive());
     TEST_ASSERT_TRUE(switchB.justStopped());

@@ -4,7 +4,7 @@ WiFiService::WiFiService(ISensorRegistry* registry, const char* ssid, const char
     : _ssid(ssid), _password(password), _isBegun(ssid != nullptr), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _registry(registry) {
     // Note: Registry storing wifi state as a logical reading
     if (_registry) {
-        _registry->publish<WiFiTag>(StatusMessage("WiFi", "DISCONNECTED", -1.0f, false));
+        _registry->publish<WiFiStatus>(StatusMessage("WiFi", "DISCONNECTED", -1.0f, false));
     }
     
     if (_isBegun) {
@@ -24,7 +24,7 @@ void WiFiService::update() {
     _lastActive = _isActive;
 
     if (_registry) {
-        _registry->publish<WiFiTag>(getStatus());
+        _registry->publish<WiFiStatus>(getStatus());
     }
 }
 

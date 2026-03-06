@@ -7,7 +7,7 @@
 #include <vector>
 
 /**
- * Calculates heating cycles from BoilerPressureTag and publishes to HeatingCycleTag.
+ * Calculates heating cycles from BoilerPressureReading and publishes to HeatingCycleReading.
  * Encapsulates the zigzag pressure logic to satisfy SRP.
  */
 class HeatingCycleProcessor : public ITagProcessor {

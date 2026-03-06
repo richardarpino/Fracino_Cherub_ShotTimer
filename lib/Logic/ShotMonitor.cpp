@@ -26,7 +26,7 @@ void ShotMonitor::update() {
 
     // Always publish derived results to the Registry
     if (_timer) {
-        _registry->publish<ShotTimeTag>(_timer->getReading());
+        _registry->publish<ShotTimeReading>(_timer->getReading());
     }
-    _registry->publish<LastValidShotTag>(Reading(_lastValidDuration, "SECS", "LAST SHOT", 1, false));
+    _registry->publish<LastValidShotReading>(Reading(_lastValidDuration, "SECS", "LAST SHOT", 1, false));
 }

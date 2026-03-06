@@ -27,7 +27,7 @@ void test_wifi_blocker_reporting() {
     TEST_ASSERT_EQUAL_FLOAT(100.0f, blocker->getStatus().progress);
     
     // Verify registry publishing
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WiFiTag>().progress);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WiFiStatus>().progress);
 }
 
 void test_wifi_blocker_failure() {
@@ -42,7 +42,7 @@ void test_wifi_blocker_failure() {
     TEST_ASSERT_FALSE(blocker->isActive());
     
     // Verify registry publishing (Indeterminate/Disconnected is -1.0f)
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, -1.0f, registry.getLatest<WiFiTag>().progress);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, -1.0f, registry.getLatest<WiFiStatus>().progress);
 }
 
 void test_wifi_construction_starts_wifi() {

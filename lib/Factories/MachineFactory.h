@@ -14,6 +14,7 @@
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
+#include "../Logic/Processors/WarmingUpProcessor.h"
 #include "../Services/WarmingUpBlocker.h"
 #include "../Logic/SensorDispatcher.h"
 #include "../Interfaces/SensorTags.h"
@@ -54,6 +55,8 @@ public:
     TaredWeight* getTaredWeight() { return &_taredWeight; }
 
 private:
+    SensorDispatcher _dispatcher;
+
     // Raw Sources
     ADCRawSource _pressureADC;
     DigitalRawSource _pumpInput;
@@ -66,9 +69,9 @@ private:
     DigitalSensor _buttonLeftSensor;
 
     // Registry-Connected Switches (Consume from Registry)
-    RegistrySwitch<PumpTag> _pumpRegSw;
-    RegistrySwitch<ButtonRightTag> _buttonRightRegSw;
-    RegistrySwitch<ButtonLeftTag> _buttonLeftRegSw;
+    RegistrySwitch<PumpReading> _pumpRegSw;
+    RegistrySwitch<ButtonRightReading> _buttonRightRegSw;
+    RegistrySwitch<ButtonLeftReading> _buttonLeftRegSw;
 
     // Physical Sensors (Registered with Dispatcher)
     BoilerPressure _boilerPressure;
@@ -83,7 +86,7 @@ private:
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
     HeatingCycleProcessor _heatingCycleProc;
-    SensorDispatcher _dispatcher;
+    WarmingUpProcessor _warmingUpProc;
 
     MachineConfig _config;
 

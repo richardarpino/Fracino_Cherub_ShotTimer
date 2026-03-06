@@ -14,6 +14,6 @@ void ScaleLogic::update() {
 
     // Publish logical results to the Registry every frame
     if (_weight) {
-        _registry->publish<TaredWeightTag>(_weight->getReading());
+        _registry->publish<TaredWeightReading>(_weight->getReading());
     }
 }

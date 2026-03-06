@@ -4,12 +4,6 @@
 #include "SensorTypes.h"
 
 /**
- * Utility for defining lists of tags at compile-time.
- */
-template<typename... T>
-struct TagList {};
-
-/**
  * Base for continuous telemetry (Pressure, Temp, Weight)
  */
 struct BaseTelemetryTag {
@@ -31,9 +25,10 @@ struct BaseServiceTag {
  * These are empty structs used purely as type markers.
  * Every Tag MUST have a unique static NAME for registry indexing.
  */
-struct HeatingCycleTag : public BaseTelemetryTag {
+struct HeatingCycleReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::COUNTER;
     static constexpr const char* NAME = "HeatingCycles";
+    using Children = TagList<struct WarmingUpStatus>;
     static SensorMetadata getMetadata() {
         return SensorMetadata(
             Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
@@ -44,10 +39,10 @@ struct HeatingCycleTag : public BaseTelemetryTag {
     }
 };
 
-struct BoilerPressureTag : public BaseTelemetryTag {
+struct BoilerPressureReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::PRESSURE;
     static constexpr const char* NAME = "BoilerPressure";
-    using Children = TagList<HeatingCycleTag>;
+    using Children = TagList<HeatingCycleReading>;
     static SensorMetadata getMetadata() {
         return SensorMetadata(
             Reading(0.0f, "BAR", "BOILER", 1, false, QUANTITY),
@@ -58,7 +53,7 @@ struct BoilerPressureTag : public BaseTelemetryTag {
     }
 };
 
-struct BoilerTempTag : public BaseTelemetryTag {
+struct BoilerTempReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::TEMPERATURE;
     static constexpr const char* NAME = "BoilerTemp";
     static SensorMetadata getMetadata() {
@@ -71,7 +66,7 @@ struct BoilerTempTag : public BaseTelemetryTag {
     }
 };
 
-struct ShotTimeTag : public BaseTelemetryTag {
+struct ShotTimeReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::TIME;
     static constexpr const char* NAME = "ShotTime";
     static SensorMetadata getMetadata() {
@@ -84,7 +79,7 @@ struct ShotTimeTag : public BaseTelemetryTag {
     }
 };
 
-struct WeightTag : public BaseTelemetryTag {
+struct WeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "Weight";
     static SensorMetadata getMetadata() {
@@ -97,7 +92,7 @@ struct WeightTag : public BaseTelemetryTag {
     }
 };
 
-struct TaredWeightTag : public BaseTelemetryTag {
+struct TaredWeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "TaredWeight";
     static SensorMetadata getMetadata() {
@@ -110,7 +105,7 @@ struct TaredWeightTag : public BaseTelemetryTag {
     }
 };
 
-struct WiFiStrengthTag : public BaseTelemetryTag {
+struct WiFiStrengthReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::SIGNAL_LEVEL;
     static constexpr const char* NAME = "WiFiStrength";
     static SensorMetadata getMetadata() {
@@ -123,7 +118,7 @@ struct WiFiStrengthTag : public BaseTelemetryTag {
     }
 };
 
-struct LastValidShotTag : public BaseTelemetryTag {
+struct LastValidShotReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::TIME;
     static constexpr const char* NAME = "LastValidShot";
     static SensorMetadata getMetadata() {
@@ -136,7 +131,7 @@ struct LastValidShotTag : public BaseTelemetryTag {
     }
 };
 
-struct PumpTag : public BaseTelemetryTag {
+struct PumpReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::BOOLEAN;
     static constexpr const char* NAME = "Pump";
     static SensorMetadata getMetadata() {
@@ -149,7 +144,7 @@ struct PumpTag : public BaseTelemetryTag {
     }
 };
 
-struct ButtonRightTag : public BaseTelemetryTag {
+struct ButtonRightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::BOOLEAN;
     static constexpr const char* NAME = "ButtonRight";
     static SensorMetadata getMetadata() {
@@ -162,7 +157,7 @@ struct ButtonRightTag : public BaseTelemetryTag {
     }
 };
 
-struct ButtonLeftTag : public BaseTelemetryTag {
+struct ButtonLeftReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::BOOLEAN;
     static constexpr const char* NAME = "ButtonLeft";
     static SensorMetadata getMetadata() {
@@ -175,7 +170,7 @@ struct ButtonLeftTag : public BaseTelemetryTag {
     }
 };
 
-struct WiFiTag : public BaseServiceTag {
+struct WiFiStatus : public BaseServiceTag {
     static constexpr const char* NAME = "WiFi";
     static ServiceMetadata getMetadata() {
         return ServiceMetadata(
@@ -187,7 +182,7 @@ struct WiFiTag : public BaseServiceTag {
     }
 };
 
-struct OTATag : public BaseServiceTag {
+struct OTAStatus : public BaseServiceTag {
     static constexpr const char* NAME = "OTA";
     static ServiceMetadata getMetadata() {
         return ServiceMetadata(
@@ -199,7 +194,7 @@ struct OTATag : public BaseServiceTag {
     }
 };
 
-struct WarmingUpTag : public BaseServiceTag {
+struct WarmingUpStatus : public BaseServiceTag {
     static constexpr const char* NAME = "WarmingUp";
     static ServiceMetadata getMetadata() {
         return ServiceMetadata(

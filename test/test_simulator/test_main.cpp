@@ -119,20 +119,20 @@ void test_generate_examples() {
     WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
 
     std::vector<DocEntry> docEntries = {
-        createEntry<BoilerPressureTag>("BoilerPressure", bp),
-        createEntry<BoilerTempTag>("BoilerTemperature"),
-        createEntry<ShotTimeTag>("ManualPumpTimer"),
-        createEntry<LastValidShotTag>("LastValidShot"),
-        createEntry<WeightTag>("WeightSensor", ws),
-        createEntry<TaredWeightTag>("TaredWeight")
+        createEntry<BoilerPressureReading>("BoilerPressure", bp),
+        createEntry<BoilerTempReading>("BoilerTemperature"),
+        createEntry<ShotTimeReading>("ManualPumpTimer"),
+        createEntry<LastValidShotReading>("LastValidShot"),
+        createEntry<WeightReading>("WeightSensor", ws),
+        createEntry<TaredWeightReading>("TaredWeight")
     };
 
     SensorDispatcher dispatcher;
 
     std::vector<BlockerInfo> blockers = {
-        createServiceEntry<WiFiTag>("WiFiService", new WiFiService(&dispatcher)),
-        createServiceEntry<OTATag>("OTAService", new OTAService(&dispatcher, "test")),
-        createServiceEntry<WarmingUpTag>("WarmingUpBlocker", nullptr)
+        createServiceEntry<WiFiStatus>("WiFiService", new WiFiService(&dispatcher)),
+        createServiceEntry<OTAStatus>("OTAService", new OTAService(&dispatcher, "test")),
+        createServiceEntry<WarmingUpStatus>("WarmingUpBlocker", nullptr)
     };
 
     ensure_dir("lib/Sensors/examples");

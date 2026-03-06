@@ -17,7 +17,7 @@ public:
     void update();
 
 private:
-    RegistrySwitch<PumpTag> _pump;
+    RegistrySwitch<PumpReading> _pump;
     TaredWeight* _weight;
     ISensorRegistry* _registry;
 };

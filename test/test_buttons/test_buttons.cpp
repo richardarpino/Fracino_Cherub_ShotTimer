@@ -40,7 +40,7 @@ void test_theme_manager_uses_registry_edge() {
     TEST_ASSERT_EQUAL_PTR(&theme1, display.currentTheme);
 
     // Simulate press (edge via registry)
-    registry.publish<ButtonRightTag>(Reading(1.0f, "", "ON", 0, false));
+    registry.publish<ButtonRightReading>(Reading(1.0f, "", "ON", 0, false));
     registry.update();
     manager.update();
     TEST_ASSERT_EQUAL_PTR(&theme2, display.currentTheme);

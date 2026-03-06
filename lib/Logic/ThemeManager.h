@@ -18,7 +18,7 @@ public:
 private:
     IThemeable* _display;
     ISensorRegistry* _registry;
-    RegistrySwitch<ButtonRightTag> _themeButton;
+    RegistrySwitch<ButtonRightReading> _themeButton;
     std::vector<ITheme*> _themes;
     int _currentIndex;
 };

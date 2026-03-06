@@ -4,7 +4,7 @@
 Proposed (March 2026)
 
 ## Context
-As the codebase evolves towards a data-first architecture, we have introduced "Derived Tags" (e.g., `HeatingCycleTag` derived from `BoilerPressureTag`). Initially, this logic was embedded in active orchestrators like `WarmingUpBlocker`, which led to:
+As the codebase evolves towards a data-first architecture, we have introduced "Derived Tags" (e.g., `HeatingCycleReading` derived from `BoilerPressureReading`). Initially, this logic was embedded in active orchestrators like `WarmingUpBlocker`, which led to:
 1.  **Temporal Coupling (Clock Races)**: Components might read stale data if they execute before the orchestrator updates the derived tag.
 2.  **SRP Violations**: Orchestrators were responsible for both process management and low-level data calculation (e.g., zigzag pressure history).
 3.  **Test Complexity**: Calculating derived state inside UI-connected blockers made it harder to unit test the calculation logic in isolation.
@@ -12,8 +12,11 @@ As the codebase evolves towards a data-first architecture, we have introduced "D
 ## Decision
 1.  **Reactive Processors**: Implement `ITagProcessor` components that are managed by the `SensorDispatcher`. These are triggered immediately during the `publish()` call of a parent tag, ensuring all derived state is consistent within the same call stack.
 2.  **Explicit Dependency Graph**: Use `TagList<...>` in `SensorTags.h` to explicitly declare which child tags are dependent on a parent tag.
-3.  **Logic Sub-Structuring**: To differentiate between different types of logic, the `lib/Logic` directory is structured into functional sub-folders:
-    -   `lib/Logic/Processors/`: Passive components that transform telemetry into derived telemetry/readings (e.g., `HeatingCycleProcessor`).
+3.  **Naming Convention**: All registry tags MUST use a descriptive suffix to indicate their data type:
+    -   `*Reading`: For telemetry data (e.g., `BoilerPressureReading`, `HeatingCycleReading`).
+    -   `*Status`: For service state data (e.g., `WarmingUpStatus`, `WiFiStatus`).
+4.  **Logic Sub-Structuring**: To differentiate between different types of logic, the `lib/Logic` directory is structured into functional sub-folders:
+    -   `lib/Logic/Processors/`: Passive components that transform telemetry into derived telemetry/readings (e.g., `HeatingCycleProcessor`, `WarmingUpProcessor`).
     -   `lib/Logic/Triggers/`: Components that transform continuous telemetry into discrete events/switches (e.g., `ThresholdSwitch`, `LogicalAnd`).
     -   `lib/Logic/`: (Root) Active orchestrators and domain-specific state managers.
 

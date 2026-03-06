@@ -17,7 +17,7 @@ public:
     void update();
 
 private:
-    RegistrySwitch<PumpTag> _pump;
+    RegistrySwitch<PumpReading> _pump;
     ManualPumpTimer* _timer;
     ISensorRegistry* _registry;
     float _lastValidDuration;

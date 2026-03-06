@@ -16,7 +16,7 @@ public:
 
     void update() {
         if (_temp && _registry) {
-            _registry->publish<BoilerTempTag>(_temp->getReading());
+            _registry->publish<BoilerTempReading>(_temp->getReading());
         }
     }
 

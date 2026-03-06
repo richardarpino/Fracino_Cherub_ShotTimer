@@ -7,11 +7,11 @@ HeatingCycleProcessor::HeatingCycleProcessor(ISensorRegistry* registry)
 void HeatingCycleProcessor::update() {
     if (!_registry) return;
     
-    Reading pressure = _registry->getLatest<BoilerPressureTag>();
+    Reading pressure = _registry->getLatest<BoilerPressureReading>();
     processHistory(pressure.value);
     
     // Publish derived state
-    _registry->publish<HeatingCycleTag>(Reading((float)_totalCompletedCycles, "", "CYCLES", 0, false, PhysicalQuantity::COUNTER));
+    _registry->publish<HeatingCycleReading>(Reading((float)_totalCompletedCycles, "", "CYCLES", 0, false, PhysicalQuantity::COUNTER));
 }
 
 void HeatingCycleProcessor::processHistory(float pressure) {

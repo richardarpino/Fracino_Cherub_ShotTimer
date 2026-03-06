@@ -9,11 +9,15 @@
 #include "../../lib/Logic/SensorDispatcher.cpp"
 #include "../../lib/Logic/Processors/HeatingCycleProcessor.h"
 #include "../../lib/Logic/Processors/HeatingCycleProcessor.cpp"
+#include "../../lib/Logic/Processors/WarmingUpProcessor.h"
+#include "../../lib/Logic/Processors/WarmingUpProcessor.cpp"
 
 void test_initial_state() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    WarmingUpBlocker blocker(&registry);
+    WarmingUpProcessor processor(&registry);
+    registry.attachProcessor<WarmingUpStatus>(&processor);
     
     // Initial state check
     TEST_ASSERT_FALSE(blocker.isActive());
@@ -25,12 +29,14 @@ void test_initial_state() {
 void test_zigzag_reactive_flow() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
-    HeatingCycleProcessor processor(&registry);
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    WarmingUpProcessor warmProc(&registry);
     
     // Setup reactive chain
-    registry.provide<BoilerPressureTag>(&pressureSensor);
-    registry.attachProcessor<HeatingCycleTag>(&processor);
+    registry.provide<BoilerPressureReading>(&pressureSensor);
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+    registry.attachProcessor<WarmingUpStatus>(&warmProc);
     
     // 1. Initial Ramp: 0.0 -> 1.1 (First Peak)
     for (int i = 0; i <= 11; i++) {
@@ -78,11 +84,13 @@ void test_zigzag_reactive_flow() {
 void test_warm_startup_reactive() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
-    HeatingCycleProcessor processor(&registry);
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    WarmingUpProcessor warmProc(&registry);
     
-    registry.provide<BoilerPressureTag>(&pressureSensor);
-    registry.attachProcessor<HeatingCycleTag>(&processor);
+    registry.provide<BoilerPressureReading>(&pressureSensor);
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+    registry.attachProcessor<WarmingUpStatus>(&warmProc);
 
     // Start already pressurized
     pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false, PhysicalQuantity::PRESSURE));
@@ -96,12 +104,19 @@ void test_timeout() {
     setMillis(0);
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    WarmingUpProcessor processor(&registry);
+    
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+    registry.attachProcessor<WarmingUpStatus>(&processor);
     
     blocker.update();
     TEST_ASSERT_FALSE(blocker.isActive());
 
     setMillis(600000);
+    // Trigger update to check timeout
+    registry.publish<BoilerPressureReading>(Reading(0.5f, "BAR", "BOILER", 1, false, PhysicalQuantity::PRESSURE));
     blocker.update();
     TEST_ASSERT_TRUE(blocker.isActive());
 }
@@ -109,11 +124,11 @@ void test_timeout() {
 void test_memory_limit_reactive() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
-    HeatingCycleProcessor processor(&registry);
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
     
-    registry.provide<BoilerPressureTag>(&pressureSensor);
-    registry.attachProcessor<HeatingCycleTag>(&processor);
+    registry.provide<BoilerPressureReading>(&pressureSensor);
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
 
     // 20 heating cycles
     for (int cycle = 1; cycle <= 20; cycle++) {
@@ -124,7 +139,7 @@ void test_memory_limit_reactive() {
     }
 
     // Check that it didn't grow unbounded
-    TEST_ASSERT_TRUE(processor._moves.size() <= 11); // 1 initial + 5 cycles (10 moves) max
+    TEST_ASSERT_TRUE(cycleProc._moves.size() <= 11); // 1 initial + 5 cycles (10 moves) max
 }
 
 int main(int argc, char **argv) {

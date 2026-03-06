@@ -3,7 +3,7 @@
 OTAService::OTAService(ISensorRegistry* registry, const char* hostname) 
     : _hostname(hostname), _isActive(false), _isError(false), _progress(100.0f), _registry(registry) {
     if (_registry) {
-        _registry->publish<OTATag>(StatusMessage("OTA", "OFF", 100.0f, false));
+        _registry->publish<OTAStatus>(StatusMessage("OTA", "OFF", 100.0f, false));
     }
 #ifdef ARDUINO
     ArduinoOTA.setHostname(_hostname);
@@ -49,7 +49,7 @@ void OTAService::update() {
 #endif
 
     if (_registry) {
-        _registry->publish<OTATag>(getStatus());
+        _registry->publish<OTAStatus>(getStatus());
     }
 }
 

@@ -44,16 +44,10 @@ public:
         _pollers.push_back(new PollTask<T>(this, sensor));
     }
 
-    /**
-     * Overridden publish to trigger auto-propagation of derived tags.
-     */
-    template<typename T>
-    void publish(typename T::DataType data) {
-        this->template publishInternal<T>(data);
-        resolveDerived(typename T::Children{});
-    }
-
     void update() override;
+
+protected:
+    void triggerResolution(const char* name) override;
 
 protected:
     Reading getReadingByName(const char* name) override;
@@ -68,21 +62,6 @@ private:
     std::map<std::string, StatusMessage> _statusCache;
     std::map<std::string, class ITagProcessor*> _processors;
     std::vector<IPollTask*> _pollers;
-
-    // Template recursion for resolving derived tags
-    template<typename... Ts>
-    void resolveDerived(TagList<Ts...>) {
-        int dummy[] = { 0, (resolveSingle<Ts>(), 0)... };
-        (void)dummy;
-    }
-
-    template<typename T>
-    void resolveSingle() {
-        auto it = _processors.find(T::NAME);
-        if (it != _processors.end()) {
-            it->second->update();
-        }
-    }
 };
 
 #endif

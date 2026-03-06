@@ -16,7 +16,7 @@ void test_shot_monitor_purging_filter() {
     SensorDispatcher registry;
     
     // Wire the sensor to the registry
-    registry.provide<PumpTag>(&pumpSensor);
+    registry.provide<PumpReading>(&pumpSensor);
     
     // Monitor now only needs the timer and registry
     ShotMonitor monitor(&timer, &registry);
@@ -36,8 +36,8 @@ void test_shot_monitor_purging_filter() {
     registry.update();
     monitor.update();
 
-    // LastValidShotTag should still be 0.0 because it was < 10s
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, registry.getLatest<LastValidShotTag>().value);
+    // LastValidShotReading should still be 0.0 because it was < 10s
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, registry.getLatest<LastValidShotReading>().value);
 }
 
 void test_shot_monitor_persistence() {
@@ -46,7 +46,7 @@ void test_shot_monitor_persistence() {
     ManualPumpTimer timer;
     SensorDispatcher registry;
     
-    registry.provide<PumpTag>(&pumpSensor);
+    registry.provide<PumpReading>(&pumpSensor);
     ShotMonitor monitor(&timer, &registry);
 
     setMillis(0);
@@ -65,7 +65,7 @@ void test_shot_monitor_persistence() {
     monitor.update();
 
     // Should be 25.0
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 25.0f, registry.getLatest<LastValidShotTag>().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 25.0f, registry.getLatest<LastValidShotReading>().value);
 
     // 2. A subsequent purge (5 seconds)
     setMillis(30000);
@@ -79,7 +79,7 @@ void test_shot_monitor_persistence() {
     monitor.update();
 
     // Should STILL be 25.0 (Persistence of last good shot)
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 25.0f, registry.getLatest<LastValidShotTag>().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 25.0f, registry.getLatest<LastValidShotReading>().value);
 }
 
 void test_shot_monitor_current_time_publication() {
@@ -88,7 +88,7 @@ void test_shot_monitor_current_time_publication() {
     ManualPumpTimer timer;
     SensorDispatcher registry;
     
-    registry.provide<PumpTag>(&pumpSensor);
+    registry.provide<PumpReading>(&pumpSensor);
     ShotMonitor monitor(&timer, &registry);
 
     setMillis(0);
@@ -102,14 +102,14 @@ void test_shot_monitor_current_time_publication() {
     monitor.update();
     
     // Register should show ~0s (or slightly more depending on when timer started)
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, registry.getLatest<ShotTimeTag>().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, registry.getLatest<ShotTimeReading>().value);
 
     setMillis(5000); // 4 seconds later
     registry.update();
     monitor.update();
 
     // Registry MUST show the incremented time
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 4.0f, registry.getLatest<ShotTimeTag>().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 4.0f, registry.getLatest<ShotTimeReading>().value);
 }
 
 int main(int argc, char **argv) {

@@ -32,8 +32,19 @@ public:
     template<typename T>
     void publish(typename T::DataType data) {
         publishInternal<T>(data);
+        resolveDerived(typename T::Children{});
     }
 
+protected:
+    template<typename... Ts>
+    void resolveDerived(TagList<Ts...>) {
+        int dummy[] = { 0, (triggerResolution(Ts::NAME), 0)... };
+        (void)dummy;
+    }
+
+    virtual void triggerResolution(const char* name) = 0;
+
+public:
     /**
      * Registers a processor to be triggered when a specific tag is updated.
      */

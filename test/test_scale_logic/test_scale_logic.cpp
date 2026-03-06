@@ -19,7 +19,7 @@ void test_scale_logic() {
     TaredWeight taredWeight(&weightSensor);
 
     SensorDispatcher registry;
-    registry.provide<PumpTag>(&pumpSensor);
+    registry.provide<PumpReading>(&pumpSensor);
     
     ScaleLogic logic(&taredWeight, &registry);
 
@@ -48,7 +48,7 @@ void test_scale_logic_edge_consumption() {
     MockRawSource mockPin;
     DigitalSensor pumpSensor(&mockPin, true, 0); // 0ms debounce for tests
     SensorDispatcher registry;
-    registry.provide<PumpTag>(&pumpSensor);
+    registry.provide<PumpReading>(&pumpSensor);
     
     ScaleLogic logic(nullptr, &registry);
 

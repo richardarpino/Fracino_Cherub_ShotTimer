@@ -34,9 +34,9 @@ void test_startup_factory_coordination() {
     // 2. Connect WiFi
     WiFi.setStatus(WL_CONNECTED);
     setMillis(100); 
-    wifi.update();     // Publishes WiFiTag=1.0 to registry
+    wifi.update();     // Publishes WiFiStatus=1.0 to registry
     registry.update(); // Updates cache
-    logic.update();    // Sees WiFiTag=1.0 via RegistrySwitch
+    logic.update();    // Sees WiFiStatus=1.0 via RegistrySwitch
     TEST_ASSERT_FALSE(factory.otaCreated());
 
     // 3. Hold wait (3s) -> Transitions to OTA_STARTING
@@ -50,7 +50,7 @@ void test_startup_factory_coordination() {
 
     // 4. OTA Ready (Listening) -> Transitions to WARMING_UP state
     // Manual publish to mock OTA service publishing its state
-    registry.publish<OTATag>(StatusMessage("OTA", "ON", 100.0f, false));
+    registry.publish<OTAStatus>(StatusMessage("OTA", "ON", 100.0f, false));
     warmingUp.setTitle("Warming Up...");
     registry.update();
     logic.update();
@@ -58,7 +58,7 @@ void test_startup_factory_coordination() {
     TEST_ASSERT_FALSE(logic.isActive()); 
     
     // 5. Warming Up Finished -> READY state
-    registry.publish<WarmingUpTag>(StatusMessage("Ready", "READY", 100.0f, false));
+    registry.publish<WarmingUpStatus>(StatusMessage("Ready", "READY", 100.0f, false));
     registry.update();
     logic.update();
     TEST_ASSERT_EQUAL_STRING("Ready", logic.getStatus().title);
@@ -104,7 +104,7 @@ void test_startup_transition_loop_timing() {
     logic.update();
     
     // Frame 4: OTA_STARTING -> WARMING_UP
-    registry.publish<OTATag>(StatusMessage("OTA", "ON", 100.0f, false));
+    registry.publish<OTAStatus>(StatusMessage("OTA", "ON", 100.0f, false));
     registry.update();
     logic.update();
     
@@ -112,7 +112,7 @@ void test_startup_transition_loop_timing() {
     TEST_ASSERT_FALSE(logic.isActive());
 
     // 2. Simulate the frame where Warming Up FINISHES
-    registry.publish<WarmingUpTag>(StatusMessage("Ready", "READY", 100.0f, false));
+    registry.publish<WarmingUpStatus>(StatusMessage("Ready", "READY", 100.0f, false));
     
     // Frame 5: WARMING_UP -> READY (Sets isActive=true, justStarted=true)
     registry.update();
@@ -139,11 +139,11 @@ void test_double_update_edge_loss_warning() {
     setMillis(0); registry.update(); logic.update();
     setMillis(100); wifi.update(); registry.update(); logic.update(); // WIFI_STABLE
     setMillis(3200); wifi.update(); registry.update(); logic.update(); // OTA_STARTING
-    registry.publish<OTATag>(StatusMessage("OTA", "ON", 100.0f, false));
+    registry.publish<OTAStatus>(StatusMessage("OTA", "ON", 100.0f, false));
     registry.update(); logic.update();                                // WARMING_UP
     
     // 2. The frame where it transitions to READY
-    registry.publish<WarmingUpTag>(StatusMessage("Ready", "READY", 100.0f, false));
+    registry.publish<WarmingUpStatus>(StatusMessage("Ready", "READY", 100.0f, false));
     registry.update();
     logic.update(); 
     TEST_ASSERT_TRUE(logic.justStarted()); 

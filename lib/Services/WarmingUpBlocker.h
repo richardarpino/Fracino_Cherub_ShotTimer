@@ -12,8 +12,8 @@
 
 class WarmingUpBlocker : public IBlocker {
 public:
-    WarmingUpBlocker(ISensorRegistry* registry, HardwareSensor* pressureSensor, unsigned long timeoutMs = 600000);
-    virtual ~WarmingUpBlocker();
+    WarmingUpBlocker(ISensorRegistry* registry, unsigned long timeoutMs = 600000);
+    virtual ~WarmingUpBlocker() = default;
     // IBlocker Implementation
     StatusMessage getStatus() const override;
 
@@ -25,18 +25,8 @@ public:
     bool justStopped() const override;
 
     ISensorRegistry* _registry;
-    HardwareSensor* _pressureSensor;
-    float _lastPressure;
-    unsigned long _startTime;
-    unsigned long _timeoutMs;
     bool _isFinished;
     bool _wasFinished;
-
-    ThresholdSwitch<HeatingCycleTag>* _cycleTrigger;
-
-    mutable char _statusBuffer[64];
-    const int TARGET_CYCLES = 3;
-    float getProgress() const;
 };
 
 #endif

@@ -9,7 +9,7 @@ The previous Sensor Registry used a name-based lookup that forced callers to kno
 Initial attempts to use `if constexpr` for dispatching caused build regressions on specific ESP32 compiler versions due to incomplete dead-code pruning during template instantiation.
 
 ## Decision
-1.  **Unified Registry API**: Use templated tags (e.g., `BoilerPressureTag`) that carry their required data type as a nested alias (`DataType`).
+1.  **Unified Registry API**: Use templated tags (e.g., `BoilerPressureReading`) that carry their required data type as a nested alias (`DataType`).
 2.  **Explicit Data Types**:
     -   `Reading`: For continuous telemetry (numeric values, units, scaling).
     -   `StatusMessage`: For discrete system processes (titles, messages, progress bars).

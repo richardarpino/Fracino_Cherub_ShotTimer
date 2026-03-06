@@ -23,7 +23,7 @@ void test_reproduction_edge_loss_multi_orchestrator() {
     ManualPumpTimer timer;
     SensorDispatcher registry;
     
-    registry.provide<PumpTag>(&pumpSensor);
+    registry.provide<PumpReading>(&pumpSensor);
     
     // Two orchestrators watching the same pump
     ShotMonitor monitor(&timer, &registry);
