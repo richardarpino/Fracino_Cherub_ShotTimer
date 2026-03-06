@@ -45,6 +45,8 @@ enum class ThresholdMode {
     BELOW
 };
 
+#include "../Utils/StringUtils.h"
+
 /**
  * Processed domain measurement (e.g. 1.2 Bar, 120 C)
  */
@@ -58,6 +60,24 @@ struct Reading {
 
     Reading(float v = 0.0f, const char* u = "", const char* l = "", int p = 1, bool error = false, PhysicalQuantity q = PhysicalQuantity::NONE) 
         : value(v), quantity(q), unit(u), label(l), precision(p), isError(error) {}
+
+    /**
+     * Formats the reading into a string buffer (e.g. "1.2BAR").
+     */
+    void format(char* buf, size_t len) const {
+        if (isError) {
+            snprintf(buf, len, "ERR");
+            return;
+        }
+
+        if (precision == 0) {
+            snprintf(buf, len, "%d%s", (int)(value + 0.5f), unit);
+        } else {
+            char valBuf[16];
+            StringUtils::formatFloat1(valBuf, sizeof(valBuf), value);
+            snprintf(buf, len, "%s%s", valBuf, unit);
+        }
+    }
 };
 
 /**

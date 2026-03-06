@@ -57,7 +57,12 @@ protected:
     // Internal tag-dispatching helpers
     template<typename T>
     Reading getInternal(Reading) {
-        return getReadingByName(T::NAME);
+        Reading reading = getReadingByName(T::NAME);
+        // If not found (initial state), return the init value from metadata
+        if (reading.isError && reading.unit[0] == '\0') {
+            return T::getMetadata().init;
+        }
+        return reading;
     }
 
     template<typename T>

@@ -1,4 +1,5 @@
 #include "ShotMonitor.h"
+#include "../Interfaces/PhysicalUnits.h"
 
 ShotMonitor::ShotMonitor(ManualPumpTimer* timer, ISensorRegistry* registry)
     : _pump(registry), _timer(timer), _registry(registry), _lastValidDuration(0.0f) {}
@@ -28,5 +29,5 @@ void ShotMonitor::update() {
     if (_timer) {
         _registry->publish<ShotTimeReading>(_timer->getReading());
     }
-    _registry->publish<LastValidShotReading>(Reading(_lastValidDuration, "SECS", "LAST SHOT", 1, false));
+    _registry->publish<LastValidShotReading>(Units::Time.make(_lastValidDuration, "LAST SHOT"));
 }

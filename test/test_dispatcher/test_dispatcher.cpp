@@ -57,10 +57,12 @@ void test_dispatcher_ensures_synchronization() {
 void test_dispatcher_unregistered_tag_returns_invalid() {
     SensorDispatcher dispatcher;
     
-    // We haven't registered WeightReading
+    // We haven't registered WeightReading, so it returns its DSL-defined init value
     Reading r = dispatcher.getLatest<WeightReading>();
     
-    TEST_ASSERT_TRUE(r.isError);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, r.value);
+    TEST_ASSERT_EQUAL_STRING("g", r.unit);
+    TEST_ASSERT_FALSE(r.isError);
 }
 
 void test_dispatcher_provides_latest_status() {

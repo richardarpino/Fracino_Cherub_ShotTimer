@@ -1,12 +1,14 @@
 #include "WarmingUpProcessor.h"
-#include "../../Utils/StringUtils.h"
 #include <Arduino.h>
 #include <stdio.h>
 
 WarmingUpProcessor::WarmingUpProcessor(ISensorRegistry* registry, unsigned long timeoutMs)
     : _registry(registry), _startTime(millis()), _timeoutMs(timeoutMs), _isFinished(false) {
     if (_registry) {
-        _registry->publish<WarmingUpStatus>(StatusMessage("Warming Up...", "Heating Cycle 1, currently 0.0bar", 0.0f, false));
+        char valBuf[16];
+        _registry->getLatest<BoilerPressureReading>().format(valBuf, sizeof(valBuf));
+        snprintf(_statusBuffer, sizeof(_statusBuffer), "Heating Cycle 1, currently %s", valBuf);
+        _registry->publish<WarmingUpStatus>(StatusMessage("Warming Up...", _statusBuffer, 0.0f, false));
     }
 }
 
@@ -25,7 +27,7 @@ void WarmingUpProcessor::update() {
     }
 
     // 3. Status Construction
-    float pressure = _registry->getLatest<BoilerPressureReading>().value;
+    Reading pressureReading = _registry->getLatest<BoilerPressureReading>();
     
     if (_isFinished) {
         _registry->publish<WarmingUpStatus>(StatusMessage("Ready", "WARM", 100.0f, false));
@@ -36,9 +38,9 @@ void WarmingUpProcessor::update() {
     int displayCycle = (currentCycles < TARGET_CYCLES) ? (currentCycles + 1) : TARGET_CYCLES;
     
     char valBuf[16];
-    StringUtils::formatFloat1(valBuf, sizeof(valBuf), pressure);
+    pressureReading.format(valBuf, sizeof(valBuf));
     
-    snprintf(_statusBuffer, sizeof(_statusBuffer), "Heating Cycle %d, currently %sbar", displayCycle, valBuf);
+    snprintf(_statusBuffer, sizeof(_statusBuffer), "Heating Cycle %d, currently %s", displayCycle, valBuf);
     
     _registry->publish<WarmingUpStatus>(StatusMessage("Warming Up...", _statusBuffer, getProgress(), false));
 }

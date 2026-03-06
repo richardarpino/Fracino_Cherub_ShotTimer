@@ -2,6 +2,7 @@
 #define SENSOR_TAGS_H
 
 #include "SensorTypes.h"
+#include "PhysicalUnits.h"
 
 /**
  * Base for continuous telemetry (Pressure, Temp, Weight)
@@ -30,12 +31,7 @@ struct HeatingCycleReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "HeatingCycles";
     using Children = TagList<struct WarmingUpStatus>;
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
-            Reading(3.0f, "", "READY", 0, false, QUANTITY),
-            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
-            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
-        );
+        return Units::Counter.range("CYCLES", 0.0f, 5.0f);
     }
 };
 
@@ -44,12 +40,7 @@ struct BoilerPressureReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "BoilerPressure";
     using Children = TagList<HeatingCycleReading>;
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "BAR", "BOILER", 1, false, QUANTITY),
-            Reading(3.0f, "BAR", "BOILER", 1, false, QUANTITY),
-            Reading(0.0f, "BAR", "BOILER", 1, false, QUANTITY),
-            Reading(0.0f, "BAR", "BOILER ERR", 1, true, QUANTITY)
-        );
+        return Units::Pressure.range("BOILER", 0.0f, 3.0f);
     }
 };
 
@@ -57,12 +48,7 @@ struct BoilerTempReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::TEMPERATURE;
     static constexpr const char* NAME = "BoilerTemp";
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(25.0f, "C", "TEMP", 0, false, QUANTITY),
-            Reading(150.0f, "C", "TEMP", 0, false, QUANTITY),
-            Reading(25.0f, "C", "TEMP", 0, false, QUANTITY),
-            Reading(0.0f, "C", "TEMP ERR", 0, true, QUANTITY)
-        );
+        return Units::Temperature.range("TEMP", 25.0f, 150.0f);
     }
 };
 
@@ -71,10 +57,10 @@ struct ShotTimeReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "ShotTime";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
-            Reading(0.0f, "SECS", "READY", 1, false, QUANTITY),
-            Reading(60.0f, "SECS", "RUNNING", 1, false, QUANTITY),
-            Reading(0.0f, "SECS", "READY", 1, false, QUANTITY),
-            Reading(0.0f, "SECS", "ERR", 1, true, QUANTITY)
+            Units::Time.make(0.0f, "READY"),
+            Units::Time.make(60.0f, "RUNNING"),
+            Units::Time.make(0.0f, "READY"),
+            Units::Time.make(0.0f, "ERR", true)
         );
     }
 };
@@ -83,12 +69,7 @@ struct WeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "Weight";
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "g", "WEIGHT", 1, false, QUANTITY),
-            Reading(2000.0f, "g", "WEIGHT", 1, false, QUANTITY),
-            Reading(0.0f, "g", "WEIGHT", 1, false, QUANTITY),
-            Reading(0.0f, "g", "WEIGHT ERR", 1, true, QUANTITY)
-        );
+        return Units::Weight.range("WEIGHT", 0.0f, 2000.0f);
     }
 };
 
@@ -96,12 +77,7 @@ struct TaredWeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "TaredWeight";
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(-2000.0f, "g", "WEIGHT", 1, false, QUANTITY),
-            Reading(2000.0f, "g", "WEIGHT", 1, false, QUANTITY),
-            Reading(0.0f, "g", "WEIGHT", 1, false, QUANTITY),
-            Reading(0.0f, "g", "WEIGHT ERR", 1, true, QUANTITY)
-        );
+        return Units::Weight.range("WEIGHT", -2000.0f, 2000.0f);
     }
 };
 
@@ -109,12 +85,7 @@ struct WiFiStrengthReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::SIGNAL_LEVEL;
     static constexpr const char* NAME = "WiFiStrength";
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(-100.0f, "dBm", "WIFI", 0, false, QUANTITY),
-            Reading(-30.0f, "dBm", "WIFI", 0, false, QUANTITY),
-            Reading(-100.0f, "dBm", "WIFI", 0, false, QUANTITY),
-            Reading(0.0f, "dBm", "WIFI ERR", 0, true, QUANTITY)
-        );
+        return Units::Signal.range("WIFI", -100.0f, -30.0f);
     }
 };
 
@@ -122,12 +93,7 @@ struct LastValidShotReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::TIME;
     static constexpr const char* NAME = "LastValidShot";
     static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "SECS", "LAST SHOT", 1, false, QUANTITY),
-            Reading(60.0f, "SECS", "LAST SHOT", 1, false, QUANTITY),
-            Reading(0.0f, "SECS", "LAST SHOT", 1, false, QUANTITY),
-            Reading(0.0f, "SECS", "ERR", 1, true, QUANTITY)
-        );
+        return Units::Time.range("LAST SHOT", 0.0f, 60.0f);
     }
 };
 
@@ -136,10 +102,10 @@ struct PumpReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "Pump";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
-            Reading(0.0f, "", "OFF", 0, false, QUANTITY),
-            Reading(1.0f, "", "ON", 0, false, QUANTITY),
-            Reading(0.0f, "", "OFF", 0, false, QUANTITY),
-            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
+            Units::Boolean.make(0.0f, "OFF"),
+            Units::Boolean.make(1.0f, "ON"),
+            Units::Boolean.make(0.0f, "OFF"),
+            Units::Boolean.make(0.0f, "ERR", true)
         );
     }
 };
@@ -149,10 +115,10 @@ struct ButtonRightReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "ButtonRight";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
-            Reading(0.0f, "", "OFF", 0, false, QUANTITY),
-            Reading(1.0f, "", "ON", 0, false, QUANTITY),
-            Reading(0.0f, "", "OFF", 0, false, QUANTITY),
-            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
+            Units::Boolean.make(0.0f, "OFF"),
+            Units::Boolean.make(1.0f, "ON"),
+            Units::Boolean.make(0.0f, "OFF"),
+            Units::Boolean.make(0.0f, "ERR", true)
         );
     }
 };
@@ -162,10 +128,10 @@ struct ButtonLeftReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "ButtonLeft";
     static SensorMetadata getMetadata() {
         return SensorMetadata(
-            Reading(0.0f, "", "OFF", 0, false, QUANTITY),
-            Reading(1.0f, "", "ON", 0, false, QUANTITY),
-            Reading(0.0f, "", "OFF", 0, false, QUANTITY),
-            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
+            Units::Boolean.make(0.0f, "OFF"),
+            Units::Boolean.make(1.0f, "ON"),
+            Units::Boolean.make(0.0f, "OFF"),
+            Units::Boolean.make(0.0f, "ERR", true)
         );
     }
 };
