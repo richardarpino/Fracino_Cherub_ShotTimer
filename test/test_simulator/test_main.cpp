@@ -12,7 +12,6 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
-#include "../../lib/Logic/ManualPumpTimer.h"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
@@ -34,7 +33,8 @@
 #include <iomanip>
 
 // Headers for virtual sensors
-#include "../../lib/Logic/BoilerTemperature.h"
+#include "../../lib/Logic/Processors/BoilerTemperatureProcessor.h"
+#include "../../lib/Logic/Processors/ShotMonitorProcessor.h"
 #include "../../lib/Logic/Processors/TaredWeightProcessor.h"
 
 void setUp(void) {}
@@ -121,7 +121,7 @@ void test_generate_examples() {
     std::vector<DocEntry> docEntries = {
         createEntry<BoilerPressureReading>("BoilerPressure", bp),
         createEntry<BoilerTempReading>("BoilerTemperature"),
-        createEntry<ShotTimeReading>("ManualPumpTimer"),
+        createEntry<ShotTimeReading>("ShotTime"),
         createEntry<LastValidShotReading>("LastValidShot"),
         createEntry<WeightReading>("WeightSensor", ws),
         createEntry<TaredWeightReading>("TaredWeight")

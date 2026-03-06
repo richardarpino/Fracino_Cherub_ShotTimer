@@ -51,9 +51,11 @@ public:
         r.value = value;
         r.isError = isError;
 
-        // Custom labels for Boolean states
+        // Custom labels for specific quantities
         if (r.quantity == PhysicalQuantity::BOOLEAN) {
             r.label = (value > 0.5f) ? meta.high.label : meta.low.label;
+        } else if ((r.quantity == PhysicalQuantity::TIME || r.quantity == PhysicalQuantity::COUNTER) && value > 0.05f) {
+            r.label = meta.high.label;
         } else {
             r.label = meta.init.label;
         }

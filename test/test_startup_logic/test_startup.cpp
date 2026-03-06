@@ -8,10 +8,11 @@
 #include "../_common/stubs/Arduino.cpp"
 #include "../../lib/Services/WiFiService.h"
 #include "../../lib/Services/WiFiService.cpp"
-#include "Logic/SensorDispatcher.h"
-#include "Logic/SensorDispatcher.cpp"
-#include "Logic/StartupLogic.h"
-#include "Logic/StartupLogic.cpp"
+#include "../../lib/Logic/SensorDispatcher.h"
+#include "../../lib/Logic/SensorDispatcher.cpp"
+#include "../../lib/Logic/StartupLogic.h"
+#include "../../lib/Logic/StartupLogic.cpp"
+#include "../../lib/Sensors/Registry/RegistrySwitch.h"
 #include <stdio.h>
 
 void test_startup_factory_coordination() {

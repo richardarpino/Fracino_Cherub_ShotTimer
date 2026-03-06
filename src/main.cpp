@@ -1,9 +1,6 @@
 #include <lvgl.h>
 #include "ThemeManager.h"
 #include "ShotDisplay.h"
-#include "ScaleLogic.h"
-#include "ShotMonitor.h"
-#include "BoilerMonitor.h"
 #include "StartupLogic.h"
 #include "MachineFactory.h"
 #include <vector>
@@ -27,9 +24,6 @@ MachineFactory factory(config);
 
 // --- Coordination & Logic ---
 StartupLogic startupLogic(&factory, factory.getRegistry());
-ShotMonitor shotMonitor(factory.getManualPumpTimer(), factory.getRegistry());
-BoilerMonitor boilerMonitor(factory.getBoilerTemp(), factory.getRegistry());
-ScaleLogic scaleLogic(factory.getTaredWeight(), factory.getRegistry()); 
 
 ShotDisplay shotDisplay;
 ThemeManager themeManager(&shotDisplay, factory.getRegistry());
@@ -66,15 +60,7 @@ void loop() {
   lv_timer_handler();
   delay(5);
 
-  // 1. Hardware Poll Pass - REFRESH ALL INPUTS once per frame
-  // This updates the raw buffers/physical pin states
-  // In our new model, the Registry handles the hardware polling!
-  // Wait, does it? MachineFactory provides sensors to the Dispatcher.
-  // Dispatcher::update() calls sensor->getReading() for all provided sensors.
-  
-  // BUT we still need to call update() on the "services" (WiFi, OTA, Warmer) 
-  // because they ARE the sensors/publishers.
-  
+  // 1. Hardware Poll Pass
   WiFiService* wifi = factory.getWiFiSwitch();
   if (wifi) wifi->update();
   
@@ -84,22 +70,16 @@ void loop() {
   WarmingUpBlocker* warmer = factory.getWarmingUpBlocker();
   if (warmer) warmer->update();
 
-  // 2. Logic Poll Pass - FREEZE MACHINE STATE
-  // This calls getReading() on all Physical Sensors (BoilerPressure, etc.) 
-  // AND DigitalSensors (Pump, Buttons).
+  // 2. Registry Pass - Triggers all reactive processors
   factory.getRegistry()->update();
 
-  // 3. Orchestrator Pass - REACT TO FROZEN STATE
-  // Each orchestrator maintains its own RegistrySwitch which pulls from the above freeze.
+  // 3. Logic Coordination
   startupLogic.update();
   if (startupLogic.justStarted()) {
     setupMainDashboard();
   }
 
   themeManager.update();
-  shotMonitor.update();
-  boilerMonitor.update();
-  scaleLogic.update();
 
   // 4. UI Pass - RENDER STATE
   shotDisplay.update();

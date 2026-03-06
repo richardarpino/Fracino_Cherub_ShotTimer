@@ -14,9 +14,9 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _buttonLeftRegSw(&_dispatcher),
       _boilerPressure(&_pressureADC, pressureScalar),
       _weightSensor(nullptr), 
-      _boilerTemp(&_boilerPressure),
-      _manualPumpTimer(),
       _taredWeight(&_dispatcher),
+      _boilerTempProc(&_dispatcher),
+      _shotMonitorProc(&_dispatcher),
       _wifi(nullptr),
       _ota(nullptr),
       _warmingUpBlocker(nullptr),
@@ -36,6 +36,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     // Attach Reactive Processors
     _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
+    _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
+    _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {

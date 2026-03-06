@@ -8,9 +8,9 @@
 #include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Hardware/WeightSensor.h"
-#include "../Logic/BoilerTemperature.h"
-#include "../Logic/ManualPumpTimer.h"
 #include "../Logic/Processors/TaredWeightProcessor.h"
+#include "../Logic/Processors/BoilerTemperatureProcessor.h"
+#include "../Logic/Processors/ShotMonitorProcessor.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
@@ -47,11 +47,6 @@ public:
     ISwitch* getButtonRight() override { return &_buttonRightRegSw; }
     ISwitch* getButtonLeft() override { return &_buttonLeftRegSw; }
 
-    // Component Access for Orchestrators
-    BoilerPressure* getBoilerPressure() { return &_boilerPressure; }
-    WeightSensor* getWeightSensor() { return &_weightSensor; }
-    BoilerTemperature* getBoilerTemp() { return &_boilerTemp; }
-    ManualPumpTimer* getManualPumpTimer() { return &_manualPumpTimer; }
     TaredWeightProcessor* getTaredWeight() { return &_taredWeight; }
 
 private:
@@ -77,10 +72,10 @@ private:
     BoilerPressure _boilerPressure;
     WeightSensor _weightSensor;
 
-    // Logical Components (Published to Dispatcher via ScaleLogic)
-    BoilerTemperature _boilerTemp;
-    ManualPumpTimer _manualPumpTimer;
+    // Logical Processors (Reactive)
     TaredWeightProcessor _taredWeight;
+    BoilerTemperatureProcessor _boilerTempProc;
+    ShotMonitorProcessor _shotMonitorProc;
 
     WiFiService* _wifi;
     OTAService* _ota;

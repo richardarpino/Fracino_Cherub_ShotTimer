@@ -21,6 +21,22 @@ struct BaseServiceTag {
     using Children = TagList<>; // Default: no dependents
 };
 
+// Forward declarations for reactive Children lists
+struct HeatingCycleReading;
+struct BoilerPressureReading;
+struct BoilerTempReading;
+struct ShotTimeReading;
+struct WeightReading;
+struct TaredWeightReading;
+struct WiFiStrengthReading;
+struct LastValidShotReading;
+struct PumpReading;
+struct ButtonRightReading;
+struct ButtonLeftReading;
+struct WiFiStatus;
+struct OTAStatus;
+struct WarmingUpStatus;
+
 /**
  * Logical Tags for the Sensor Registry.
  * These are empty structs used purely as type markers.
@@ -38,7 +54,7 @@ struct HeatingCycleReading : public BaseTelemetryTag {
 struct BoilerPressureReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::PRESSURE;
     static constexpr const char* NAME = "BoilerPressure";
-    using Children = TagList<HeatingCycleReading>;
+    using Children = TagList<HeatingCycleReading, BoilerTempReading>;
     static SensorMetadata getMetadata() {
         return Units::Pressure.range("BOILER", 0.0f, 3.0f);
     }
@@ -100,6 +116,7 @@ struct LastValidShotReading : public BaseTelemetryTag {
 struct PumpReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::BOOLEAN;
     static constexpr const char* NAME = "Pump";
+    using Children = TagList<ShotTimeReading, TaredWeightReading>;
     static SensorMetadata getMetadata() {
         return SensorMetadata(
             Units::Boolean.make(0.0f, "OFF"),
