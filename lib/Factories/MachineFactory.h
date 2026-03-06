@@ -13,6 +13,7 @@
 #include "../Logic/TaredWeight.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
+#include "../Logic/Processors/HeatingCycleProcessor.h"
 #include "../Services/WarmingUpBlocker.h"
 #include "../Logic/SensorDispatcher.h"
 #include "../Interfaces/SensorTags.h"
@@ -81,6 +82,7 @@ private:
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
+    HeatingCycleProcessor _heatingCycleProc;
     SensorDispatcher _dispatcher;
 
     MachineConfig _config;

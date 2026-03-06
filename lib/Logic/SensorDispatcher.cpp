@@ -2,11 +2,15 @@
 
 SensorDispatcher::SensorDispatcher() {}
 
+SensorDispatcher::~SensorDispatcher() {
+    for (auto p : _pollers) {
+        delete p;
+    }
+}
+
 void SensorDispatcher::update() {
-    for (auto const& [name, sensor] : _sensors) {
-        if (sensor) {
-            _cache[name] = sensor->getReading();
-        }
+    for (auto p : _pollers) {
+        p->run();
     }
 }
 
@@ -25,7 +29,6 @@ void SensorDispatcher::setReadingByName(const char* name, Reading reading) {
 StatusMessage SensorDispatcher::getStatusByName(const char* name) {
     auto it = _statusCache.find(name);
     if (it == _statusCache.end()) {
-        // Fallback to reading if no status exists
         auto rit = _cache.find(name);
         if (rit != _cache.end()) {
             return StatusMessage("", rit->second.label, rit->second.value, rit->second.isError);
@@ -37,7 +40,9 @@ StatusMessage SensorDispatcher::getStatusByName(const char* name) {
 
 void SensorDispatcher::setStatusByName(const char* name, StatusMessage status) {
     _statusCache[name] = status;
-    
-    // For compatibility with widgets that only know about Readings
     _cache[name] = Reading(status.progress, "", status.message, 0, status.isFailed);
+}
+
+void SensorDispatcher::attachProcessorInternal(const char* targetTagName, ITagProcessor* processor) {
+    _processors[targetTagName] = processor;
 }

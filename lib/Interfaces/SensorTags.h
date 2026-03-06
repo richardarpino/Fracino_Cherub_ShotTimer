@@ -4,10 +4,17 @@
 #include "SensorTypes.h"
 
 /**
+ * Utility for defining lists of tags at compile-time.
+ */
+template<typename... T>
+struct TagList {};
+
+/**
  * Base for continuous telemetry (Pressure, Temp, Weight)
  */
 struct BaseTelemetryTag {
     using DataType = Reading;
+    using Children = TagList<>; // Default: no dependents
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::NONE;
 };
 
@@ -16,6 +23,7 @@ struct BaseTelemetryTag {
  */
 struct BaseServiceTag {
     using DataType = StatusMessage;
+    using Children = TagList<>; // Default: no dependents
 };
 
 /**
@@ -23,9 +31,23 @@ struct BaseServiceTag {
  * These are empty structs used purely as type markers.
  * Every Tag MUST have a unique static NAME for registry indexing.
  */
+struct HeatingCycleTag : public BaseTelemetryTag {
+    static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::COUNTER;
+    static constexpr const char* NAME = "HeatingCycles";
+    static SensorMetadata getMetadata() {
+        return SensorMetadata(
+            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
+            Reading(3.0f, "", "READY", 0, false, QUANTITY),
+            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
+            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
+        );
+    }
+};
+
 struct BoilerPressureTag : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::PRESSURE;
     static constexpr const char* NAME = "BoilerPressure";
+    using Children = TagList<HeatingCycleTag>;
     static SensorMetadata getMetadata() {
         return SensorMetadata(
             Reading(0.0f, "BAR", "BOILER", 1, false, QUANTITY),
@@ -110,19 +132,6 @@ struct LastValidShotTag : public BaseTelemetryTag {
             Reading(60.0f, "SECS", "LAST SHOT", 1, false, QUANTITY),
             Reading(0.0f, "SECS", "LAST SHOT", 1, false, QUANTITY),
             Reading(0.0f, "SECS", "ERR", 1, true, QUANTITY)
-        );
-    }
-};
-
-struct HeatingCycleTag : public BaseTelemetryTag {
-    static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::COUNTER;
-    static constexpr const char* NAME = "HeatingCycles";
-    static SensorMetadata getMetadata() {
-        return SensorMetadata(
-            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
-            Reading(3.0f, "", "READY", 0, false, QUANTITY),
-            Reading(0.0f, "", "STARTING", 0, false, QUANTITY),
-            Reading(0.0f, "", "ERR", 0, true, QUANTITY)
         );
     }
 };

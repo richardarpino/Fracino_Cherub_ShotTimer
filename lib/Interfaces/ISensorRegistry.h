@@ -34,6 +34,14 @@ public:
         publishInternal<T>(data);
     }
 
+    /**
+     * Registers a processor to be triggered when a specific tag is updated.
+     */
+    template<typename T>
+    void attachProcessor(class ITagProcessor* processor) {
+        attachProcessorInternal(T::NAME, processor);
+    }
+
 protected:
     // Internal tag-dispatching helpers
     template<typename T>
@@ -71,6 +79,7 @@ protected:
     virtual void setReadingByName(const char* name, Reading reading) = 0;
     virtual StatusMessage getStatusByName(const char* name) = 0;
     virtual void setStatusByName(const char* name, StatusMessage status) = 0;
+    virtual void attachProcessorInternal(const char* targetTagName, class ITagProcessor* processor) = 0;
 };
 
 #endif

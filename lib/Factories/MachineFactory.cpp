@@ -19,7 +19,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _taredWeight(&_weightSensor),
       _wifi(nullptr),
       _ota(nullptr),
-      _warmingUpBlocker(nullptr) {
+      _warmingUpBlocker(nullptr),
+      _heatingCycleProc(&_dispatcher) {
     
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
 
@@ -29,6 +30,9 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.provide<ButtonLeftTag>(&_buttonLeftSensor);
     _dispatcher.provide<BoilerPressureTag>(&_boilerPressure);
     _dispatcher.provide<WeightTag>(&_weightSensor);
+
+    // Attach Reactive Processors
+    _dispatcher.attachProcessor<HeatingCycleTag>(&_heatingCycleProc);
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {
