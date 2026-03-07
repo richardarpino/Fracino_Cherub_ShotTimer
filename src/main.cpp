@@ -17,7 +17,7 @@ MachineConfig config = {
   .otaHostname = OTA_HOSTNAME,
   .wifiSsid = WIFI_SSID,
   .wifiPassword = WIFI_PASSWORD,
-  .debounceMs = 150
+  .debounceMs = 30
 };
 
 MachineFactory factory(config);

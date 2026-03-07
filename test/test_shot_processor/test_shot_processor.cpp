@@ -10,7 +10,7 @@
 void test_shot_timing() {
     SensorDispatcher registry;
     SensorStub pumpSensor;
-    ShotMonitorProcessor processor(&registry);
+    ShotMonitorProcessor processor(&registry, 0.1f); // 100ms compensation
 
     registry.provide<PumpReading>(&pumpSensor);
     registry.attachProcessor<ShotTimeReading>(&processor);
@@ -29,23 +29,23 @@ void test_shot_timing() {
     registry.update(); 
     
     Reading shotTime = registry.getLatest<ShotTimeReading>();
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 4.0f, shotTime.value);
+    TEST_ASSERT_FLOAT_WITHIN(0.1f, 4.0f, shotTime.value); // Running time not compensated
     TEST_ASSERT_EQUAL_STRING("RUNNING", shotTime.label);
 
     // 2. Pump Stop
-    registry.publish<SystemUptimeReading>(6.0f);
+    registry.publish<SystemUptimeReading>(6.0f); // 5s elapsed
     pumpSensor.setReading(0.0f); // OFF
     registry.update();
 
     shotTime = registry.getLatest<ShotTimeReading>();
-    TEST_ASSERT_EQUAL_FLOAT(5.0f, shotTime.value); // Final duration
+    TEST_ASSERT_EQUAL_FLOAT(4.9f, shotTime.value); // Final duration (5s - 0.1s)
     TEST_ASSERT_EQUAL_STRING("READY", shotTime.label);
 }
 
 void test_last_valid_shot_filtering() {
     SensorDispatcher registry;
     SensorStub pumpSensor;
-    ShotMonitorProcessor processor(&registry);
+    ShotMonitorProcessor processor(&registry, 0.1f); // 100ms compensation
 
     registry.provide<PumpReading>(&pumpSensor);
     registry.attachProcessor<ShotTimeReading>(&processor);
@@ -58,7 +58,7 @@ void test_last_valid_shot_filtering() {
     pumpSensor.setReading(0.0f); registry.update();
 
     Reading lastValid = registry.getLatest<LastValidShotReading>();
-    TEST_ASSERT_EQUAL_FLOAT(15.0f, lastValid.value);
+    TEST_ASSERT_EQUAL_FLOAT(14.9f, lastValid.value); // 15s - 0.1s
 
     // 2. Short Shot (Purge - should be ignored)
     registry.publish<SystemUptimeReading>(20.0f);
@@ -68,7 +68,7 @@ void test_last_valid_shot_filtering() {
     pumpSensor.setReading(0.0f); registry.update();
 
     lastValid = registry.getLatest<LastValidShotReading>();
-    TEST_ASSERT_EQUAL_FLOAT(15.0f, lastValid.value); // Still 15s!
+    TEST_ASSERT_EQUAL_FLOAT(14.9f, lastValid.value); // Still 14.9s!
 }
 
 int main() {
