@@ -10,8 +10,8 @@ extern "C" {
 #endif
 
 unsigned long millis();
-void setMillis(unsigned long ms);
-void addMillis(unsigned long ms);
+void setHardwareTime(unsigned long ms);
+void addHardwareTime(unsigned long ms);
 void pinMode(int pin, int mode);
 int digitalRead(int pin);
 int analogRead(int pin);

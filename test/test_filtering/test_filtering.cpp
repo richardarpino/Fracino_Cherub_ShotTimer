@@ -12,7 +12,7 @@ void test_pressure_rounding_jitter() {
     // 1. Settle just ABOVE a rounding boundary (1.16 Bar -> rounds to 1.2)
     // 1.16 Bar -> (1.16/1.25 + 0.5) = 1.428V sensor -> 0.714V pin -> (0.714/3.3)*4095 = 886 raw
     mock.setRawValue(886); 
-    for(int i=0; i<100; i++) { setMillis(i); pressure.getReading(); }
+    for(int i=0; i<100; i++) { setHardwareTime(i); pressure.getReading(); }
     
     float v1 = pressure.getReading();
     char buf1[16];
@@ -22,7 +22,7 @@ void test_pressure_rounding_jitter() {
     // 2. Small move (0.025 Bar) that triggers hysteresis and crosses boundary (1.135 Bar -> rounds to 1.1)
     // 1.135 Bar -> (1.135/1.25 + 0.5) = 1.408V sensor -> 0.704V pin -> (0.704/3.3)*4095 = 873 raw
     mock.setRawValue(873); 
-    for(int i=100; i<200; i++) { setMillis(i); pressure.getReading(); }
+    for(int i=100; i<200; i++) { setHardwareTime(i); pressure.getReading(); }
     
     float v2 = pressure.getReading();
     char buf2[16];
@@ -31,7 +31,7 @@ void test_pressure_rounding_jitter() {
 
     // 3. Move back UP by 0.021 Bar
     mock.setRawValue(896); 
-    for(int i=200; i<300; i++) { setMillis(i); pressure.getReading(); }
+    for(int i=200; i<300; i++) { setHardwareTime(i); pressure.getReading(); }
     
     float v3 = pressure.getReading();
     char buf3[16];

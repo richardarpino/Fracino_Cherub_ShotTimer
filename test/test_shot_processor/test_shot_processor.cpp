@@ -15,20 +15,25 @@ void test_shot_timing() {
     registry.provide<PumpReading>(&pumpSensor);
     registry.attachProcessor<ShotTimeReading>(&processor);
 
-    setMillis(1000);
+    // Initial state
+    registry.publish<SystemUptimeReading>(1.0f);
+    registry.publish<PumpReading>(0.0f);
+    registry.update();
+
     // 1. Pump Start
     pumpSensor.setReading(1.0f); // ON
     registry.update();
 
-    setMillis(5000);
-    registry.update(); // 4 seconds later
+    // 4 seconds later (1s -> 5s)
+    registry.publish<SystemUptimeReading>(5.0f);
+    registry.update(); 
     
     Reading shotTime = registry.getLatest<ShotTimeReading>();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 4.0f, shotTime.value);
     TEST_ASSERT_EQUAL_STRING("RUNNING", shotTime.label);
 
     // 2. Pump Stop
-    setMillis(6000);
+    registry.publish<SystemUptimeReading>(6.0f);
     pumpSensor.setReading(0.0f); // OFF
     registry.update();
 
@@ -46,18 +51,20 @@ void test_last_valid_shot_filtering() {
     registry.attachProcessor<ShotTimeReading>(&processor);
 
     // 1. Long Shot (Valid)
-    setMillis(0);
+    registry.publish<SystemUptimeReading>(0.0f);
     pumpSensor.setReading(1.0f); registry.update();
-    setMillis(15000); // 15s
+    
+    registry.publish<SystemUptimeReading>(15.0f); // 15s
     pumpSensor.setReading(0.0f); registry.update();
 
     Reading lastValid = registry.getLatest<LastValidShotReading>();
     TEST_ASSERT_EQUAL_FLOAT(15.0f, lastValid.value);
 
     // 2. Short Shot (Purge - should be ignored)
-    setMillis(20000);
+    registry.publish<SystemUptimeReading>(20.0f);
     pumpSensor.setReading(1.0f); registry.update();
-    setMillis(25000); // 5s
+    
+    registry.publish<SystemUptimeReading>(25.0f); // 5s
     pumpSensor.setReading(0.0f); registry.update();
 
     lastValid = registry.getLatest<LastValidShotReading>();

@@ -21,7 +21,7 @@ private:
     ISensorRegistry* _registry;
     RegistrySwitch<PumpReading> _pump;
     
-    unsigned long _startTime;
+    float _startTimeSecs;
     bool _isRunning;
     float _lastDuration;
     float _lastValidDuration;

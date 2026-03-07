@@ -14,28 +14,28 @@ void test_digital_sensor_debounce() {
     // 50ms debounce
     DigitalSensor sensor(&source, true, 50);
 
-    setMillis(0);
+    setHardwareTime(0);
     source.val = LOW; // Raw Active
     
     // Immediately after change
     Reading r = sensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, r.value); // Should still be inactive
     
-    setMillis(25);
+    setHardwareTime(25);
     r = sensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, r.value); // Still inactive
 
-    setMillis(51);
+    setHardwareTime(51);
     r = sensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, r.value); // Now active!
 
     // Noise: brief flip
     source.val = HIGH;
-    setMillis(60);
+    setHardwareTime(60);
     r = sensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 1.0f, r.value); // Should STAY active (filtered)
 
-    setMillis(111);
+    setHardwareTime(111);
     r = sensor.getReading();
     TEST_ASSERT_FLOAT_WITHIN(0.1f, 0.0f, r.value); // Now inactive after debounce
 }

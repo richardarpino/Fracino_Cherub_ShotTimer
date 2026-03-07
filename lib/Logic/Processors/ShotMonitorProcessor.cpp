@@ -3,7 +3,7 @@
 
 ShotMonitorProcessor::ShotMonitorProcessor(ISensorRegistry* registry)
     : _registry(registry), _pump(registry), 
-      _startTime(0), _isRunning(false), 
+      _startTimeSecs(0.0f), _isRunning(false), 
       _lastDuration(0.0f), _lastValidDuration(0.0f) {}
 
 void ShotMonitorProcessor::update() {
@@ -41,7 +41,7 @@ void ShotMonitorProcessor::update() {
 
 void ShotMonitorProcessor::startTimer() {
     _isRunning = true;
-    _startTime = millis();
+    _startTimeSecs = _registry->getLatest<SystemUptimeReading>().value;
     _lastDuration = 0.0f;
 }
 
@@ -53,5 +53,6 @@ void ShotMonitorProcessor::stopTimer() {
 
 float ShotMonitorProcessor::getElapsedSeconds() const {
     if (!_isRunning) return _lastDuration;
-    return (millis() - _startTime) / 1000.0f;
+    float now = _registry->getLatest<SystemUptimeReading>().value;
+    return now - _startTimeSecs;
 }

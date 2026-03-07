@@ -4,7 +4,7 @@
 
 StartupLogic::StartupLogic(ISwitchProvider* provider, ISensorRegistry* registry, unsigned long holdDurationMs) 
     : _wifiSwitch(registry), _otaSwitch(registry), _warmingUpSwitch(registry), _wifi(nullptr), _warmingUp(nullptr), _provider(provider), _registry(registry),
-      _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTime(0), _holdDurationMs(holdDurationMs) {}
+      _state(State::SEARCHING_WIFI), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _startTimeSecs(0.0f), _holdDurationSecs(holdDurationMs / 1000.0f) {}
 
 StatusMessage StartupLogic::getStatus() const {
     if (!_wifi) return StatusMessage("Startup", "INITIALIZING...", -1.0f, false);
@@ -50,7 +50,7 @@ void StartupLogic::update() {
     switch (_state) {
         case State::SEARCHING_WIFI:
             if (_wifiSwitch.isActive()) {
-                _startTime = millis();
+                _startTimeSecs = _registry->getLatest<SystemUptimeReading>().value;
                 _state = State::WIFI_STABLE;
             }
             break;
@@ -58,8 +58,8 @@ void StartupLogic::update() {
         case State::WIFI_STABLE:
             if (!_wifiSwitch.isActive()) {
                 _state = State::SEARCHING_WIFI;
-                _startTime = 0;
-            } else if (millis() - _startTime >= _holdDurationMs) {
+                _startTimeSecs = 0;
+            } else if (_registry->getLatest<SystemUptimeReading>().value - _startTimeSecs >= _holdDurationSecs) {
                 _provider->createOTA(); 
                 _state = State::OTA_STARTING;
             }

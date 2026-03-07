@@ -33,6 +33,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.provide<ButtonLeftReading>(&_buttonLeftSensor);
     _dispatcher.provide<BoilerPressureReading>(&_boilerPressure);
     _dispatcher.provide<WeightReading>(&_weightSensor);
+    _dispatcher.provide<SystemUptimeReading>(&_uptimeSensor);
 
     // Attach Reactive Processors
     _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);

@@ -8,6 +8,7 @@
 #include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Hardware/WeightSensor.h"
+#include "../Sensors/Hardware/SystemTimeSensor.h"
 #include "../Logic/Processors/TaredWeightProcessor.h"
 #include "../Logic/Processors/BoilerTemperatureProcessor.h"
 #include "../Logic/Processors/ShotMonitorProcessor.h"
@@ -82,6 +83,7 @@ private:
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
+    SystemTimeSensor _uptimeSensor;
     HeatingCycleProcessor _heatingCycleProc;
     WarmingUpProcessor _warmingUpProc;
 
