@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 WarmingUpProcessor::WarmingUpProcessor(ISensorRegistry* registry, unsigned long timeoutMs)
-    : _registry(registry), _startTime(millis()), _timeoutMs(timeoutMs), _isFinished(false) {
+    : _registry(registry), _startTime(millis()), _timeoutMs(timeoutMs), _isFinished(false), _firstUpdate(true) {
     if (_registry) {
         char valBuf[16];
         _registry->getLatest<BoilerPressureReading>().format(valBuf, sizeof(valBuf));
@@ -14,6 +14,14 @@ WarmingUpProcessor::WarmingUpProcessor(ISensorRegistry* registry, unsigned long 
 
 void WarmingUpProcessor::update() {
     if (!_registry) return;
+
+    if (_firstUpdate) {
+        _firstUpdate = false;
+        Reading pressure = _registry->getLatest<BoilerPressureReading>();
+        if (pressure.value > 0.1f) {
+            _isFinished = true;
+        }
+    }
 
     // 1. Timeout Check
     if (!_isFinished && (millis() - _startTime >= _timeoutMs)) {

@@ -34,8 +34,8 @@ void setupMainDashboard() {
 
   layout->addWidget(new SensorWidget<BoilerPressureReading>()); 
   layout->addWidget(new SensorWidget<BoilerTempReading>());     
-  layout->addWidget(new SensorWidget<ShotTimeReading>());       
-  layout->addWidget(new SensorWidget<LastValidShotReading>());  
+  layout->addWidget(new SensorWidget<HeatingCycleReading>());       
+  layout->addWidget(new SensorWidget<ShotTimeReading>());  
 }
 
 void setup() {

@@ -20,6 +20,7 @@ private:
     unsigned long _startTime;
     unsigned long _timeoutMs;
     bool _isFinished;
+    bool _firstUpdate;
     
     mutable char _statusBuffer[64];
     const int TARGET_CYCLES = 3;

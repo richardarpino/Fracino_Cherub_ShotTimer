@@ -27,11 +27,9 @@ void HeatingCycleProcessor::processHistory(float pressure) {
 
     // Handle Warm Start:
     // If first move, empty, and already pressurized
-    if (_moves.size() == 1 && _moves.back().empty() && rounded > 0.3f) {
-        // We jump to 3 cycles (target) to trigger immediate ready
-        _totalCompletedCycles = 3; 
-        _lastRoundedReading = rounded;
-        return;
+    if (_moves.size() == 1 && _moves.back().empty() && rounded > 0.1f) {
+        // We no longer jump to 3 cycles. 
+        // We fall through to ensure history is populated.
     }
 
     std::vector<float>& currentMove = _moves.back();
