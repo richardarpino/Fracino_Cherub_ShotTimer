@@ -35,11 +35,20 @@ lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     return _container;
 }
 
+void BlockerWidget::setStatus(const StatusMessage& status) {
+    _lastStatus = status;
+}
+
 void BlockerWidget::refresh() {
     if (!_container) return; // Added as per instruction
-    if (!_blocker) return;
 
-    StatusMessage status = _blocker->getStatus();
+    StatusMessage status;
+    if (_blocker) {
+        status = _blocker->getStatus();
+    } else {
+        status = _lastStatus;
+    }
+
     lv_label_set_text(_title_label, status.title);
     lv_label_set_text(_status_label, status.message);
 

@@ -12,6 +12,9 @@ public:
     void update(const Reading& reading) override;
     void refresh() override;
     void applyTheme(ITheme* theme) override;
+    
+    // Explicitly push status when used by a Painter
+    void setStatus(const StatusMessage& status);
 
 private:
     lv_obj_t* _container;
@@ -19,6 +22,8 @@ private:
     lv_obj_t* _status_label;
     lv_obj_t* _bar;
     IBlocker* _blocker;
+    
+    StatusMessage _lastStatus;
     
     lv_color_t _bgColor;
     lv_color_t _textColor;

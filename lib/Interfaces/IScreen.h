@@ -1,7 +1,7 @@
 #ifndef ISCREEN_H
 #define ISCREEN_H
 
-#include "../UI/ScreenLayout.h"
+class IPainter;
 
 /**
  * Interface for a visual unit in a Workflow.
@@ -10,9 +10,11 @@
 class IScreen {
 public:
     virtual ~IScreen() {}
-    virtual ScreenLayout* getLayout() = 0;
     virtual void update() = 0;
     virtual bool isDone() const = 0;
+    
+    // Bridge to new IPainter pattern
+    virtual void paint(IPainter& painter) {}
 };
 
 #endif

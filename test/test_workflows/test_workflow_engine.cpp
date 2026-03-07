@@ -14,7 +14,6 @@
 class MockScreen : public IScreen {
 public:
     MockScreen(const char* name) : _name(name), _isDone(false) {}
-    ScreenLayout* getLayout() override { return nullptr; }
     void update() override {}
     bool isDone() const override { return _isDone; }
     void setDone(bool done) { _isDone = done; }
@@ -26,7 +25,6 @@ private:
 class MockBlockerScreen : public IScreen {
 public:
     MockBlockerScreen(IBlocker* blocker) : _blocker(blocker) {}
-    ScreenLayout* getLayout() override { return nullptr; }
     void update() override {}
     bool isDone() const override { return !_blocker->isActive(); }
 private:
@@ -167,8 +165,15 @@ void test_workflow_engine_default_fallback() {
     TEST_ASSERT_EQUAL_PTR(&dashboard, engine.getActiveWorkflow());
 }
 
+void test_painter_infrastructure(); // From test_painter.cpp
+void test_blockerscreen_painting(); // From test_painter.cpp
+void test_dashboardscreen_painting(); // From test_painter.cpp
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
+    RUN_TEST(test_painter_infrastructure);
+    RUN_TEST(test_blockerscreen_painting);
+    RUN_TEST(test_dashboardscreen_painting);
     RUN_TEST(test_workflow_sequential_navigation);
     RUN_TEST(test_workflow_lifecycle);
     RUN_TEST(test_workflow_auto_advance_on_blocker_done);

@@ -16,11 +16,14 @@ MachineConfig config = {
 
 MachineFactory factory(config);
 
+#include "LVGLPainter.h"
+
 // --- Coordination & Logic ---
 ShotDisplay shotDisplay;
 ThemeManager themeManager(&shotDisplay, factory.getRegistry());
 WorkflowEngine* workflowEngine = nullptr;
 ScreenLayout* lastLayout = nullptr;
+LVGLPainter lvglPainter;
 
 void setup() {
   Serial.begin(115200);
@@ -38,6 +41,9 @@ void setup() {
   // Get the Workflow Engine (wires up Startup and Dashboard)
   workflowEngine = factory.getWorkflowEngine();
   Serial.println("Workflow Engine Ready");
+  
+  // Initialize painter without initial theme (will switch later)
+  lvglPainter.init(lv_scr_act(), nullptr); 
 }
 
 void loop() {
@@ -61,10 +67,18 @@ void loop() {
   if (workflowEngine) {
     // Sync UI with active workflow BEFORE update
     IScreen* activeScreen = workflowEngine->getActiveScreen();
-    if (activeScreen && activeScreen->getLayout() != lastLayout) {
-      Serial.println("Switching Screen Layout...");
-      shotDisplay.setLayout(activeScreen->getLayout());
-      lastLayout = activeScreen->getLayout();
+    if (activeScreen) {
+        // Provide the painter to the logic screen so it can draw itself
+        activeScreen->paint(lvglPainter);
+        
+        // Retrieve the populated layout from the painter
+        ScreenLayout* targetLayout = lvglPainter.getLayout();
+
+        if (targetLayout != lastLayout && targetLayout != nullptr) {
+            Serial.println("Switching Screen Layout...");
+            shotDisplay.setLayout(targetLayout);
+            lastLayout = targetLayout;
+        }
     }
 
     workflowEngine->update();
