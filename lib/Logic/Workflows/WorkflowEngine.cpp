@@ -1,0 +1,49 @@
+#include "WorkflowEngine.h"
+#include <algorithm>
+
+WorkflowEngine::WorkflowEngine(ISensorRegistry* registry)
+    : _registry(registry), _root(nullptr), _activeWorkflow(nullptr) {}
+
+void WorkflowEngine::setRootWorkflow(IWorkflow* root) {
+    _root = root;
+    if (!_activeWorkflow) _activeWorkflow = root;
+}
+
+void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, TriggerType trigger, int precedence) {
+    _triggeredWorkflows.emplace_back(workflow, trigger, precedence, _registry);
+    
+    // Sort by precedence (highest first)
+    std::sort(_triggeredWorkflows.begin(), _triggeredWorkflows.end(), 
+        [](const TriggeredWorkflow& a, const TriggeredWorkflow& b) {
+            return a.precedence > b.precedence;
+        });
+}
+
+void WorkflowEngine::update() {
+    if (!_registry) return;
+
+    IWorkflow* nextActive = _root;
+    int highestMatchedPrecedence = -1;
+
+    for (auto& tw : _triggeredWorkflows) {
+        if (tw.type == TriggerType::BUTTON_LEFT) {
+            tw.leftButton.update();
+            if (tw.leftButton.isActive()) {
+                if (tw.precedence > highestMatchedPrecedence) {
+                    nextActive = tw.workflow;
+                    highestMatchedPrecedence = tw.precedence;
+                }
+            }
+        }
+    }
+
+    _activeWorkflow = nextActive;
+}
+
+IWorkflow* WorkflowEngine::getActiveWorkflow() const {
+    return _activeWorkflow;
+}
+
+IScreen* WorkflowEngine::getActiveScreen() const {
+    return _activeWorkflow ? _activeWorkflow->getActiveScreen() : nullptr;
+}
