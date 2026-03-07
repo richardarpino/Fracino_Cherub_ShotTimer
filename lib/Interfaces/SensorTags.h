@@ -37,6 +37,7 @@ struct WiFiStatus;
 struct OTAStatus;
 struct WarmingUpStatus;
 struct BoilerSafetyStatus;
+struct SystemUptimeReading;
 
 /**
  * Logical Tags for the Sensor Registry.
@@ -49,6 +50,14 @@ struct HeatingCycleReading : public BaseTelemetryTag {
     using Children = TagList<struct WarmingUpStatus>;
     static SensorMetadata getMetadata() {
         return Units::Counter.range("CYCLES", 0.0f, 5.0f);
+    }
+};
+
+struct SystemUptimeReading : public BaseTelemetryTag {
+    static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::TIME;
+    static constexpr const char* NAME = "Uptime";
+    static SensorMetadata getMetadata() {
+        return Units::Time.range("UPTIME", 0.0f, 86400.0f); // 24h range for UI if needed
     }
 };
 

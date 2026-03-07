@@ -14,7 +14,7 @@ void test_pressure_scalar_application() {
     
     // 1.0 Bar baseline (ADC 806 -> 1.0 Bar with scalar 1.0)
     mock.setRawValue(806);
-    for(int i=0; i<100; i++) { setMillis(i); sensor.getReading(); }
+    for(int i=0; i<100; i++) { setHardwareTime(i); sensor.getReading(); }
     
     float rawExpected = 1.0f;
     float expectedValue = rawExpected * pressureScalar;
@@ -28,7 +28,7 @@ void test_pressure_scalar_1_25() {
     BoilerPressure sensor(&mock, 1.25f);
     
     mock.setRawValue(806); // 1.0 Bar raw
-    for(int i=0; i<100; i++) { setMillis(i); sensor.getReading(); }
+    for(int i=0; i<100; i++) { setHardwareTime(i); sensor.getReading(); }
     
     TEST_ASSERT_FLOAT_WITHIN(0.05f, 1.25f, sensor.getReading());
 }

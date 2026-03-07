@@ -16,7 +16,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _weightSensor(nullptr), 
       _taredWeight(&_dispatcher),
       _boilerTempProc(&_dispatcher),
-      _shotMonitorProc(&_dispatcher),
+      _shotMonitorProc(&_dispatcher, config.debounceMs / 1000.0f),
       _safetyProc(&_dispatcher),
       _wifi(nullptr),
       _ota(nullptr),
@@ -28,6 +28,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
 
     // Register Hardware Sensors for central polling
+    _dispatcher.provide<SystemUptimeReading>(&_uptimeSensor);
     _dispatcher.provide<PumpReading>(&_pumpSensor);
     _dispatcher.provide<ButtonRightReading>(&_buttonRightSensor);
     _dispatcher.provide<ButtonLeftReading>(&_buttonLeftSensor);

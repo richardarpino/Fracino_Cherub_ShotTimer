@@ -6,11 +6,11 @@ unsigned long millis() {
     return _mock_millis;
 }
 
-void setMillis(unsigned long ms) {
+void setHardwareTime(unsigned long ms) {
     _mock_millis = ms;
 }
 
-void addMillis(unsigned long ms) {
+void addHardwareTime(unsigned long ms) {
     _mock_millis += ms;
 }
 

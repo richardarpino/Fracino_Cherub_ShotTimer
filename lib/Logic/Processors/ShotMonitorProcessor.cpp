@@ -1,9 +1,10 @@
 #include "ShotMonitorProcessor.h"
 #include <Arduino.h>
 
-ShotMonitorProcessor::ShotMonitorProcessor(ISensorRegistry* registry)
+ShotMonitorProcessor::ShotMonitorProcessor(ISensorRegistry* registry, float latencyCompSecs)
     : _registry(registry), _pump(registry), 
-      _startTime(0), _isRunning(false), 
+      _latencyCompSecs(latencyCompSecs),
+      _startTimeSecs(0.0f), _isRunning(false), 
       _lastDuration(0.0f), _lastValidDuration(0.0f) {}
 
 void ShotMonitorProcessor::update() {
@@ -21,7 +22,7 @@ void ShotMonitorProcessor::update() {
         
         // Filter purges (< 10s)
         if (duration >= 10.0f) {
-            _lastValidDuration = duration;
+            _lastValidDuration = _lastDuration; // Use compensated duration
         }
     }
 
@@ -41,17 +42,19 @@ void ShotMonitorProcessor::update() {
 
 void ShotMonitorProcessor::startTimer() {
     _isRunning = true;
-    _startTime = millis();
+    _startTimeSecs = _registry->getLatest<SystemUptimeReading>().value;
     _lastDuration = 0.0f;
 }
 
 void ShotMonitorProcessor::stopTimer() {
     if (!_isRunning) return;
-    _lastDuration = getElapsedSeconds();
+    float duration = getElapsedSeconds();
+    _lastDuration = (duration > _latencyCompSecs) ? (duration - _latencyCompSecs) : 0.0f;
     _isRunning = false;
 }
 
 float ShotMonitorProcessor::getElapsedSeconds() const {
     if (!_isRunning) return _lastDuration;
-    return (millis() - _startTime) / 1000.0f;
+    float now = _registry->getLatest<SystemUptimeReading>().value;
+    return now - _startTimeSecs;
 }

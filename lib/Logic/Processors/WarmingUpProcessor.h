@@ -17,8 +17,8 @@ public:
 
 private:
     ISensorRegistry* _registry;
-    unsigned long _startTime;
-    unsigned long _timeoutMs;
+    float _startTimeSecs;
+    float _timeoutSecs;
     bool _isFinished;
     bool _firstUpdate;
     

@@ -44,8 +44,8 @@ private:
     bool _justStarted;
     bool _justStopped;
     bool _lastActive;
-    unsigned long _startTime;
-    unsigned long _holdDurationMs;
+    float _startTimeSecs;
+    float _holdDurationSecs;
 };
 
 #endif

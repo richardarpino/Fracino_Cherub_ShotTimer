@@ -13,7 +13,7 @@
  */
 class ShotMonitorProcessor : public ITagProcessor {
 public:
-    ShotMonitorProcessor(ISensorRegistry* registry);
+    ShotMonitorProcessor(ISensorRegistry* registry, float latencyCompSecs = 0.0f);
     
     void update() override;
 
@@ -21,7 +21,8 @@ private:
     ISensorRegistry* _registry;
     RegistrySwitch<PumpReading> _pump;
     
-    unsigned long _startTime;
+    float _latencyCompSecs;
+    float _startTimeSecs;
     bool _isRunning;
     float _lastDuration;
     float _lastValidDuration;

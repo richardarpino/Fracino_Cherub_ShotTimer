@@ -27,6 +27,9 @@ void test_startup_factory_coordination() {
     TEST_ASSERT_FALSE(logic.isActive());
     TEST_ASSERT_FALSE(factory.otaCreated());
     
+    // Initial uptime
+    registry.publish<SystemUptimeReading>(0.0f);
+
     // 1. Initial State: SEARCHING_WIFI
     registry.update(); // Initial poll
     logic.update(); 
@@ -34,14 +37,14 @@ void test_startup_factory_coordination() {
     
     // 2. Connect WiFi
     WiFi.setStatus(WL_CONNECTED);
-    setMillis(100); 
+    registry.publish<SystemUptimeReading>(0.1f); // 100ms
     wifi.update();     // Publishes WiFiStatus=1.0 to registry
     registry.update(); // Updates cache
     logic.update();    // Sees WiFiStatus=1.0 via RegistrySwitch
     TEST_ASSERT_FALSE(factory.otaCreated());
 
     // 3. Hold wait (3s) -> Transitions to OTA_STARTING
-    setMillis(3100); 
+    registry.publish<SystemUptimeReading>(3.1f); 
     wifi.update(); 
     registry.update();
     logic.update();
@@ -50,7 +53,6 @@ void test_startup_factory_coordination() {
     TEST_ASSERT_FALSE(logic.isActive()); 
 
     // 4. OTA Ready (Listening) -> Transitions to WARMING_UP state
-    // Manual publish to mock OTA service publishing its state
     registry.publish<OTAStatus>(StatusMessage("OTA", "ON", 100.0f, false));
     warmingUp.setTitle("Warming Up...");
     registry.update();
@@ -77,29 +79,27 @@ void test_startup_transition_loop_timing() {
     MachineProviderStub factory(&wifi, &ota, &warmingUp);
     StartupLogic logic(&factory, &registry);
 
-    printf("\nDEBUG: Started Loop Timing Test\n"); fflush(stdout);
-
     // Initial state: SEARCHING_WIFI
-    setMillis(0);
+    registry.publish<SystemUptimeReading>(0.0f);
     registry.update();
     logic.update(); 
     TEST_ASSERT_FALSE(logic.justStarted());
 
     // 1. Progress to WARMING_UP
     // Frame 1: SEARCHING -> WIFI_STABLE
-    setMillis(100); 
+    registry.publish<SystemUptimeReading>(0.1f);
     wifi.update(); 
     registry.update();
     logic.update(); 
     
     // Frame 2: Wait in WIFI_STABLE
-    setMillis(2000); 
+    registry.publish<SystemUptimeReading>(2.0f);
     wifi.update();
     registry.update();
     logic.update();
     
     // Frame 3: WIFI_STABLE -> OTA_STARTING (after 3000ms from Frame 1)
-    setMillis(3200); 
+    registry.publish<SystemUptimeReading>(3.2f);
     wifi.update();
     registry.update();
     logic.update();
@@ -137,9 +137,9 @@ void test_double_update_edge_loss_warning() {
     StartupLogic logic(&factory, &registry);
 
     // 1. Advance to READY frame
-    setMillis(0); registry.update(); logic.update();
-    setMillis(100); wifi.update(); registry.update(); logic.update(); // WIFI_STABLE
-    setMillis(3200); wifi.update(); registry.update(); logic.update(); // OTA_STARTING
+    registry.publish<SystemUptimeReading>(0.0f); registry.update(); logic.update();
+    registry.publish<SystemUptimeReading>(0.1f); wifi.update(); registry.update(); logic.update(); // WIFI_STABLE
+    registry.publish<SystemUptimeReading>(3.2f); wifi.update(); registry.update(); logic.update(); // OTA_STARTING
     registry.publish<OTAStatus>(StatusMessage("OTA", "ON", 100.0f, false));
     registry.update(); logic.update();                                // WARMING_UP
     
@@ -149,15 +149,6 @@ void test_double_update_edge_loss_warning() {
     logic.update(); 
     TEST_ASSERT_TRUE(logic.justStarted()); 
 
-    // 3. Second update in same loop (This represents the BUG we fixed)
-    // In the new architecture, logic.update() uses RegistrySwitch::update().
-    // If RegistrySwitch::update() is called again in the same frame, 
-    // it will pull CURRENT reading and compare against ITS PREVIOUS frame state.
-    
-    // BUT wait: RegistrySwitch::update() sets _lastIsActive = _isActive.
-    // So a second update() in the SAME frame WILL consume the edge!
-    // This is correct behavior for the switch - it's the Orchestrator's responsibility 
-    // to call update() only once per frame.
     logic.update();
     
     // 4. Verification: Edge is correctly "lost" (processed) by the second update

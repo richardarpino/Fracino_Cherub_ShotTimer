@@ -3,8 +3,9 @@
 #include <stdio.h>
 
 WarmingUpProcessor::WarmingUpProcessor(ISensorRegistry* registry, unsigned long timeoutMs)
-    : _registry(registry), _startTime(millis()), _timeoutMs(timeoutMs), _isFinished(false), _firstUpdate(true) {
+    : _registry(registry), _startTimeSecs(0.0f), _timeoutSecs(timeoutMs / 1000.0f), _isFinished(false), _firstUpdate(true) {
     if (_registry) {
+        _startTimeSecs = _registry->getLatest<SystemUptimeReading>().value;
         char valBuf[16];
         _registry->getLatest<BoilerPressureReading>().format(valBuf, sizeof(valBuf));
         snprintf(_statusBuffer, sizeof(_statusBuffer), "Heating Cycle 1, currently %s", valBuf);
@@ -17,6 +18,7 @@ void WarmingUpProcessor::update() {
 
     if (_firstUpdate) {
         _firstUpdate = false;
+        _startTimeSecs = _registry->getLatest<SystemUptimeReading>().value;
         Reading pressure = _registry->getLatest<BoilerPressureReading>();
         if (pressure.value > 0.1f) {
             _isFinished = true;
@@ -24,7 +26,8 @@ void WarmingUpProcessor::update() {
     }
 
     // 1. Timeout Check
-    if (!_isFinished && (millis() - _startTime >= _timeoutMs)) {
+    float now = _registry->getLatest<SystemUptimeReading>().value;
+    if (!_isFinished && (now - _startTimeSecs >= _timeoutSecs)) {
         _isFinished = true;
     }
 
@@ -60,8 +63,9 @@ float WarmingUpProcessor::getProgress() const {
     int currentCycles = (int)reading.value;
     float moveProgress = ((float)currentCycles / (float)TARGET_CYCLES) * 100.0f;
     
-    unsigned long elapsed = millis() - _startTime;
-    float timeProgress = (float)elapsed / (float)_timeoutMs * 100.0f;
+    float now = _registry->getLatest<SystemUptimeReading>().value;
+    float elapsed = now - _startTimeSecs;
+    float timeProgress = elapsed / _timeoutSecs * 100.0f;
     if (timeProgress > 100.0f) timeProgress = 100.0f;
     
     // Whichever is further along

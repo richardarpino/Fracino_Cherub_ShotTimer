@@ -93,7 +93,6 @@ void test_warm_startup_reactive() {
 }
 
 void test_timeout() {
-    setMillis(0);
     SensorDispatcher registry;
     SensorStub pressureSensor;
     WarmingUpBlocker blocker(&registry);
@@ -103,13 +102,22 @@ void test_timeout() {
     registry.attachProcessor<HeatingCycleReading>(&cycleProc);
     registry.attachProcessor<WarmingUpStatus>(&processor);
     
+    // Initial uptime and pressure (cold)
+    registry.publish<SystemUptimeReading>(0.0f);
+    registry.publish<BoilerPressureReading>(0.0f);
+
+    registry.update(); // Clear firstUpdate flag if it exists (processor might check it)
     blocker.update();
     TEST_ASSERT_FALSE(blocker.isActive());
 
-    setMillis(600000);
-    // Trigger update to check timeout
-    registry.publish<BoilerPressureReading>(0.5f);
+    // Travel to 10 minutes (600 seconds)
+    registry.publish<SystemUptimeReading>(600.0f);
+
+    // Trigger update (without pressure skip)
+    registry.publish<BoilerPressureReading>(0.05f); // Still below 0.1f skip threshold
     blocker.update();
+    
+    // This should FAIL (RED) until WarmingUpProcessor is refactored to use SystemUptimeReading
     TEST_ASSERT_TRUE(blocker.isActive());
 }
 
