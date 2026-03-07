@@ -21,10 +21,17 @@ Passive logic components that transform telemetry.
 - **Registration**: Processors are attached to their output tags using `registry.attachProcessor<T>(processor)`.
 - **Execution**: They do not have their own timers; they are called by the Registry the moment their input data is ready.
 
-### 4. Wiring it Together (`Factories/MachineFactory.cpp`)
+4. **Workflows & Screens (`Logic/Workflows/`)**
+The UI layer is now managed via a state-machine of Workflows.
+- **`IScreen`**: A single UI state (e.g., WiFi Blocker, Dashboard). It provides a `ScreenLayout` and informs the engine when it is `isDone()`.
+- **`WorkflowEngine`**: The master controller. It manages transitions between sequential `BasicWorkflows` and `Trigger`-based workflows (e.g., safety alerts or button presses).
+- **Reactive UI**: The UI doesn't poll; it is synchronized by the `WorkflowEngine` which pulls the active layout and sets it on the `ShotDisplay`.
+
+### 5. Wiring it Together (`Factories/MachineFactory.cpp`)
 The Factory is the "Wiring Diagram":
 1.  **Provide Sensors**: `registry.provide<BoilerPressureReading>(&pressureSensor)`.
 2.  **Attach Processors**: `registry.attachProcessor<HeatingCycleReading>(&heatingCycleProc)`.
+3.  **Define Workflows**: Wire sequential blockers (WiFi -> OTA -> Warmup) and fall back to the Dashboard.
 
 ---
 
