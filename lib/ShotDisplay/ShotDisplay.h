@@ -19,16 +19,15 @@ public:
     // IThemeable implementation
     void setTheme(ITheme* newTheme) override;
 
-    // Screens (Status Widget)
+    // Screens & Layouts
     void showInfo(const String& topText, const String& bottomText);
+    void setLayout(ScreenLayout* layout);
     void clearScreen();
-    void resetLayout(uint8_t cols = 2, uint8_t rows = 2);
-    void setRegistry(class ISensorRegistry* registry);
-
+    
     // Updates
     void update(); // The main "Pull" update
     
-    ScreenLayout* getLayout() { return _layout; }
+    ScreenLayout* getLayout() { return _externalLayout; }
     
     // LVGL Flush Callback (Must be static to be a C callback)
     static void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
@@ -36,7 +35,7 @@ public:
 private:
     TFT_eSPI _tft;
     ITheme* _currentTheme;
-    ScreenLayout* _layout;
+    ScreenLayout* _externalLayout;
 
     // LVGL buffers and driver
     static const uint16_t SCREEN_WIDTH = TFT_HEIGHT; // 240 in landscape

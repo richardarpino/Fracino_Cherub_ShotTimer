@@ -23,6 +23,13 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _warmingUpBlocker(nullptr),
       _heatingCycleProc(&_dispatcher),
       _warmingUpProc(&_dispatcher),
+      _workflowEngine(nullptr),
+      _startupWorkflow(nullptr),
+      _dashboardWorkflow(nullptr),
+      _wifiScreen(nullptr),
+      _otaScreen(nullptr),
+      _warmupScreen(nullptr),
+      _dashScreen(nullptr),
       _config(config) {
     
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
@@ -54,6 +61,13 @@ MachineFactory::~MachineFactory() {
     if (_wifi) delete _wifi;
     if (_ota) delete _ota;
     if (_warmingUpBlocker) delete _warmingUpBlocker;
+    if (_workflowEngine) delete _workflowEngine;
+    if (_startupWorkflow) delete _startupWorkflow;
+    if (_dashboardWorkflow) delete _dashboardWorkflow;
+    if (_wifiScreen) delete _wifiScreen;
+    if (_otaScreen) delete _otaScreen;
+    if (_warmupScreen) delete _warmupScreen;
+    if (_dashScreen) delete _dashScreen;
 }
 
 OTAService* MachineFactory::createOTA() {
@@ -68,4 +82,30 @@ WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
         _warmingUpBlocker = new WarmingUpBlocker(&_dispatcher);
     }
     return _warmingUpBlocker;
+}
+
+WorkflowEngine* MachineFactory::getWorkflowEngine() {
+    if (!_workflowEngine) {
+        _workflowEngine = new WorkflowEngine(&_dispatcher);
+
+        // 1. Startup Sequence (Root)
+        _startupWorkflow = new BasicWorkflow();
+        _wifiScreen = new BlockerScreen(getWiFiSwitch());
+        _otaScreen = new BlockerScreen(createOTA());
+        _warmupScreen = new BlockerScreen(getWarmingUpBlocker());
+        
+        _startupWorkflow->addScreen(_wifiScreen);
+        _startupWorkflow->addScreen(_otaScreen);
+        _startupWorkflow->addScreen(_warmupScreen);
+        
+        _workflowEngine->setRootWorkflow(_startupWorkflow);
+
+        // 2. Main Dashboard (Default fallback)
+        _dashboardWorkflow = new BasicWorkflow();
+        _dashScreen = new DashboardScreen(&_dispatcher);
+        _dashboardWorkflow->addScreen(_dashScreen);
+        
+        _workflowEngine->setDefaultWorkflow(_dashboardWorkflow);
+    }
+    return _workflowEngine;
 }

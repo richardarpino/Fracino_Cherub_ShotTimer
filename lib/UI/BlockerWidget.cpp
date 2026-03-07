@@ -36,6 +36,7 @@ lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
 }
 
 void BlockerWidget::refresh() {
+    if (!_container) return; // Added as per instruction
     if (!_blocker) return;
 
     StatusMessage status = _blocker->getStatus();
@@ -65,6 +66,7 @@ void BlockerWidget::update(const Reading& reading) {
 }
 
 void BlockerWidget::applyTheme(ITheme* theme) {
+    if (!_container) return;
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F; r = (r * 255) / 31;
         uint8_t g = (c >> 5) & 0x3F;  g = (g * 255) / 63;

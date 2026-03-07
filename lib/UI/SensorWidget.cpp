@@ -35,6 +35,7 @@ lv_obj_t* SensorWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
 }
 
 void SensorWidgetBase::update(const Reading& reading) {
+    if (!_container) return;
     char buf[16];
     if (reading.precision == 0) {
         snprintf(buf, sizeof(buf), "%.0f", reading.value);
@@ -56,6 +57,7 @@ void SensorWidgetBase::update(const Reading& reading) {
 }
 
 void SensorWidgetBase::applyTheme(ITheme* theme) {
+    if (!_container) return;
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F;
         uint8_t g = (c >> 5) & 0x3F;

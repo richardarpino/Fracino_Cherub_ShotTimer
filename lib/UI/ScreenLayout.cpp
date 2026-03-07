@@ -2,31 +2,41 @@
 #include "SensorWidget.h"
 #include "StatusWidget.h"
 
-ScreenLayout::ScreenLayout() : _grid(nullptr), _widgets(), _registry(nullptr), _currentTheme(nullptr), _nextSlot(0) {}
+ScreenLayout::ScreenLayout() 
+    : _grid(nullptr), _widgets(), _registry(nullptr), _currentTheme(nullptr), _cols(2), _rows(2), _nextSlot(0) {}
 
-void ScreenLayout::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
-    _grid = parent;
+void ScreenLayout::setDimensions(uint8_t cols, uint8_t rows) {
     _cols = cols;
     _rows = rows;
+}
+
+void ScreenLayout::init(lv_obj_t* parent) {
+    _grid = parent;
+    
+    if (!_grid) return;
+
+    // Use internal dimensions
+    uint8_t cols = _cols;
+    uint8_t rows = _rows;
     _nextSlot = 0;
 
-    // Use dynamic descriptors for the grid
-    lv_coord_t* col_dsc = (lv_coord_t*)malloc((cols + 1) * sizeof(lv_coord_t));
-    lv_coord_t* row_dsc = (lv_coord_t*)malloc((rows + 1) * sizeof(lv_coord_t));
+    // Use persistable members to prevent memory corruption in LVGL grid
+    static lv_coord_t col_dsc[10];
+    static lv_coord_t row_dsc[10];
 
-    for(int i=0; i<cols; i++) col_dsc[i] = LV_GRID_FR(1);
-    col_dsc[cols] = LV_GRID_TEMPLATE_LAST;
+    for(int i=0; i<cols && i<9; i++) col_dsc[i] = LV_GRID_FR(1);
+    col_dsc[cols < 9 ? cols : 9] = LV_GRID_TEMPLATE_LAST;
 
-    for(int i=0; i<rows; i++) row_dsc[i] = LV_GRID_FR(1);
-    row_dsc[rows] = LV_GRID_TEMPLATE_LAST;
+    for(int i=0; i<rows && i<9; i++) row_dsc[i] = LV_GRID_FR(1);
+    row_dsc[rows < 9 ? rows : 9] = LV_GRID_TEMPLATE_LAST;
 
     lv_obj_set_grid_dsc_array(_grid, col_dsc, row_dsc);
     lv_obj_set_layout(_grid, LV_LAYOUT_GRID);
-    
-    // Note: LVGL copies these arrays, but with set_grid_dsc_array it doesn't. 
-    // Wait, LVGL 8.3 requires these to be static or persist. 
-    // Let's use static for common cases if possible, but for dynamic we need a better way.
-    // Actually, ScreenLayout is usually long-lived. We can store them as members.
+
+    // Initialize all deferred widgets
+    for (int i = 0; i < _widgets.size(); i++) {
+        initializeWidget(_widgets[i], i);
+    }
 }
 
 void ScreenLayout::reset() {
@@ -46,9 +56,21 @@ void ScreenLayout::reset() {
 void ScreenLayout::addWidget(IWidget* widget) {
     if (_nextSlot >= (_cols * _rows)) return; // Grid full
 
+    _widgets.push_back(widget);
+    
+    if (_grid) {
+        initializeWidget(widget, _nextSlot);
+    }
+    
+    _nextSlot++;
+}
+
+void ScreenLayout::initializeWidget(IWidget* widget, int slot) {
+    if (!_grid) return;
+
     // Determine grid position (down then right)
-    uint8_t col = _nextSlot / _rows;
-    uint8_t row = _nextSlot % _rows;
+    uint8_t col = slot / _rows;
+    uint8_t row = slot % _rows;
 
     // Initialize the widget and get its root visual
     lv_obj_t* root = widget->init(_grid, _cols, _rows);
@@ -58,9 +80,6 @@ void ScreenLayout::addWidget(IWidget* widget) {
 
     if (_currentTheme) widget->applyTheme(_currentTheme);
     if (_registry) widget->setRegistry(_registry);
-
-    _widgets.push_back(widget);
-    _nextSlot++;
 }
 
 void ScreenLayout::update() {
@@ -81,6 +100,7 @@ void ScreenLayout::showMessage(const char* text) {
 }
 
 void ScreenLayout::applyTheme(ITheme* theme) {
+    if (!theme) return;
     _currentTheme = theme;
     for (auto* w : _widgets) {
         w->applyTheme(theme);
@@ -92,7 +112,9 @@ void ScreenLayout::applyTheme(ITheme* theme) {
     uint8_t g = (c >> 5) & 0x3F;  g = (g * 255) / 63;
     uint8_t b = c & 0x1F;         b = (b * 255) / 31;
     
-    lv_obj_set_style_bg_color(_grid, lv_color_make(r, g, b), 0);
+    if (_grid) {
+        lv_obj_set_style_bg_color(_grid, lv_color_make(r, g, b), 0);
+    }
 }
 
 void ScreenLayout::setRegistry(ISensorRegistry* registry) {

@@ -11,6 +11,8 @@ class IScreen {
 public:
     virtual ~IScreen() {}
     virtual ScreenLayout* getLayout() = 0;
+    virtual void update() = 0;
+    virtual bool isDone() const = 0;
 };
 
 #endif

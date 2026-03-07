@@ -30,6 +30,7 @@ void StatusWidgetBase::setText(const char* text) {
 }
 
 void StatusWidgetBase::update(const Reading& reading) {
+    if (!_container) return;
     if (reading.label && reading.label[0] != '\0') {
         setText(reading.label);
         
@@ -48,6 +49,7 @@ void StatusWidgetBase::update(const Reading& reading) {
 }
 
 void StatusWidgetBase::update(const StatusMessage& status) {
+    if (!_container) return;
     if (status.message && status.message[0] != '\0') {
         setText(status.message);
         
@@ -62,6 +64,7 @@ void StatusWidgetBase::update(const StatusMessage& status) {
 }
 
 void StatusWidgetBase::applyTheme(ITheme* theme) {
+    if (!_container) return;
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F; r = (r * 255) / 31;
         uint8_t g = (c >> 5) & 0x3F;  g = (g * 255) / 63;

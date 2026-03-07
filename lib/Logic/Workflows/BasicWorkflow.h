@@ -14,6 +14,7 @@ public:
     void addScreen(IScreen* screen) override;
     IScreen* getActiveScreen() const override;
     
+    void update() override;
     void next() override;
     bool isFinished() const override;
 

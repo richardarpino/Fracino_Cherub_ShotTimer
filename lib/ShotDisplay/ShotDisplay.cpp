@@ -1,7 +1,7 @@
 #include "ShotDisplay.h"
 
 ShotDisplay::ShotDisplay() 
-    : _tft(TFT_eSPI()), _currentTheme(nullptr), _layout(nullptr) {}
+    : _tft(TFT_eSPI()), _currentTheme(nullptr), _externalLayout(nullptr) {}
 
 void ShotDisplay::init() {
     _tft.init();
@@ -13,14 +13,14 @@ void ShotDisplay::init() {
     } else {
         _tft.fillScreen(TFT_BLACK);
     }
-
+ 
     // LVGL Initialization
     lv_init();
-
+ 
     // Buffer Allocation
     _buf = (lv_color_t*) malloc(BUF_SIZE * sizeof(lv_color_t));
     lv_disp_draw_buf_init(&_draw_buf, _buf, NULL, BUF_SIZE);
-
+ 
     // Driver Registration
     lv_disp_drv_init(&_disp_drv);
     _disp_drv.hor_res = SCREEN_WIDTH;
@@ -29,11 +29,6 @@ void ShotDisplay::init() {
     _disp_drv.draw_buf = &_draw_buf;
     _disp_drv.user_data = &_tft; 
     lv_disp_drv_register(&_disp_drv);
-
-    // Layout Initialization
-    _layout = new ScreenLayout();
-    _layout->init(lv_scr_act());
-    _layout->applyTheme(_currentTheme);
 }
 
 // Static Flush Callback
@@ -50,39 +45,28 @@ void ShotDisplay::my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_c
     lv_disp_flush_ready(disp);
 }
 
+void ShotDisplay::setLayout(ScreenLayout* layout) {
+    if (_externalLayout == layout) return;
+    
+    _externalLayout = layout;
+    if (_externalLayout) {
+        lv_obj_clean(lv_scr_act()); // Remove old widgets
+        _externalLayout->init(lv_scr_act()); // Default 2x2 or as configured in layout
+        _externalLayout->applyTheme(_currentTheme);
+    }
+}
+ 
 void ShotDisplay::setTheme(ITheme* newTheme) {
     _currentTheme = newTheme;
-    if (_layout) {
-        _layout->applyTheme(_currentTheme);
+    if (_externalLayout) {
+        _externalLayout->applyTheme(_currentTheme);
     }
 }
-
+ 
 void ShotDisplay::update() {
-    if (_layout) _layout->update();
+    if (_externalLayout) _externalLayout->update();
 }
-
-void ShotDisplay::showInfo(const String& topText, const String& bottomText) {
-    if (_layout) {
-        String combined = topText + "\n" + bottomText;
-        _layout->showMessage(combined.c_str());
-    }
-}
-
+ 
 void ShotDisplay::clearScreen() {
-    // No-op or just refresh theme
-    if (_layout) _layout->applyTheme(_currentTheme);
-}
-
-void ShotDisplay::resetLayout(uint8_t cols, uint8_t rows) {
-    if (_layout) {
-        _layout->reset();
-        _layout->init(lv_scr_act(), cols, rows);
-        _layout->applyTheme(_currentTheme);
-    }
-}
-
-void ShotDisplay::setRegistry(ISensorRegistry* registry) {
-    if (_layout) {
-        _layout->setRegistry(registry);
-    }
+    if (_externalLayout) _externalLayout->applyTheme(_currentTheme);
 }

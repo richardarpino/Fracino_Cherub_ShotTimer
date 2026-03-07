@@ -15,6 +15,18 @@ IScreen* BasicWorkflow::getActiveScreen() const {
     return nullptr;
 }
 
+void BasicWorkflow::update() {
+    if (_isFinished || _screens.empty()) return;
+
+    IScreen* active = getActiveScreen();
+    if (active) {
+        active->update();
+        if (active->isDone()) {
+            next();
+        }
+    }
+}
+
 void BasicWorkflow::next() {
     if (_screens.empty()) return;
 

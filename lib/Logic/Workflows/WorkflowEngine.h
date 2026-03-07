@@ -4,7 +4,7 @@
 #include "../../Interfaces/IWorkflow.h"
 #include "../../Interfaces/ISensorRegistry.h"
 #include "../../Interfaces/SensorTags.h"
-#include "../Registry/RegistrySwitch.h"
+#include "../../Sensors/Registry/RegistrySwitch.h"
 #include <map>
 #include <vector>
 
@@ -24,6 +24,7 @@ public:
     WorkflowEngine(ISensorRegistry* registry);
 
     void setRootWorkflow(IWorkflow* root);
+    void setDefaultWorkflow(IWorkflow* defaultWf);
     void addTriggerWorkflow(IWorkflow* workflow, TriggerType trigger, int precedence);
 
     void update();
@@ -44,6 +45,7 @@ private:
 
     ISensorRegistry* _registry;
     IWorkflow* _root;
+    IWorkflow* _default;
     std::vector<TriggeredWorkflow> _triggeredWorkflows;
     IWorkflow* _activeWorkflow;
 };

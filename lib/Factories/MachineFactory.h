@@ -13,6 +13,10 @@
 #include "../Logic/Processors/BoilerTemperatureProcessor.h"
 #include "../Logic/Processors/ShotMonitorProcessor.h"
 #include "../Logic/Processors/BoilerSafetyProcessor.h"
+#include "../Logic/Workflows/WorkflowEngine.h"
+#include "../Logic/Workflows/BasicWorkflow.h"
+#include "../Logic/Workflows/BlockerScreen.h"
+#include "../Logic/Workflows/DashboardScreen.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
@@ -51,6 +55,8 @@ public:
 
     TaredWeightProcessor* getTaredWeight() { return &_taredWeight; }
 
+    WorkflowEngine* getWorkflowEngine();
+
 private:
     SensorDispatcher _dispatcher;
 
@@ -86,6 +92,15 @@ private:
     SystemTimeSensor _uptimeSensor;
     HeatingCycleProcessor _heatingCycleProc;
     WarmingUpProcessor _warmingUpProc;
+ 
+    WorkflowEngine* _workflowEngine;
+    BasicWorkflow* _startupWorkflow;
+    BasicWorkflow* _dashboardWorkflow;
+    
+    BlockerScreen* _wifiScreen;
+    BlockerScreen* _otaScreen;
+    BlockerScreen* _warmupScreen;
+    DashboardScreen* _dashScreen;
 
     MachineConfig _config;
 

@@ -14,6 +14,7 @@ public:
     virtual void addScreen(IScreen* screen) = 0;
     virtual IScreen* getActiveScreen() const = 0;
     
+    virtual void update() = 0;
     virtual void next() = 0;
     virtual bool isFinished() const = 0;
 };

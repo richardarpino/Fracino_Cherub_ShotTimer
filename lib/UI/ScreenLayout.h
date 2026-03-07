@@ -11,7 +11,8 @@ class ScreenLayout {
 public:
     ScreenLayout();
     
-    void init(lv_obj_t* parent, uint8_t cols = 2, uint8_t rows = 2);
+    void setDimensions(uint8_t cols, uint8_t rows);
+    void init(lv_obj_t* parent);
     void update();
     void applyTheme(ITheme* theme);
     void reset();
@@ -21,6 +22,8 @@ public:
     void setRegistry(class ISensorRegistry* registry);
 
 private:
+    void initializeWidget(IWidget* widget, int slot);
+    
     lv_obj_t* _grid;
     std::vector<IWidget*> _widgets;
     class ISensorRegistry* _registry;

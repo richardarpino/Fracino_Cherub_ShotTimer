@@ -1,17 +1,11 @@
 #include <lvgl.h>
 #include "ThemeManager.h"
 #include "ShotDisplay.h"
-#include "StartupLogic.h"
 #include "MachineFactory.h"
 #include <vector>
 #include "pins.h"
 #include "secrets.h"
-#include "ScreenLayout.h"
-#include "SensorWidget.h"
-#include "GaugeWidget.h"
-#include "StatusWidget.h"
-#include "BlockerWidget.h"
- 
+
 // --- Factory & Configuration ---
 MachineConfig config = {
   .otaHostname = OTA_HOSTNAME,
@@ -23,20 +17,10 @@ MachineConfig config = {
 MachineFactory factory(config);
 
 // --- Coordination & Logic ---
-StartupLogic startupLogic(&factory, factory.getRegistry());
-
 ShotDisplay shotDisplay;
 ThemeManager themeManager(&shotDisplay, factory.getRegistry());
-
-void setupMainDashboard() {
-  shotDisplay.resetLayout(2, 2);
-  ScreenLayout* layout = shotDisplay.getLayout();
-
-  layout->addWidget(new SensorWidget<BoilerPressureReading>()); 
-  layout->addWidget(new SensorWidget<BoilerTempReading>());     
-  layout->addWidget(new SensorWidget<HeatingCycleReading>());       
-  layout->addWidget(new SensorWidget<ShotTimeReading>());  
-}
+WorkflowEngine* workflowEngine = nullptr;
+ScreenLayout* lastLayout = nullptr;
 
 void setup() {
   Serial.begin(115200);
@@ -49,11 +33,11 @@ void setup() {
   }
  
   shotDisplay.init();
-  shotDisplay.setRegistry(factory.getRegistry());
+  Serial.println("Display Initialized");
   
-  // Startup Layout (1x1)
-  shotDisplay.resetLayout(1, 1);
-  shotDisplay.getLayout()->addWidget(new BlockerWidget(&startupLogic));
+  // Get the Workflow Engine (wires up Startup and Dashboard)
+  workflowEngine = factory.getWorkflowEngine();
+  Serial.println("Workflow Engine Ready");
 }
 
 void loop() {
@@ -73,10 +57,17 @@ void loop() {
   // 2. Registry Pass - Triggers all reactive processors
   factory.getRegistry()->update();
 
-  // 3. Logic Coordination
-  startupLogic.update();
-  if (startupLogic.justStarted()) {
-    setupMainDashboard();
+  // 3. Workflow & Logic Coordination
+  if (workflowEngine) {
+    // Sync UI with active workflow BEFORE update
+    IScreen* activeScreen = workflowEngine->getActiveScreen();
+    if (activeScreen && activeScreen->getLayout() != lastLayout) {
+      Serial.println("Switching Screen Layout...");
+      shotDisplay.setLayout(activeScreen->getLayout());
+      lastLayout = activeScreen->getLayout();
+    }
+
+    workflowEngine->update();
   }
 
   themeManager.update();

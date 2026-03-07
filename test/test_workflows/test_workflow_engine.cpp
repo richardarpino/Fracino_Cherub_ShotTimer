@@ -9,12 +9,28 @@
 #include "../../lib/Logic/SensorDispatcher.h"
 #include "../../lib/Logic/SensorDispatcher.cpp"
 
+#include "../_common/stubs/BlockerStub.h"
+
 class MockScreen : public IScreen {
 public:
-    MockScreen(const char* name) : _name(name) {}
+    MockScreen(const char* name) : _name(name), _isDone(false) {}
     ScreenLayout* getLayout() override { return nullptr; }
+    void update() override {}
+    bool isDone() const override { return _isDone; }
+    void setDone(bool done) { _isDone = done; }
 private:
     const char* _name;
+    bool _isDone;
+};
+
+class MockBlockerScreen : public IScreen {
+public:
+    MockBlockerScreen(IBlocker* blocker) : _blocker(blocker) {}
+    ScreenLayout* getLayout() override { return nullptr; }
+    void update() override {}
+    bool isDone() const override { return !_blocker->isActive(); }
+private:
+    IBlocker* _blocker;
 };
 
 void test_workflow_sequential_navigation() {
@@ -46,6 +62,42 @@ void test_workflow_lifecycle() {
     
     workflow.next();
     TEST_ASSERT_TRUE(workflow.isFinished());
+}
+
+void test_workflow_auto_advance_on_blocker_done() {
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+    BasicWorkflow startupWorkflow;
+
+    BlockerStub blocker1;
+    blocker1.setActive(true);
+    MockBlockerScreen screen1(&blocker1);
+
+    BlockerStub blocker2;
+    blocker2.setActive(true);
+    MockBlockerScreen screen2(&blocker2);
+
+    startupWorkflow.addScreen(&screen1);
+    startupWorkflow.addScreen(&screen2);
+    engine.setRootWorkflow(&startupWorkflow);
+
+    // 1. Initially on screen 1
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+
+    // 2. Unblock 1
+    blocker1.setActive(false);
+    engine.update();
+    
+    // Should have advanced to screen 2
+    TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
+
+    // 3. Unblock 2
+    blocker2.setActive(false);
+    engine.update();
+
+    // Workflow should be finished
+    TEST_ASSERT_TRUE(startupWorkflow.isFinished());
 }
 
 void test_workflow_engine_switching() {
@@ -84,10 +136,43 @@ void test_workflow_engine_switching() {
     TEST_ASSERT_EQUAL_PTR(&screenB, engine.getActiveScreen());
 }
 
+// No includes for real BlockerScreen to avoid UI dependencies in native
+
+void test_workflow_engine_default_fallback() {
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+
+    BasicWorkflow startup;
+    BlockerStub blocker;
+    blocker.setActive(true);
+    MockBlockerScreen startupScreen(&blocker);
+    startup.addScreen(&startupScreen);
+
+    BasicWorkflow dashboard;
+    MockScreen dashScreen("Dash");
+    dashboard.addScreen(&dashScreen);
+
+    engine.setRootWorkflow(&startup);
+    engine.setDefaultWorkflow(&dashboard);
+
+    // 1. Initially on Startup
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(&startup, engine.getActiveWorkflow());
+
+    // 2. Startup Finishes
+    blocker.setActive(false);
+    engine.update();
+    
+    // Should have moved to default dashboard
+    TEST_ASSERT_EQUAL_PTR(&dashboard, engine.getActiveWorkflow());
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_workflow_sequential_navigation);
     RUN_TEST(test_workflow_lifecycle);
+    RUN_TEST(test_workflow_auto_advance_on_blocker_done);
     RUN_TEST(test_workflow_engine_switching);
+    RUN_TEST(test_workflow_engine_default_fallback);
     return UNITY_END();
 }
