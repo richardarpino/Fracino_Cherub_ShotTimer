@@ -18,7 +18,6 @@ private:
     IBlocker* _blocker;
     ScreenLayout* _layout;
     BlockerWidget* _widget;
-    unsigned long _startTime;
 };
 
 #endif
