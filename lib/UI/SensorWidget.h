@@ -34,7 +34,7 @@ protected:
 
 /**
  * Registry-Aware Widget (The NEW Way)
- * Usage: layout->addWidget(new SensorWidget<BoilerPressureTag>(registry));
+ * Usage: layout->addWidget(new SensorWidget<BoilerPressureReading>(registry));
  */
 template<typename T = void>
 class SensorWidget : public SensorWidgetBase {

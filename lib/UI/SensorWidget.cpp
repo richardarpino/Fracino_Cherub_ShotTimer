@@ -42,7 +42,7 @@ void SensorWidgetBase::update(const Reading& reading) {
         snprintf(buf, sizeof(buf), "%.*f", reading.precision, reading.value);
     }
     lv_label_set_text(_value_label, buf);
-    lv_label_set_text(_unit_label, reading.unit.c_str());
+    lv_label_set_text(_unit_label, reading.unit);
 
     if (reading.isError) {
         lv_obj_set_style_bg_color(_container, _alertBgColor, 0);

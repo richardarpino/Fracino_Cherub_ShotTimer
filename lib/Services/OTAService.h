@@ -33,6 +33,7 @@ public:
     bool _justStopped = false;
     bool _isError = false;
     float _progress = 0;
+    mutable char _statusBuffer[64];
 };
 
 #endif

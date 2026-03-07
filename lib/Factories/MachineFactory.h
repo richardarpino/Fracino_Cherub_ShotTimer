@@ -8,11 +8,14 @@
 #include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Hardware/WeightSensor.h"
-#include "../Logic/BoilerTemperature.h"
-#include "../Logic/ManualPumpTimer.h"
-#include "../Logic/TaredWeight.h"
+#include "../Logic/Processors/TaredWeightProcessor.h"
+#include "../Logic/Processors/BoilerTemperatureProcessor.h"
+#include "../Logic/Processors/ShotMonitorProcessor.h"
+#include "../Logic/Processors/BoilerSafetyProcessor.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
+#include "../Logic/Processors/HeatingCycleProcessor.h"
+#include "../Logic/Processors/WarmingUpProcessor.h"
 #include "../Services/WarmingUpBlocker.h"
 #include "../Logic/SensorDispatcher.h"
 #include "../Interfaces/SensorTags.h"
@@ -45,14 +48,11 @@ public:
     ISwitch* getButtonRight() override { return &_buttonRightRegSw; }
     ISwitch* getButtonLeft() override { return &_buttonLeftRegSw; }
 
-    // Component Access for Orchestrators
-    BoilerPressure* getBoilerPressure() { return &_boilerPressure; }
-    WeightSensor* getWeightSensor() { return &_weightSensor; }
-    BoilerTemperature* getBoilerTemp() { return &_boilerTemp; }
-    ManualPumpTimer* getManualPumpTimer() { return &_manualPumpTimer; }
-    TaredWeight* getTaredWeight() { return &_taredWeight; }
+    TaredWeightProcessor* getTaredWeight() { return &_taredWeight; }
 
 private:
+    SensorDispatcher _dispatcher;
+
     // Raw Sources
     ADCRawSource _pressureADC;
     DigitalRawSource _pumpInput;
@@ -65,23 +65,25 @@ private:
     DigitalSensor _buttonLeftSensor;
 
     // Registry-Connected Switches (Consume from Registry)
-    RegistrySwitch<PumpTag> _pumpRegSw;
-    RegistrySwitch<ButtonRightTag> _buttonRightRegSw;
-    RegistrySwitch<ButtonLeftTag> _buttonLeftRegSw;
+    RegistrySwitch<PumpReading> _pumpRegSw;
+    RegistrySwitch<ButtonRightReading> _buttonRightRegSw;
+    RegistrySwitch<ButtonLeftReading> _buttonLeftRegSw;
 
     // Physical Sensors (Registered with Dispatcher)
     BoilerPressure _boilerPressure;
     WeightSensor _weightSensor;
 
-    // Logical Components (Published to Dispatcher via ScaleLogic)
-    BoilerTemperature _boilerTemp;
-    ManualPumpTimer _manualPumpTimer;
-    TaredWeight _taredWeight;
+    // Logical Processors (Reactive)
+    TaredWeightProcessor _taredWeight;
+    BoilerTemperatureProcessor _boilerTempProc;
+    ShotMonitorProcessor _shotMonitorProc;
+    BoilerSafetyProcessor _safetyProc;
 
     WiFiService* _wifi;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
-    SensorDispatcher _dispatcher;
+    HeatingCycleProcessor _heatingCycleProc;
+    WarmingUpProcessor _warmingUpProc;
 
     MachineConfig _config;
 

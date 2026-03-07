@@ -84,7 +84,7 @@ void GaugeWidgetBase::update(const Reading& reading) {
     if (!_meter || !_indic) return;
     lv_meter_set_indicator_value(_meter, _indic, (int32_t)(reading.value * 10));
     if (_unit_label) {
-        lv_label_set_text(_unit_label, reading.unit.c_str());
+        lv_label_set_text(_unit_label, reading.unit);
     }
 
     if (reading.isError) {

@@ -50,7 +50,7 @@ void test_theme_manager_switching() {
     TEST_ASSERT_EQUAL_PTR(&theme1, display.lastTheme());
 
     // Press button (Simulate edge via Registry)
-    registry.publish<ButtonRightTag>(Reading(1.0f, "", "ON", 0, false));
+    registry.publish<ButtonRightReading>(Reading(1.0f, "", "ON", 0, false));
     registry.update();
     manager.update();
 

@@ -5,7 +5,6 @@
 #include "OTAServiceStub.h"
 #include "BlockerStub.h"
 #include "IBlocker.h"
-#include "Logic/ManualPumpTimer.h"
 #include "Logic/SensorDispatcher.h"
 
 class MachineProviderStub : public ISensorProvider, public ISwitchProvider, public IThemeProvider {
@@ -39,7 +38,6 @@ private:
     BlockerStub* _warmingUp;
     bool _otaCreated;
     std::vector<ITheme*> _themes;
-    ManualPumpTimer shotTimer;
     SensorDispatcher _dispatcher;
 };
 

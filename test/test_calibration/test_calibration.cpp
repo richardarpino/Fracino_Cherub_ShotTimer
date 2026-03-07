@@ -19,7 +19,7 @@ void test_pressure_scalar_application() {
     float rawExpected = 1.0f;
     float expectedValue = rawExpected * pressureScalar;
     
-    TEST_ASSERT_FLOAT_WITHIN(0.05f, expectedValue, sensor.getReading().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.05f, expectedValue, sensor.getReading());
 }
 
 void test_pressure_scalar_1_25() {
@@ -30,7 +30,7 @@ void test_pressure_scalar_1_25() {
     mock.setRawValue(806); // 1.0 Bar raw
     for(int i=0; i<100; i++) { setMillis(i); sensor.getReading(); }
     
-    TEST_ASSERT_FLOAT_WITHIN(0.05f, 1.25f, sensor.getReading().value);
+    TEST_ASSERT_FLOAT_WITHIN(0.05f, 1.25f, sensor.getReading());
 }
 
 int main() {

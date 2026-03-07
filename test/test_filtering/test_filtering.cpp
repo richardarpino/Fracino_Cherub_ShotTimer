@@ -14,7 +14,7 @@ void test_pressure_rounding_jitter() {
     mock.setRawValue(886); 
     for(int i=0; i<100; i++) { setMillis(i); pressure.getReading(); }
     
-    float v1 = pressure.getReading().value;
+    float v1 = pressure.getReading();
     char buf1[16];
     StringUtils::formatFloat1(buf1, sizeof(buf1), v1);
     printf("DEBUG: V1=%.3f, Display=%s\n", v1, buf1);
@@ -24,7 +24,7 @@ void test_pressure_rounding_jitter() {
     mock.setRawValue(873); 
     for(int i=100; i<200; i++) { setMillis(i); pressure.getReading(); }
     
-    float v2 = pressure.getReading().value;
+    float v2 = pressure.getReading();
     char buf2[16];
     StringUtils::formatFloat1(buf2, sizeof(buf2), v2);
     printf("DEBUG: V2=%.3f, Display=%s\n", v2, buf2);
@@ -33,7 +33,7 @@ void test_pressure_rounding_jitter() {
     mock.setRawValue(896); 
     for(int i=200; i<300; i++) { setMillis(i); pressure.getReading(); }
     
-    float v3 = pressure.getReading().value;
+    float v3 = pressure.getReading();
     char buf3[16];
     StringUtils::formatFloat1(buf3, sizeof(buf3), v3);
     printf("DEBUG: V3=%.3f, Display=%s\n", v3, buf3);

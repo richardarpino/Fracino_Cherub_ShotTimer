@@ -3,8 +3,11 @@
 
 #include "../Interfaces/ISensorRegistry.h"
 #include "../Interfaces/HardwareSensor.h"
+#include "../Interfaces/ITagProcessor.h"
+#include "../Interfaces/SensorTags.h"
 #include <map>
 #include <string>
+#include <vector>
 
 /**
  * Concrete implementation of the Sensor Registry.
@@ -13,32 +16,55 @@
 class SensorDispatcher : public ISensorRegistry {
 public:
     SensorDispatcher();
+    virtual ~SensorDispatcher();
+
+    // Internal Polling helper
+    struct IPollTask {
+        virtual ~IPollTask() = default;
+        virtual void run() = 0;
+    };
+
+    template<typename T>
+    struct PollTask : public IPollTask {
+        SensorDispatcher* d;
+        HardwareSensor* s;
+        PollTask(SensorDispatcher* dispatcher, HardwareSensor* sensor) : d(dispatcher), s(sensor) {}
+        void run() override { 
+            if (s) {
+                d->publish<T>(s->getReading(), false);
+            }
+        }
+    };
 
     /**
      * Registers a physical sensor for a specific Type-Tag.
+     * Creates a type-aware polling task that triggers reactive propagation.
      */
     template<typename T>
     void provide(HardwareSensor* sensor) {
         _sensors[T::NAME] = sensor;
+        _pollers.push_back(new PollTask<T>(this, sensor));
     }
 
     void update() override;
+    bool hasProcessor(const char* name) override;
+
+protected:
+    void triggerResolution(const char* name) override;
 
 protected:
     Reading getReadingByName(const char* name) override;
     void setReadingByName(const char* name, Reading reading) override;
     StatusMessage getStatusByName(const char* name) override;
     void setStatusByName(const char* name, StatusMessage status) override;
+    void attachProcessorInternal(const char* targetTagName, class ITagProcessor* processor) override;
 
 private:
-    // List of physical sensors mapped by their Type-Name
     std::map<std::string, HardwareSensor*> _sensors;
-    
-    // Cache of the latest readings, updated once per update() call
     std::map<std::string, Reading> _cache;
-
-    // Cache of the latest status messages
     std::map<std::string, StatusMessage> _statusCache;
+    std::map<std::string, class ITagProcessor*> _processors;
+    std::vector<IPollTask*> _pollers;
 };
 
 #endif

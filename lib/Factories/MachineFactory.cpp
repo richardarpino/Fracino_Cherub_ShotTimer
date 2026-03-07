@@ -1,7 +1,7 @@
 #include "MachineFactory.h"
 
 MachineFactory::MachineFactory(const MachineConfig& config) 
-    : _config(config),
+    : _dispatcher(),
       _pressureADC(pressurePin),
       _pumpInput(pumpPin),
       _buttonRightInput(buttonRightPin),
@@ -14,21 +14,32 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _buttonLeftRegSw(&_dispatcher),
       _boilerPressure(&_pressureADC, pressureScalar),
       _weightSensor(nullptr), 
-      _boilerTemp(&_boilerPressure),
-      _manualPumpTimer(),
-      _taredWeight(&_weightSensor),
+      _taredWeight(&_dispatcher),
+      _boilerTempProc(&_dispatcher),
+      _shotMonitorProc(&_dispatcher),
+      _safetyProc(&_dispatcher),
       _wifi(nullptr),
       _ota(nullptr),
-      _warmingUpBlocker(nullptr) {
+      _warmingUpBlocker(nullptr),
+      _heatingCycleProc(&_dispatcher),
+      _warmingUpProc(&_dispatcher),
+      _config(config) {
     
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
 
     // Register Hardware Sensors for central polling
-    _dispatcher.provide<PumpTag>(&_pumpSensor);
-    _dispatcher.provide<ButtonRightTag>(&_buttonRightSensor);
-    _dispatcher.provide<ButtonLeftTag>(&_buttonLeftSensor);
-    _dispatcher.provide<BoilerPressureTag>(&_boilerPressure);
-    _dispatcher.provide<WeightTag>(&_weightSensor);
+    _dispatcher.provide<PumpReading>(&_pumpSensor);
+    _dispatcher.provide<ButtonRightReading>(&_buttonRightSensor);
+    _dispatcher.provide<ButtonLeftReading>(&_buttonLeftSensor);
+    _dispatcher.provide<BoilerPressureReading>(&_boilerPressure);
+    _dispatcher.provide<WeightReading>(&_weightSensor);
+
+    // Attach Reactive Processors
+    _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);
+    _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
+    _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
+    _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
+    _dispatcher.attachProcessor<BoilerSafetyStatus>(&_safetyProc);
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {
@@ -53,7 +64,7 @@ OTAService* MachineFactory::createOTA() {
 
 WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
     if (!_warmingUpBlocker) {
-        _warmingUpBlocker = new WarmingUpBlocker(&_dispatcher, &_boilerPressure);
+        _warmingUpBlocker = new WarmingUpBlocker(&_dispatcher);
     }
     return _warmingUpBlocker;
 }

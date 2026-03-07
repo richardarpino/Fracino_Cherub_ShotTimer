@@ -32,13 +32,70 @@ public:
     template<typename T>
     void publish(typename T::DataType data) {
         publishInternal<T>(data);
+        resolveDerived(typename T::Children{});
     }
+
+    /**
+     * Publishes a raw numeric value, automatically wrapping it in a Reading
+     * using the Tag's metadata (units, precision, quantity).
+     */
+    template<typename T>
+    void publish(float value, bool isError = false) {
+        SensorMetadata meta = T::getMetadata();
+        Reading r;
+        
+        // Use DSL-standard metadata (units, precision, quantity)
+        r.unit = meta.init.unit;
+        r.precision = meta.init.precision;
+        r.quantity = meta.init.quantity;
+        r.value = value;
+        r.isError = isError;
+
+        // Custom labels for specific quantities
+        if (r.quantity == PhysicalQuantity::BOOLEAN) {
+            r.label = (value > 0.5f) ? meta.high.label : meta.low.label;
+        } else if ((r.quantity == PhysicalQuantity::TIME || r.quantity == PhysicalQuantity::COUNTER) && value > 0.05f) {
+            r.label = meta.high.label;
+        } else {
+            r.label = meta.init.label;
+        }
+
+        publish<T>(r);
+    }
+
+protected:
+    template<typename... Ts>
+    void resolveDerived(TagList<Ts...>) {
+        int dummy[] = { 0, (triggerResolution(Ts::NAME), 0)... };
+        (void)dummy;
+    }
+
+    virtual void triggerResolution(const char* name) = 0;
+
+public:
+    /**
+     * Registers a processor to be triggered when a specific tag is updated.
+     */
+    template<typename T>
+    void attachProcessor(class ITagProcessor* processor) {
+        attachProcessorInternal(T::NAME, processor);
+    }
+
+    /**
+     * Checks if a specific tag has a registered processor.
+     */
+    virtual bool hasProcessor(const char* name) = 0;
 
 protected:
     // Internal tag-dispatching helpers
     template<typename T>
     Reading getInternal(Reading) {
-        return getReadingByName(T::NAME);
+        Reading reading = getReadingByName(T::NAME);
+        // If not found (initial state), return the init value from metadata
+        if (reading.isError && reading.unit[0] == '\0') {
+            return T::getMetadata().init;
+        }
+        return reading;
     }
 
     template<typename T>
@@ -71,6 +128,7 @@ protected:
     virtual void setReadingByName(const char* name, Reading reading) = 0;
     virtual StatusMessage getStatusByName(const char* name) = 0;
     virtual void setStatusByName(const char* name, StatusMessage status) = 0;
+    virtual void attachProcessorInternal(const char* targetTagName, class ITagProcessor* processor) = 0;
 };
 
 #endif

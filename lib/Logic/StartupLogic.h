@@ -31,9 +31,9 @@ private:
         READY
     };
 
-    RegistrySwitch<WiFiTag> _wifiSwitch;
-    RegistrySwitch<OTATag> _otaSwitch;
-    RegistrySwitch<WarmingUpTag> _warmingUpSwitch;
+    RegistrySwitch<WiFiStatus> _wifiSwitch;
+    RegistrySwitch<OTAStatus> _otaSwitch;
+    RegistrySwitch<WarmingUpStatus> _warmingUpSwitch;
     
     IBlocker* _wifi;
     IBlocker* _warmingUp;

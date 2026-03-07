@@ -12,7 +12,6 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
-#include "../../lib/Logic/ManualPumpTimer.h"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
@@ -34,8 +33,9 @@
 #include <iomanip>
 
 // Headers for virtual sensors
-#include "../../lib/Logic/BoilerTemperature.h"
-#include "../../lib/Logic/TaredWeight.h"
+#include "../../lib/Logic/Processors/BoilerTemperatureProcessor.h"
+#include "../../lib/Logic/Processors/ShotMonitorProcessor.h"
+#include "../../lib/Logic/Processors/TaredWeightProcessor.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -98,10 +98,10 @@ template<typename Tag>
 BlockerInfo createServiceEntry(std::string name, IBlocker* b = nullptr) {
     ServiceMetadata meta = Tag::getMetadata();
     std::vector<BlockerInfo::State> states = {
-        {"Pending", std::string(meta.pending.title.c_str()), std::string(meta.pending.message.c_str()), meta.pending.progress, meta.pending.isFailed},
-        {"Active", std::string(meta.active.title.c_str()), std::string(meta.active.message.c_str()), meta.active.progress, meta.active.isFailed},
-        {"Ready", std::string(meta.ready.title.c_str()), std::string(meta.ready.message.c_str()), meta.ready.progress, meta.ready.isFailed},
-        {"Failed", std::string(meta.failed.title.c_str()), std::string(meta.failed.message.c_str()), meta.failed.progress, meta.failed.isFailed}
+        {"Pending", std::string(meta.pending.title), std::string(meta.pending.message), meta.pending.progress, meta.pending.isFailed},
+        {"Active", std::string(meta.active.title), std::string(meta.active.message), meta.active.progress, meta.active.isFailed},
+        {"Ready", std::string(meta.ready.title), std::string(meta.ready.message), meta.ready.progress, meta.ready.isFailed},
+        {"Failed", std::string(meta.failed.title), std::string(meta.failed.message), meta.failed.progress, meta.failed.isFailed}
     };
     return { name, b, states };
 }
@@ -119,20 +119,20 @@ void test_generate_examples() {
     WeightSensor* ws = new WeightSensor(nullptr, 0.001f);
 
     std::vector<DocEntry> docEntries = {
-        createEntry<BoilerPressureTag>("BoilerPressure", bp),
-        createEntry<BoilerTempTag>("BoilerTemperature"),
-        createEntry<ShotTimeTag>("ManualPumpTimer"),
-        createEntry<LastValidShotTag>("LastValidShot"),
-        createEntry<WeightTag>("WeightSensor", ws),
-        createEntry<TaredWeightTag>("TaredWeight")
+        createEntry<BoilerPressureReading>("BoilerPressure", bp),
+        createEntry<BoilerTempReading>("BoilerTemperature"),
+        createEntry<ShotTimeReading>("ShotTime"),
+        createEntry<LastValidShotReading>("LastValidShot"),
+        createEntry<WeightReading>("WeightSensor", ws),
+        createEntry<TaredWeightReading>("TaredWeight")
     };
 
     SensorDispatcher dispatcher;
 
     std::vector<BlockerInfo> blockers = {
-        createServiceEntry<WiFiTag>("WiFiService", new WiFiService(&dispatcher)),
-        createServiceEntry<OTATag>("OTAService", new OTAService(&dispatcher, "test")),
-        createServiceEntry<WarmingUpTag>("WarmingUpBlocker", nullptr)
+        createServiceEntry<WiFiStatus>("WiFiService", new WiFiService(&dispatcher)),
+        createServiceEntry<OTAStatus>("OTAService", new OTAService(&dispatcher, "test")),
+        createServiceEntry<WarmingUpStatus>("WarmingUpBlocker", nullptr)
     };
 
     ensure_dir("lib/Sensors/examples");

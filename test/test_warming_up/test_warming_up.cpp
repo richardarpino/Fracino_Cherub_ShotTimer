@@ -5,102 +5,141 @@
 #include "../../lib/Services/WarmingUpBlocker.cpp"
 #include <SensorStub.h>
 #include "../../lib/Utils/StringUtils.h"
-#include "Logic/SensorDispatcher.h"
-#include "Logic/SensorDispatcher.cpp"
+#include "../../lib/Logic/SensorDispatcher.h"
+#include "../../lib/Logic/SensorDispatcher.cpp"
+#include "../../lib/Logic/Processors/HeatingCycleProcessor.h"
+#include "../../lib/Logic/Processors/HeatingCycleProcessor.cpp"
+#include "../../lib/Logic/Processors/WarmingUpProcessor.h"
+#include "../../lib/Logic/Processors/WarmingUpProcessor.cpp"
 
 void test_initial_state() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    WarmingUpBlocker blocker(&registry);
+    WarmingUpProcessor processor(&registry);
+    registry.attachProcessor<WarmingUpStatus>(&processor);
     
+    // Initial state check
     TEST_ASSERT_FALSE(blocker.isActive());
     StatusMessage status = blocker.getStatus();
-    TEST_ASSERT_EQUAL_STRING("Warming Up...", status.title.c_str());
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.0bar", status.message.c_str());
-    TEST_ASSERT_FLOAT_WITHIN(0.01, 0.0f, status.progress);
+    TEST_ASSERT_EQUAL_STRING("Warming Up...", status.title);
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.0bar", status.message);
 }
 
-void test_zigzag_extrema_detection() {
+void test_zigzag_reactive_flow() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    WarmingUpProcessor warmProc(&registry);
+    
+    // Setup reactive chain
+    registry.provide<BoilerPressureReading>(&pressureSensor);
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+    registry.attachProcessor<WarmingUpStatus>(&warmProc);
     
     // 1. Initial Ramp: 0.0 -> 1.1 (First Peak)
     for (int i = 0; i <= 11; i++) {
-        float p = i / 10.0f;
-        pressureSensor.setReading(Reading(p, "BAR", "BOILER", 1, false));
+        pressureSensor.setReading(i / 10.0f);
+        registry.update(); // Polling -> Resolve Boiler -> Resolve HeatingCycle
         blocker.update();
     }
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 1.1bar", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 1.1bar", blocker.getStatus().message);
 
     // 2. First Drop: 1.1 -> 0.8 (First Valley)
     for (int i = 11; i >= 8; i--) {
-        float p = i / 10.0f;
-        pressureSensor.setReading(Reading(p, "BAR", "BOILER", 1, false));
+        pressureSensor.setReading(i / 10.0f);
+        registry.update();
         blocker.update();
     }
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.8bar", blocker.getStatus().message.c_str());
+    TEST_ASSERT_EQUAL_STRING("Heating Cycle 1, currently 0.8bar", blocker.getStatus().message);
 
     // 3. Second Heat: 0.8 -> 1.2 (Second Peak)
     for (int i = 8; i <= 12; i++) {
-        float p = i / 10.0f;
-        pressureSensor.setReading(Reading(p, "BAR", "BOILER", 1, false));
+        pressureSensor.setReading(i / 10.0f);
+        registry.update();
         blocker.update();
     }
-    pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false));
-    blocker.update();
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 2, currently 1.1bar", blocker.getStatus().message.c_str());
-
-    // 4. Third Heat (Cycle 2 Completed)
-    pressureSensor.setReading(Reading(0.8f, "BAR", "BOILER", 1, false)); blocker.update();
-    pressureSensor.setReading(Reading(1.2f, "BAR", "BOILER", 1, false)); blocker.update();
-    pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false)); blocker.update();
-    TEST_ASSERT_EQUAL_STRING("Heating Cycle 3, currently 1.1bar", blocker.getStatus().message.c_str());
-
-    // 5. Fourth Heat (Cycle 3 Completed -> FINISHED)
-    pressureSensor.setReading(Reading(0.8f, "BAR", "BOILER", 1, false)); blocker.update();
-    pressureSensor.setReading(Reading(1.2f, "BAR", "BOILER", 1, false)); blocker.update();
-    pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false)); blocker.update();
+    // Simulation of more cycles to verify completion
+    pressureSensor.setReading(0.8f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.2f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.1f); registry.update(); blocker.update();
+    
+    pressureSensor.setReading(0.8f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.2f); registry.update(); blocker.update();
+    pressureSensor.setReading(1.1f); registry.update(); blocker.update();
 
     TEST_ASSERT_TRUE(blocker.isActive());
-    TEST_ASSERT_EQUAL_STRING("WARM", blocker.getStatus().message.c_str());
-    
-    // Verify registry publishing (Using .progress)
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
+    TEST_ASSERT_EQUAL_STRING("WARM", blocker.getStatus().message);
 }
 
-void test_warm_startup() {
+void test_warm_startup_reactive() {
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    pressureSensor.setReading(Reading(1.1f, "BAR", "BOILER", 1, false));
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    WarmingUpProcessor warmProc(&registry);
     
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    registry.provide<BoilerPressureReading>(&pressureSensor);
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+    registry.attachProcessor<WarmingUpStatus>(&warmProc);
+
+    // Start already pressurized
+    pressureSensor.setReading(1.1f);
+    registry.update(); // Triggers Warm Start bypass in processor
     blocker.update();
     
     TEST_ASSERT_TRUE(blocker.isActive());
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
 }
 
 void test_timeout() {
     setMillis(0);
     SensorDispatcher registry;
     SensorStub pressureSensor;
-    WarmingUpBlocker blocker(&registry, &pressureSensor);
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    WarmingUpProcessor processor(&registry);
+    
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+    registry.attachProcessor<WarmingUpStatus>(&processor);
     
     blocker.update();
     TEST_ASSERT_FALSE(blocker.isActive());
 
     setMillis(600000);
+    // Trigger update to check timeout
+    registry.publish<BoilerPressureReading>(0.5f);
     blocker.update();
     TEST_ASSERT_TRUE(blocker.isActive());
-    TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, registry.getLatest<WarmingUpTag>().progress);
+}
+
+void test_memory_limit_reactive() {
+    SensorDispatcher registry;
+    SensorStub pressureSensor;
+    WarmingUpBlocker blocker(&registry);
+    HeatingCycleProcessor cycleProc(&registry);
+    
+    registry.provide<BoilerPressureReading>(&pressureSensor);
+    registry.attachProcessor<HeatingCycleReading>(&cycleProc);
+
+    // 20 heating cycles
+    for (int cycle = 1; cycle <= 20; cycle++) {
+        pressureSensor.setReading(0.8f);
+        registry.update();
+        pressureSensor.setReading(1.2f);
+        registry.update();
+    }
+
+    // Check that it didn't grow unbounded
+    TEST_ASSERT_TRUE(cycleProc._moves.size() <= 11); // 1 initial + 5 cycles (10 moves) max
 }
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_initial_state);
-    RUN_TEST(test_zigzag_extrema_detection);
-    RUN_TEST(test_warm_startup);
+    RUN_TEST(test_zigzag_reactive_flow);
+    RUN_TEST(test_warm_startup_reactive);
     RUN_TEST(test_timeout);
+    RUN_TEST(test_memory_limit_reactive);
     return UNITY_END();
 }

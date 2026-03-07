@@ -18,15 +18,22 @@ public:
     virtual ~HardwareSensor() = default;
 
     /**
-     * Physical sensors must provide metadata and their current processed reading.
+     * Physical sensors provide their current processed numeric reading.
+     * The registry handles wrapping this with metadata.
      */
-    virtual Reading getReading() = 0;
+    virtual float getReading() = 0;
 
     /**
      * Returns the high-precision filtered value before hysteresis.
      * Useful for logic components that derive data from this sensor.
      */
     float getFilteredValue() const { return _currentFilteredValue; }
+
+    /**
+     * Testability hooks to adjust filtering at runtime.
+     */
+    void setFilterAlpha(float alpha) { _alpha = alpha; }
+    void setHysteresisThreshold(float threshold) { _hysteresisThreshold = threshold; }
 
 protected:
     /**
