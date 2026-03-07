@@ -2,46 +2,34 @@
 
 This directory contains the core machine logic, hardware abstractions, and UI components. We follow a **Pure Factory** and **Coordinator-based** architecture.
 
-## 📂 Directory Guide
+## 📂 Core Architecture: The Reactive Chain
 
-### 🏭 `Factories/`
-The "Assembly Line" of the machine.
-- **`MachineFactory`**: The single source of truth for Dependency Injection. Wires concrete hardware to abstract logic.
+This project uses a **Type-Safety Registry** to decouple hardware from logic. The system is a directed acyclic graph (DAG) of data dependencies.
 
-### 🔌 `Interfaces/`
-The "Contract Layer." All logic depends on these abstractions to remain host-independent.
-- **`ISensor` / `ISwitch`**: Telemetry and state protocols.
-- **`IBlocker`**: Transient startup gate protocol (WiFi, Warmup).
-- **`IRawSource`**: Basic pin/ADC abstraction.
+### 1. Data Definitions (`Interfaces/SensorTags.h`)
+Type-Tags define the "Domain Contract." They specify units, limits, and **Dependencies**:
+- **Tag Inheritance**: A tag like `BoilerPressureReading` can define `Children = TagList<HeatingCycleReading>`.
+- **Compile-Time Safety**: This ensures the registry knows exactly which processors to trigger when a parent value changes.
 
-### 🧠 `Logic/`
-The orchestrators (Coordinators). Process-specific behavior that combines multiple data sources and handles UI state logic.
-- **`StartupLogic`**: Manages the boot journey via `IBlocker` states.
-- **`ScaleLogic`**: High-level espresso weighing and timing logic.
-- **`ThemeManager`**: Handles display theme switching based on `ISwitch` trigger events.
+### 2. The Registry (`Logic/SensorDispatcher`)
+The single source of truth for the machine state.
+- **`publish<T>(value)`**: When hardware (or a processor) publishes a value, the Registry immediately identifies dependent tags and triggers their attached processors.
+- **Host Independence**: The registry works identically on the ESP32 and in `native` unit tests.
 
-### 🌡️ `Sensors/`
-Data acquisition components.
-- **`Hardware/`**: Concrete sensors like `BoilerPressure`, `WeightSensor`, and `DigitalSensor`.
-- **`Virtual/`**: Logic-based decorators like `RegistrySwitch` or `EMAFilter`.
+### 3. Processors (`Logic/Processors/`)
+Passive logic components that transform telemetry.
+- **Registration**: Processors are attached to their output tags using `registry.attachProcessor<T>(processor)`.
+- **Execution**: They do not have their own timers; they are called by the Registry the moment their input data is ready.
 
-### 🛰️ `Services/`
-System-level lifecycle managers and transient startup gates.
-- **`WiFiService`**: Manages connection and network status.
-- **`OTAService`**: Handles wireless firmware updates.
-- **`WarmingUpBlocker`**: Detects boiler warmup cycles via dimensional history.
-
-### 🔌 `Hardware/`
-The lowest level of the stack. Direct pin scanners (`ADCRawSource`, `DigitalRawSource`).
-
-### 🎨 `Themes/` & `UI/`
-The presentation layer. Passive widgets that consume data from the logic layer.
+### 4. Wiring it Together (`Factories/MachineFactory.cpp`)
+The Factory is the "Wiring Diagram":
+1.  **Provide Sensors**: `registry.provide<BoilerPressureReading>(&pressureSensor)`.
+2.  **Attach Processors**: `registry.attachProcessor<HeatingCycleReading>(&heatingCycleProc)`.
 
 ---
 
 ## 🛠 Developer Workflow
 
-1.  **Architecture First**: Read the **[📜 Developer Standards & Principles](../docs/README.md)** before starting.
-2.  **TDD**: Start with a `native` test using stubs.
-3.  **Abstractions**: Use `lib/Interfaces`. Do not leak hardware-specific code into `lib/Logic`.
-4.  **Wiring**: Update the `MachineFactory` to register new components.
+1.  **Architecture First**: Component logic belongs in `lib/Logic/Processors`.
+2.  **TDD**: Start with a `native` test by publishing raw values to the registry and asserting the derived results.
+3.  **No Hardware Leakage**: If you find yourself using `digitalRead()` or `millis()` in a Processor, you are breaking the abstraction. Use `RegistrySwitch` or `SystemUptimeReading` instead.

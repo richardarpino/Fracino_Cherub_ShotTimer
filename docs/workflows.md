@@ -15,8 +15,8 @@ We use three distinct PlatformIO environments. Use the right tool for the job:
 ### 🚀 `native` (The Workhorse)
 *   **Usage**: 95% of your time.
 *   **Purpose**: Running unit tests and logic verification.
-*   **Safety**: This environment **ignores** UI/LVGL and Themes. It is designed for near-instant feedback on "machine brains" (Logic modules, Sensor math, Dispatcher state).
-*   **Validation**: Always run this first. If logic fails here, don't bother with other environments.
+*   **Safety**: This environment **ignores** UI/LVGL and Themes. It is designed for near-instant feedback on the machine's "Brain"—the **Registry/Processor chain**.
+*   **Validation**: If logic fails here, don't bother with other environments. Success here proves that hardware signals are correctly transformed into domain state.
 
 ### 🖼️ `simulator` (The Studio / Integration Guard)
 *   **Usage**: UI design, interface refactors, and regression.

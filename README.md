@@ -29,23 +29,20 @@ cp include/pins.h.example include/pins.h        # Define your pins
 
 ## 🏗 Modular Architecture
 
-The project is split into three distinct layers to make it maintainable and testable.
+The project follows a **Reactive Registry** pattern to ensure data integrity and host-independent testing.
 
-### 🔌 Layer 1: Hardware & Interfaces (`lib/Interfaces` & `lib/Sensors/Hardware`)
-Everything that measures or detects a physical signal.
-- **`HardwareSensor`**: Root base class for all physical sensors (e.g., `BoilerPressure`, `DigitalSensor`). Enforces passivity and EMA filtering.
-- **`IRawSource`**: Abstract interface for physical ADCs/GPIOs.
+### 🧠 Logic Layer (`lib/Logic`)
+The "Brain" of the machine.
+- **Processors**: Reactive components (`ShotMonitor`, `BoilerTemp`) that transform hardware signals into machine-domain data.
+- **Sensor Registry**: The single source of truth. Data is **Published** here by hardware or processors, and **Consumed** by the UI.
 
-### 🧠 Layer 2: Logic Modules (`lib/Logic`)
-The **"Brain"** of the machine. It processes hardware signals into machine-domain data.
-- **Derived Components**: `BoilerTemperature`, `ManualPumpTimer`, `TaredWeight`. These are **NOT** sensors; they are logical producers.
-- **Orchestrators**: `ScaleLogic` coords behavior (e.g., "If pump starts, start shot timer and publish results to Registry").
-- **`SensorDispatcher`**: The central **Registry** (Single Source of Truth). Logic modules *push* data here; the UI *pulls* it.
+### 🏭 Provider Layer (`lib/Factories`)
+- **MachineFactory**: Wires concrete hardware to logic via Dependency Injection.
+- **Deployment**: Logic is tested 100% in the `native` environment before touching hardware.
 
-### 🏭 Layer 3: Providers & Factories (`lib/Factories`)
-Manages lifetime and wiring.
-- **`MachineFactory`**: The single point of instantiation. It wires the concrete hardware to the orchestrators.
-- **`IMachineProvider`**: Segregated interfaces (`ISensorProvider`, `ISwitchProvider`) used to access the global Registry and hardware switches.
+---
+
+For a deep dive into the code structure and how components are linked, see the **[Internal Library Map](lib/README.md)**.
 
 ---
 
