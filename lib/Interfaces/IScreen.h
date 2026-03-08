@@ -19,6 +19,7 @@ public:
     virtual ScreenComposition getComposition() const = 0;
 
     // Incoming Transition Control: -1 = use engine default, 0+ = specific delay in ms
+    virtual void setTransitionDelay(int delayMs) {}
     virtual int getTransitionDelay() const { return -1; }
 
     // Bridge: Calls the painter with our composition
