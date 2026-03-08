@@ -40,3 +40,8 @@ void BasicWorkflow::next() {
 bool BasicWorkflow::isFinished() const {
     return _isFinished;
 }
+
+int BasicWorkflow::getTransitionPause() const {
+    IScreen* active = getActiveScreen();
+    return active ? active->getTransitionDelay() : -1;
+}

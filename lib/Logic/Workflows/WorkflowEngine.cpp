@@ -5,7 +5,8 @@
 
 WorkflowEngine::WorkflowEngine(ISensorRegistry* registry, uint32_t transitionPauseMs)
     : _registry(registry), _root(nullptr), _default(nullptr), _activeWorkflow(nullptr),
-      _transitionPauseMs(transitionPauseMs), _lastScreen(nullptr), _transitionStartTime(0), _isTransitioning(false) {}
+      _transitionPauseMs(transitionPauseMs), _currentTransitionPauseMs(0), _lastScreen(nullptr), 
+      _transitionStartTime(0), _isTransitioning(false) {}
 
 void WorkflowEngine::setRootWorkflow(IWorkflow* root) {
     _root = root;
@@ -28,7 +29,7 @@ void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, ITrigger* trigger, 
 
 void WorkflowEngine::update() {
     if (_isTransitioning) {
-        if (millis() - _transitionStartTime >= _transitionPauseMs) {
+        if (millis() - _transitionStartTime >= _currentTransitionPauseMs) {
             _isTransitioning = false;
         } else {
             return; // Stay on previous screen visually
@@ -62,14 +63,28 @@ void WorkflowEngine::update() {
 
     // Detect Transition
     if (nextActive != _activeWorkflow) {
-        if (_transitionPauseMs > 0 && _activeWorkflow) {
+        // Determine pause duration: check incoming workflow override, else use logic default
+        uint32_t pause = _transitionPauseMs;
+        if (nextActive) {
+            int overridePause = nextActive->getTransitionPause();
+            if (overridePause >= 0) pause = (uint32_t)overridePause;
+        }
+
+        if (pause > 0 && _activeWorkflow) {
             _lastScreen = _activeWorkflow->getActiveScreen();
             _isTransitioning = true;
             _transitionStartTime = millis();
+            _currentTransitionPauseMs = pause;
+            _activeWorkflow = nextActive; // Step the pointer immediately
+            
+            // If the requested pause is 0, we can skip the transition state entirely
+            if (pause == 0) {
+                _isTransitioning = false;
+            }
+        } else {
+             _activeWorkflow = nextActive;
         }
     }
-
-    _activeWorkflow = nextActive;
 }
 
 IWorkflow* WorkflowEngine::getActiveWorkflow() const {

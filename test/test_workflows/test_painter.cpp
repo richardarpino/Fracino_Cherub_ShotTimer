@@ -1,10 +1,9 @@
 #include <unity.h>
 #include "../../lib/Interfaces/IScreen.h"
 #include "../_common/stubs/MockPainter.h"
-#include "../../lib/Logic/Workflows/BlockerScreen.h"
-#include "../../lib/Logic/Workflows/DashboardScreen.h"
-#include "../../lib/Logic/Workflows/DashboardScreen.cpp"
-#include "../../lib/Logic/Workflows/ShotScreen.h"
+#include "../../lib/Logic/Workflows/GenericScreen.h"
+#include "../../lib/Interfaces/SensorTags.h"
+#include "../../lib/Logic/SensorDispatcher.h"
 #include "../_common/stubs/BlockerStub.h"
 
 // Keep the old infrastructure test
@@ -31,7 +30,7 @@ void test_painter_infrastructure() {
 void test_blockerscreen_painting() {
     BlockerStub blocker;
     SensorDispatcher registry;
-    BlockerScreen screen(&blocker, &registry);
+    GenericScreen screen(ScreenComposition(1, 1).add(WidgetType::STATUS, "Blocker"), &registry);
     
     MockPainter painter;
     screen.paint(painter); 
@@ -41,7 +40,14 @@ void test_blockerscreen_painting() {
 }
 
 void test_dashboardscreen_painting() {
-    DashboardScreen screen(nullptr); 
+    GenericScreen screen(
+        ScreenComposition(2, 2)
+            .add(WidgetType::GAUGE, BoilerPressureReading::NAME)
+            .add(WidgetType::SENSOR, BoilerTempReading::NAME)
+            .add(WidgetType::SENSOR, SystemUptimeReading::NAME)
+            .add(WidgetType::SENSOR, HeatingCycleReading::NAME),
+        nullptr
+    ); 
     
     MockPainter painter;
     screen.paint(painter);
@@ -51,7 +57,12 @@ void test_dashboardscreen_painting() {
 }
 
 void test_shotscreen_painting() {
-    ShotScreen screen(nullptr);
+    GenericScreen screen(
+        ScreenComposition(2, 1)
+            .add(WidgetType::SENSOR, LastValidShotReading::NAME)
+            .add(WidgetType::SENSOR, ShotTimeReading::NAME),
+        nullptr
+    );
     MockPainter painter;
     screen.paint(painter);
     

@@ -17,6 +17,9 @@ public:
     virtual void update() = 0;
     virtual void next() = 0;
     virtual bool isFinished() const = 0;
+
+    // Transition Control for the incoming workflow
+    virtual int getTransitionPause() const = 0;
 };
 
 #endif

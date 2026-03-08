@@ -233,11 +233,45 @@ void test_workflow_engine_transition_pause() {
     TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
 }
 
+class FastMockScreen : public MockScreen {
+public:
+    FastMockScreen(const char* name) : MockScreen(name) {}
+    int getTransitionDelay() const override { return 0; }
+};
+
+void test_workflow_engine_transition_override() {
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry, 1000); // 1s global pause
+    
+    BasicWorkflow rootWf;
+    MockScreen screen1("Screen 1");
+    rootWf.addScreen(&screen1);
+    engine.setRootWorkflow(&rootWf);
+
+    BasicWorkflow triggeredWf;
+    FastMockScreen screen2("Screen 2"); // Returns 0ms delay
+    triggeredWf.addScreen(&screen2);
+    
+    MockTrigger trigger;
+    engine.addTriggerWorkflow(&triggeredWf, &trigger, 100);
+
+    setHardwareTime(1000);
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+
+    // 1. Activate Trigger - Should switch INSTANTLY
+    trigger.setActive(true);
+    engine.update();
+    
+    // Should see screen 2 immediately because it overrides to 0ms
+    TEST_ASSERT_EQUAL_PTR(&triggeredWf, engine.getActiveWorkflow());
+    TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
+}
+
 void test_painter_infrastructure(); // From test_painter.cpp
 void test_blockerscreen_painting(); // From test_painter.cpp
 void test_dashboardscreen_painting(); // From test_painter.cpp
 void test_shotscreen_painting(); // From test_painter.cpp
-void test_workflow_engine_transition_pause();
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
@@ -251,5 +285,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_workflow_engine_switching);
     RUN_TEST(test_workflow_engine_default_fallback);
     RUN_TEST(test_workflow_engine_transition_pause);
+    RUN_TEST(test_workflow_engine_transition_override);
     return UNITY_END();
 }

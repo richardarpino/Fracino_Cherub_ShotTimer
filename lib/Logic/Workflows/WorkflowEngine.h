@@ -40,6 +40,7 @@ private:
 
     // Transition Pause Logic
     uint32_t _transitionPauseMs;
+    uint32_t _currentTransitionPauseMs;
     IScreen* _lastScreen;
     unsigned long _transitionStartTime;
     bool _isTransitioning;

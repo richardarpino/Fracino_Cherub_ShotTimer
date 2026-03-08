@@ -17,6 +17,7 @@ public:
     void update() override;
     void next() override;
     bool isFinished() const override;
+    int getTransitionPause() const override;
 
 private:
     std::vector<IScreen*> _screens;

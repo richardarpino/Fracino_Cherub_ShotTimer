@@ -18,6 +18,9 @@ public:
     // The Manifest: Subclasses describe their UI here
     virtual ScreenComposition getComposition() const = 0;
 
+    // Incoming Transition Control: -1 = use engine default, 0+ = specific delay in ms
+    virtual int getTransitionDelay() const { return -1; }
+
     // Bridge: Calls the painter with our composition
     // Note: Most screens have their own _registry member
     virtual void paint(IPainter& painter) = 0;

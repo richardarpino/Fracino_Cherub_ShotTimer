@@ -1,6 +1,6 @@
 #include "MachineFactory.h"
 #include "../Logic/Workflows/BasicWorkflow.h"
-#include "../Logic/Workflows/ShotScreen.h"
+#include "../Logic/Workflows/GenericScreen.h"
 
 MachineFactory::MachineFactory(const MachineConfig& config) 
     : _dispatcher(),
@@ -96,9 +96,22 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
 
         // 1. Startup Sequence (Root)
         _startupWorkflow = new BasicWorkflow();
-        _wifiScreen = new BlockerScreen(getWiFiSwitch(), &_dispatcher);
-        _otaScreen = new BlockerScreen(createOTA(), &_dispatcher);
-        _warmupScreen = new BlockerScreen(getWarmingUpBlocker(), &_dispatcher);
+        
+        _wifiScreen = new GenericScreen(
+            ScreenComposition(1, 1).add(WidgetType::STATUS, getWiFiSwitch()->getTagName()),
+            &_dispatcher,
+            getWiFiSwitch()
+        );
+        _otaScreen = new GenericScreen(
+            ScreenComposition(1, 1).add(WidgetType::STATUS, createOTA()->getTagName()),
+            &_dispatcher,
+            createOTA()
+        );
+        _warmupScreen = new GenericScreen(
+            ScreenComposition(1, 1).add(WidgetType::STATUS, getWarmingUpBlocker()->getTagName()),
+            &_dispatcher,
+            getWarmingUpBlocker()
+        );
         
         _startupWorkflow->addScreen(_wifiScreen);
         _startupWorkflow->addScreen(_otaScreen);
@@ -108,14 +121,27 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
 
         // 2. Main Dashboard (Default fallback)
         _dashboardWorkflow = new BasicWorkflow();
-        _dashScreen = new DashboardScreen(&_dispatcher);
+        _dashScreen = new GenericScreen(
+            ScreenComposition(2, 2)
+                .add(WidgetType::GAUGE, BoilerPressureReading::NAME)
+                .add(WidgetType::SENSOR, BoilerTempReading::NAME)
+                .add(WidgetType::SENSOR, HeatingCycleReading::NAME)
+                .add(WidgetType::SENSOR, LastValidShotReading::NAME),
+            &_dispatcher
+        );
         _dashboardWorkflow->addScreen(_dashScreen);
         
         _workflowEngine->setDefaultWorkflow(_dashboardWorkflow);
 
         // 3. Shot Workflow (Triggered by Pump)
         _shotWorkflow = new BasicWorkflow();
-        _shotScreen = new ShotScreen(&_dispatcher);
+        _shotScreen = new GenericScreen(
+            ScreenComposition(2, 1)
+                .add(WidgetType::SENSOR, LastValidShotReading::NAME)
+                .add(WidgetType::SENSOR, ShotTimeReading::NAME),
+            &_dispatcher
+        );
+        _shotScreen->setTransitionDelay(0);
         _shotWorkflow->addScreen(_shotScreen);
         _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100);
     }

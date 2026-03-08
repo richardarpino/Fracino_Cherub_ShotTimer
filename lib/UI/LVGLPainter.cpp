@@ -7,17 +7,17 @@
 #include <cstring>
 #include <cstdint>
 
-LVGLPainter::LVGLPainter() : _layout(nullptr), _parent(nullptr), _theme(nullptr) {
-    _layout = new ScreenLayout();
-}
+LVGLPainter::LVGLPainter() 
+    : _layout(new ScreenLayout()), _parent(nullptr), _theme(nullptr), _widgetFactory(nullptr) {}
 
 LVGLPainter::~LVGLPainter() {
     delete _layout;
 }
 
-void LVGLPainter::init(lv_obj_t* parent, ITheme* initialTheme) {
+void LVGLPainter::init(lv_obj_t* parent, ITheme* initialTheme, IWidgetFactory* widgetFactory) {
     _parent = parent;
     _theme = initialTheme;
+    _widgetFactory = widgetFactory;
     _layout->init(parent);
     if (_theme) {
         _layout->applyTheme(_theme);
@@ -39,26 +39,7 @@ void LVGLPainter::setLayout(uint8_t cols, uint8_t rows) {
     _layout->setDimensions(cols, rows);
 }
 
-// Internal Factory: The "Stage 1" simple dispatcher
-IWidget* createWidget(WidgetType type, const char* tagName, ISensorRegistry* registry) {
-    // 1. Gauge Specialized Mapping
-    if (type == WidgetType::GAUGE) {
-        if (strcmp(tagName, BoilerPressureReading::NAME) == 0) return new GaugeWidget<BoilerPressureReading>(registry);
-    } 
-
-    // 2. Status Specialized Mapping
-    if (type == WidgetType::STATUS) {
-        return new BlockerWidget(tagName); // Since BlockerWidget is now registry-aware
-    }
-
-    // 3. Sensor (Default) Mapping
-    if (strcmp(tagName, BoilerTempReading::NAME) == 0)   return new SensorWidget<BoilerTempReading>(registry);
-    if (strcmp(tagName, ShotTimeReading::NAME) == 0)     return new SensorWidget<ShotTimeReading>(registry);
-    if (strcmp(tagName, HeatingCycleReading::NAME) == 0) return new SensorWidget<HeatingCycleReading>(registry);
-    if (strcmp(tagName, LastValidShotReading::NAME) == 0) return new SensorWidget<LastValidShotReading>(registry);
-    
-    return nullptr;
-}
+// Replaced by IWidgetFactory
 
 uint32_t LVGLPainter::calculateHash(const ScreenComposition& comp) {
     uint32_t h = comp.cols ^ (comp.rows << 8);
@@ -82,9 +63,11 @@ void LVGLPainter::draw(const ScreenComposition& composition, ISensorRegistry* re
         _layout->setDimensions(composition.cols, composition.rows);
         
         for (const auto& w : composition.widgets) {
-            IWidget* widget = createWidget(w.type, w.tag, registry);
-            if (widget) {
-                _layout->addWidget(widget);
+            if (_widgetFactory) {
+                IWidget* widget = _widgetFactory->createWidget(w.type, w.tag, registry);
+                if (widget) {
+                    _layout->addWidget(widget);
+                }
             }
         }
         

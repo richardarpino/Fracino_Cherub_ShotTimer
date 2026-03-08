@@ -15,8 +15,6 @@
 #include "../Logic/Processors/BoilerSafetyProcessor.h"
 #include "../Logic/Workflows/WorkflowEngine.h"
 #include "../Logic/Workflows/BasicWorkflow.h"
-#include "../Logic/Workflows/BlockerScreen.h"
-#include "../Logic/Workflows/DashboardScreen.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
@@ -97,14 +95,14 @@ private:
     BasicWorkflow* _startupWorkflow;
     BasicWorkflow* _dashboardWorkflow;
     
-    BlockerScreen* _wifiScreen;
-    BlockerScreen* _otaScreen;
-    class IScreen* _warmupScreen;
-    class IScreen* _dashScreen;
+    IScreen* _wifiScreen;
+    IScreen* _otaScreen;
+    IScreen* _warmupScreen;
+    IScreen* _dashScreen;
     
     // Shot Workflow
-    class IWorkflow* _shotWorkflow;
-    class IScreen* _shotScreen;
+    IWorkflow* _shotWorkflow;
+    IScreen* _shotScreen;
 
     MachineConfig _config;
 

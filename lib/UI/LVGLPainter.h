@@ -4,7 +4,7 @@
 #include "../Interfaces/IPainter.h"
 #include "ScreenLayout.h"
 #include "../Themes/ITheme.h"
-#include "BlockerWidget.h"
+#include "../Interfaces/IWidgetFactory.h"
 
 // Concrete implementation of IPainter for LVGL
 class LVGLPainter : public IPainter {
@@ -12,8 +12,9 @@ public:
     LVGLPainter();
     ~LVGLPainter();
 
-    void init(lv_obj_t* parent, ITheme* initialTheme);
+    void init(lv_obj_t* parent, ITheme* initialTheme, IWidgetFactory* widgetFactory = nullptr);
     void setTheme(ITheme* theme);
+    void setWidgetFactory(IWidgetFactory* factory) { _widgetFactory = factory; }
     
     // IPainter implementation
     void setLayout(uint8_t cols, uint8_t rows) override;
@@ -22,7 +23,7 @@ public:
     ScreenLayout* getLayout();
 
 private:
-    void ensureWidget(int slot, IWidget* (*factory)());
+    void ensureWidget(int slot, WidgetType type, const char* tagName, class ISensorRegistry* registry);
 
     enum class ActiveScreen { NONE, BLOCKER, DASHBOARD, SHOT_TIMER };
     ActiveScreen _activeScreen = ActiveScreen::NONE;
@@ -30,6 +31,7 @@ private:
     ScreenLayout* _layout;
     lv_obj_t* _parent;
     ITheme* _theme;
+    IWidgetFactory* _widgetFactory;
     
     // Cache for current composition to prevent flickering
     uint32_t _compositionHash = 0;

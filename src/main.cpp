@@ -17,6 +17,7 @@ MachineConfig config = {
 MachineFactory factory(config);
 
 #include "LVGLPainter.h"
+#include "../lib/Factories/LVGLWidgetFactory.h"
 
 // --- Coordination & Logic ---
 ShotDisplay shotDisplay;
@@ -24,6 +25,7 @@ ThemeManager themeManager(&shotDisplay, factory.getRegistry());
 WorkflowEngine* workflowEngine = nullptr;
 ScreenLayout* lastLayout = nullptr;
 LVGLPainter lvglPainter;
+LVGLWidgetFactory widgetFactory;
 
 void setup() {
   Serial.begin(115200);
@@ -42,8 +44,8 @@ void setup() {
   workflowEngine = factory.getWorkflowEngine();
   Serial.println("Workflow Engine Ready");
   
-  // Initialize painter without initial theme (will switch later)
-  lvglPainter.init(lv_scr_act(), nullptr); 
+  // Initialize painter with widget factory
+  lvglPainter.init(lv_scr_act(), nullptr, &widgetFactory); 
 }
 
 void loop() {
