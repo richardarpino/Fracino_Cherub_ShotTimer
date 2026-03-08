@@ -13,8 +13,8 @@ void WorkflowEngine::setDefaultWorkflow(IWorkflow* defaultWf) {
     _default = defaultWf;
 }
 
-void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, TriggerType trigger, int precedence) {
-    _triggeredWorkflows.emplace_back(workflow, trigger, precedence, _registry);
+void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, ITrigger* trigger, int precedence) {
+    _triggeredWorkflows.emplace_back(workflow, trigger, precedence);
     
     // Sort by precedence (highest first)
     std::sort(_triggeredWorkflows.begin(), _triggeredWorkflows.end(), 
@@ -24,8 +24,6 @@ void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, TriggerType trigger
 }
 
 void WorkflowEngine::update() {
-    if (!_registry) return;
-
     if (_activeWorkflow) {
         _activeWorkflow->update();
     }
@@ -40,19 +38,13 @@ void WorkflowEngine::update() {
     int highestMatchedPrecedence = -1;
 
     for (auto& tw : _triggeredWorkflows) {
-        bool isActive = false;
-        if (tw.type == TriggerType::BUTTON_LEFT) {
-            tw.leftButton.update();
-            isActive = tw.leftButton.isActive();
-        } else if (tw.type == TriggerType::PUMP) {
-            tw.pump.update();
-            isActive = tw.pump.isActive();
-        }
-
-        if (isActive) {
-            if (tw.precedence > highestMatchedPrecedence) {
-                nextActive = tw.workflow;
-                highestMatchedPrecedence = tw.precedence;
+        if (tw.trigger) {
+            tw.trigger->update();
+            if (tw.trigger->isActive()) {
+                if (tw.precedence > highestMatchedPrecedence) {
+                    nextActive = tw.workflow;
+                    highestMatchedPrecedence = tw.precedence;
+                }
             }
         }
     }

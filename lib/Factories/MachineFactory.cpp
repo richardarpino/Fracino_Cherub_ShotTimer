@@ -117,7 +117,7 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _shotWorkflow = new BasicWorkflow();
         _shotScreen = new ShotScreen(&_dispatcher);
         _shotWorkflow->addScreen(_shotScreen);
-        _workflowEngine->addTriggerWorkflow(_shotWorkflow, TriggerType::PUMP, 100);
+        _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100);
     }
     return _workflowEngine;
 }

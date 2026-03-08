@@ -10,6 +10,19 @@
 #include "../../lib/Logic/SensorDispatcher.cpp"
 
 #include "../_common/stubs/BlockerStub.h"
+#include "../../lib/Interfaces/ITrigger.h"
+
+class MockTrigger : public ITrigger {
+public:
+    MockTrigger() : _active(false), _updated(false) {}
+    void update() override { _updated = true; }
+    bool isActive() const override { return _active; }
+    void setActive(bool active) { _active = active; }
+    bool wasUpdated() const { return _updated; }
+private:
+    bool _active;
+    bool _updated;
+};
 
 class MockScreen : public IScreen {
 public:
@@ -120,15 +133,16 @@ void test_workflow_engine_switching() {
     registry.provide<ButtonLeftReading>(&triggerStub);
 
     // Register Workflow B with Trigger
-    engine.addTriggerWorkflow(&workflowB, TriggerType::BUTTON_LEFT, 10); // Higher precedence
+    MockTrigger mockTrigger;
+    engine.addTriggerWorkflow(&workflowB, &mockTrigger, 10); // Higher precedence
 
     // Before trigger
     engine.update();
+    TEST_ASSERT_TRUE(mockTrigger.wasUpdated());
     TEST_ASSERT_EQUAL_PTR(&workflowA, engine.getActiveWorkflow());
 
     // After trigger
-    triggerStub.setReading(1.0f); // Button Pressed
-    registry.update(); // MUST update registry to propagate to RegistrySwitch
+    mockTrigger.setActive(true);
     engine.update();
     TEST_ASSERT_EQUAL_PTR(&workflowB, engine.getActiveWorkflow());
     TEST_ASSERT_EQUAL_PTR(&screenB, engine.getActiveScreen());
