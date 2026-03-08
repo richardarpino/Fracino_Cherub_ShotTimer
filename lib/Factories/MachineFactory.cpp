@@ -1,4 +1,6 @@
 #include "MachineFactory.h"
+#include "../Logic/Workflows/BasicWorkflow.h"
+#include "../Logic/Workflows/ShotScreen.h"
 
 MachineFactory::MachineFactory(const MachineConfig& config) 
     : _dispatcher(),
@@ -30,6 +32,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _otaScreen(nullptr),
       _warmupScreen(nullptr),
       _dashScreen(nullptr),
+      _shotWorkflow(nullptr),
+      _shotScreen(nullptr),
       _config(config) {
     
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
@@ -68,6 +72,8 @@ MachineFactory::~MachineFactory() {
     if (_otaScreen) delete _otaScreen;
     if (_warmupScreen) delete _warmupScreen;
     if (_dashScreen) delete _dashScreen;
+    if (_shotWorkflow) delete _shotWorkflow;
+    if (_shotScreen) delete _shotScreen;
 }
 
 OTAService* MachineFactory::createOTA() {
@@ -106,6 +112,12 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _dashboardWorkflow->addScreen(_dashScreen);
         
         _workflowEngine->setDefaultWorkflow(_dashboardWorkflow);
+
+        // 3. Shot Workflow (Triggered by Pump)
+        _shotWorkflow = new BasicWorkflow();
+        _shotScreen = new ShotScreen(&_dispatcher);
+        _shotWorkflow->addScreen(_shotScreen);
+        _workflowEngine->addTriggerWorkflow(_shotWorkflow, TriggerType::PUMP, 100);
     }
     return _workflowEngine;
 }

@@ -75,13 +75,30 @@ void LVGLPainter::drawDashboard(ISensorRegistry* registry) {
         _layout->addWidget(new SensorWidget<BoilerPressureReading>(registry));
         _layout->addWidget(new SensorWidget<BoilerTempReading>(registry));
         _layout->addWidget(new SensorWidget<HeatingCycleReading>(registry));
-        _layout->addWidget(new SensorWidget<ShotTimeReading>(registry));
+        _layout->addWidget(new SensorWidget<LastValidShotReading>(registry));
         if (_parent) {
             _layout->init(_parent);
             if (_theme) _layout->applyTheme(_theme);
         }
         _blockerWidget = nullptr; // Was deleted by reset()
         _activeScreen = ActiveScreen::DASHBOARD;
+    }
+    
+    _layout->update();
+}
+
+void LVGLPainter::drawShotTimer(ISensorRegistry* registry) {
+    if (_activeScreen != ActiveScreen::SHOT_TIMER) {
+        _layout->reset();
+        _layout->setDimensions(2, 1);
+        _layout->addWidget(new SensorWidget<LastValidShotReading>(registry));
+        _layout->addWidget(new SensorWidget<ShotTimeReading>(registry));
+        if (_parent) {
+            _layout->init(_parent);
+            if (_theme) _layout->applyTheme(_theme);
+        }
+        _blockerWidget = nullptr;
+        _activeScreen = ActiveScreen::SHOT_TIMER;
     }
     
     _layout->update();

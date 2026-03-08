@@ -40,13 +40,19 @@ void WorkflowEngine::update() {
     int highestMatchedPrecedence = -1;
 
     for (auto& tw : _triggeredWorkflows) {
+        bool isActive = false;
         if (tw.type == TriggerType::BUTTON_LEFT) {
             tw.leftButton.update();
-            if (tw.leftButton.isActive()) {
-                if (tw.precedence > highestMatchedPrecedence) {
-                    nextActive = tw.workflow;
-                    highestMatchedPrecedence = tw.precedence;
-                }
+            isActive = tw.leftButton.isActive();
+        } else if (tw.type == TriggerType::PUMP) {
+            tw.pump.update();
+            isActive = tw.pump.isActive();
+        }
+
+        if (isActive) {
+            if (tw.precedence > highestMatchedPrecedence) {
+                nextActive = tw.workflow;
+                highestMatchedPrecedence = tw.precedence;
             }
         }
     }

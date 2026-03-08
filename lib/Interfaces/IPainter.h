@@ -15,6 +15,7 @@ public:
     virtual void drawGauge(const char* label, float value, float min, float max) = 0;
     virtual void drawStatus(const char* label, const char* value, bool isAlert) = 0;
     virtual void drawDashboard(class ISensorRegistry* registry) = 0;
+    virtual void drawShotTimer(class ISensorRegistry* registry) = 0;
     virtual void setLayout(uint8_t cols, uint8_t rows) = 0;
 };
 

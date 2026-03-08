@@ -21,13 +21,14 @@ public:
     void drawGauge(const char* label, float value, float min, float max) override;
     void drawStatus(const char* label, const char* value, bool isAlert) override;
     void drawDashboard(class ISensorRegistry* registry) override;
+    void drawShotTimer(class ISensorRegistry* registry) override;
 
     ScreenLayout* getLayout();
 
 private:
     void ensureWidget(int slot, IWidget* (*factory)());
 
-    enum class ActiveScreen { NONE, BLOCKER, DASHBOARD };
+    enum class ActiveScreen { NONE, BLOCKER, DASHBOARD, SHOT_TIMER };
     ActiveScreen _activeScreen = ActiveScreen::NONE;
 
     ScreenLayout* _layout;

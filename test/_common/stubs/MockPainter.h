@@ -11,6 +11,7 @@ public:
     int drawBlockerCallCount = 0;
     int setLayoutCallCount = 0;
     int drawDashboardCallCount = 0;
+    int drawShotTimerCallCount = 0;
 
     std::string lastBlockerTitle = "";
     std::string lastBlockerMessage = "";
@@ -36,6 +37,11 @@ public:
 
     void drawDashboard(class ISensorRegistry* registry) override {
         drawDashboardCallCount++;
+        lastRegistryPassed = registry;
+    }
+
+    void drawShotTimer(class ISensorRegistry* registry) override {
+        drawShotTimerCallCount++;
         lastRegistryPassed = registry;
     }
 

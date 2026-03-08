@@ -12,7 +12,8 @@ enum class TriggerType {
     NONE,
     BUTTON_LEFT,
     BUTTON_RIGHT,
-    PRESSURE_THRESHOLD
+    PRESSURE_THRESHOLD,
+    PUMP
 };
 
 /**
@@ -37,10 +38,11 @@ private:
         IWorkflow* workflow;
         TriggerType type;
         int precedence;
-        RegistrySwitch<ButtonLeftReading> leftButton; // Simplification for now
+        RegistrySwitch<ButtonLeftReading> leftButton;
+        RegistrySwitch<PumpReading> pump;
         
         TriggeredWorkflow(IWorkflow* w, TriggerType t, int p, ISensorRegistry* r) 
-            : workflow(w), type(t), precedence(p), leftButton(r) {}
+            : workflow(w), type(t), precedence(p), leftButton(r), pump(r) {}
     };
 
     ISensorRegistry* _registry;

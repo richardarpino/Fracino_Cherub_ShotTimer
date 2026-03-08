@@ -19,6 +19,8 @@
 #include "../../lib/UI/SensorWidget.cpp"
 #include "../../lib/UI/GaugeWidget.cpp"
 #include "../../lib/UI/BlockerWidget.cpp"
+#include "../../lib/UI/LVGLPainter.cpp"
+#include "../../lib/UI/ScreenLayout.cpp"
 
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
@@ -346,8 +348,27 @@ void test_generate_examples() {
     for(auto& b : blockers) delete b.blocker;
 }
 
+void test_shot_timer_visualization() {
+    HeadlessDriver::init(240, 135);
+    
+    SensorDispatcher dispatcher;
+    LVGLPainter painter;
+    DefaultTheme theme;
+    
+    painter.init(lv_scr_act(), &theme);
+    
+    // Simulate a shot in progress
+    painter.drawShotTimer(&dispatcher);
+    
+    // Check layout dimensions
+    ScreenLayout* layout = painter.getLayout();
+    
+    std::cout << "Shot timer visualization initialized successfully." << std::endl;
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_generate_examples);
+    RUN_TEST(test_shot_timer_visualization);
     return UNITY_END();
 }

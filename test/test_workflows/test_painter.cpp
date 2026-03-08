@@ -4,6 +4,7 @@
 #include "../../lib/Logic/Workflows/BlockerScreen.h"
 #include "../../lib/Logic/Workflows/DashboardScreen.h"
 #include "../../lib/Logic/Workflows/DashboardScreen.cpp"
+#include "../../lib/Logic/Workflows/ShotScreen.h"
 #include "../_common/stubs/BlockerStub.h"
 
 // Keep the old infrastructure test
@@ -45,4 +46,12 @@ void test_dashboardscreen_painting() {
     
     TEST_ASSERT_EQUAL(1, painter.drawDashboardCallCount);
     TEST_ASSERT_NULL(painter.lastRegistryPassed);
+}
+
+void test_shotscreen_painting() {
+    ShotScreen screen(nullptr);
+    MockPainter painter;
+    screen.paint(painter);
+    
+    TEST_ASSERT_EQUAL(1, painter.drawShotTimerCallCount);
 }

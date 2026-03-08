@@ -168,11 +168,13 @@ void test_workflow_engine_default_fallback() {
 void test_painter_infrastructure(); // From test_painter.cpp
 void test_blockerscreen_painting(); // From test_painter.cpp
 void test_dashboardscreen_painting(); // From test_painter.cpp
+void test_shotscreen_painting(); // From test_painter.cpp
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_painter_infrastructure);
     RUN_TEST(test_blockerscreen_painting);
+    RUN_TEST(test_shotscreen_painting);
     RUN_TEST(test_dashboardscreen_painting);
     RUN_TEST(test_workflow_sequential_navigation);
     RUN_TEST(test_workflow_lifecycle);

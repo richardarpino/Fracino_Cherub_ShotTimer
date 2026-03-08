@@ -99,8 +99,12 @@ private:
     
     BlockerScreen* _wifiScreen;
     BlockerScreen* _otaScreen;
-    BlockerScreen* _warmupScreen;
-    DashboardScreen* _dashScreen;
+    class IScreen* _warmupScreen;
+    class IScreen* _dashScreen;
+    
+    // Shot Workflow
+    class IWorkflow* _shotWorkflow;
+    class IScreen* _shotScreen;
 
     MachineConfig _config;
 
