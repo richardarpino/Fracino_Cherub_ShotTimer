@@ -11,38 +11,13 @@ public:
     int drawBlockerCallCount = 0;
     int setLayoutCallCount = 0;
     int drawDashboardCallCount = 0;
-    int drawShotTimerCallCount = 0;
-
-    std::string lastBlockerTitle = "";
-    std::string lastBlockerMessage = "";
-    float lastBlockerProgress = -1.0f;
-    bool lastBlockerAlert = false;
     class ISensorRegistry* lastRegistryPassed = nullptr;
+    ScreenComposition lastComposition;
 
-    void drawBlocker(const char* title, const char* message, float progress, bool isAlert) override {
-        drawBlockerCallCount++;
-        lastBlockerTitle = title ? title : "";
-        lastBlockerMessage = message ? message : "";
-        lastBlockerProgress = progress;
-        lastBlockerAlert = isAlert;
-    }
-
-    void drawGauge(const char* label, float value, float min, float max) override {
-        drawGaugeCallCount++;
-    }
-
-    void drawStatus(const char* label, const char* value, bool isAlert) override {
-        drawStatusCallCount++;
-    }
-
-    void drawDashboard(class ISensorRegistry* registry) override {
-        drawDashboardCallCount++;
+    void draw(const ScreenComposition& composition, class ISensorRegistry* registry) override {
+        lastComposition = composition;
         lastRegistryPassed = registry;
-    }
-
-    void drawShotTimer(class ISensorRegistry* registry) override {
-        drawShotTimerCallCount++;
-        lastRegistryPassed = registry;
+        drawDashboardCallCount++; // Temporarily reuse for simple test compatibility if needed
     }
 
     void setLayout(uint8_t cols, uint8_t rows) override {
@@ -50,15 +25,9 @@ public:
     }
     
     void reset() {
-        drawGaugeCallCount = 0;
-        drawStatusCallCount = 0;
+        lastComposition = ScreenComposition();
         drawDashboardCallCount = 0;
-        drawBlockerCallCount = 0;
         setLayoutCallCount = 0;
-        lastBlockerTitle = "";
-        lastBlockerMessage = "";
-        lastBlockerProgress = -1.0f;
-        lastBlockerAlert = false;
         lastRegistryPassed = nullptr;
     }
 };

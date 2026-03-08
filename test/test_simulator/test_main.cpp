@@ -26,6 +26,7 @@
 #include "Hardware/BoilerPressure.h"
 #include "Hardware/WeightSensor.h"
 #include "../../lib/Logic/SensorDispatcher.h"
+#include "../../lib/Interfaces/ISensorRegistry.h"
 #include "../../lib/Interfaces/SensorTags.h"
 #include <functional>
 #include <sys/stat.h>
@@ -358,7 +359,10 @@ void test_shot_timer_visualization() {
     painter.init(lv_scr_act(), &theme);
     
     // Simulate a shot in progress
-    painter.drawShotTimer(&dispatcher);
+    ScreenComposition shotComp(2, 1);
+    shotComp.add(WidgetType::SENSOR, LastValidShotReading::NAME)
+            .add(WidgetType::SENSOR, ShotTimeReading::NAME);
+    painter.draw(shotComp, &dispatcher);
     
     // Check layout dimensions
     ScreenLayout* layout = painter.getLayout();

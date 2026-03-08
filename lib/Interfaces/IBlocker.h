@@ -14,6 +14,9 @@ public:
 
     // Get the full structured status message of the blocker
     virtual StatusMessage getStatus() const = 0;
+
+    // Get the registry tag name associated with this blocker
+    virtual const char* getTagName() const = 0;
 };
 
 #endif

@@ -11,7 +11,7 @@
  */
 class WorkflowEngine {
 public:
-    WorkflowEngine(class ISensorRegistry* registry);
+    WorkflowEngine(class ISensorRegistry* registry, uint32_t transitionPauseMs = 0);
 
     void setRootWorkflow(IWorkflow* root);
     void setDefaultWorkflow(IWorkflow* defaultWf);
@@ -37,6 +37,12 @@ private:
     IWorkflow* _default;
     std::vector<TriggeredWorkflow> _triggeredWorkflows;
     IWorkflow* _activeWorkflow;
+
+    // Transition Pause Logic
+    uint32_t _transitionPauseMs;
+    IScreen* _lastScreen;
+    unsigned long _transitionStartTime;
+    bool _isTransitioning;
 };
 
 #endif

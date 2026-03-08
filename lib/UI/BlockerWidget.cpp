@@ -1,7 +1,8 @@
 #include "BlockerWidget.h"
+#include "../Interfaces/ISensorRegistry.h"
 
-BlockerWidget::BlockerWidget(IBlocker* blocker) 
-    : _container(nullptr), _title_label(nullptr), _status_label(nullptr), _bar(nullptr), _blocker(blocker) {}
+BlockerWidget::BlockerWidget(const char* tagName) 
+    : _container(nullptr), _title_label(nullptr), _status_label(nullptr), _bar(nullptr), _registry(nullptr), _tagName(tagName) {}
 
 lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     _container = lv_obj_create(parent);
@@ -39,12 +40,20 @@ void BlockerWidget::setStatus(const StatusMessage& status) {
     _lastStatus = status;
 }
 
+void BlockerWidget::setRegistry(ISensorRegistry* registry) {
+    _registry = registry;
+}
+
+void BlockerWidget::setTagName(const char* tagName) {
+    _tagName = tagName;
+}
+
 void BlockerWidget::refresh() {
-    if (!_container) return; // Added as per instruction
+    if (!_container) return; 
 
     StatusMessage status;
-    if (_blocker) {
-        status = _blocker->getStatus();
+    if (_registry && _tagName) {
+        status = _registry->getLatestStatus(_tagName);
     } else {
         status = _lastStatus;
     }

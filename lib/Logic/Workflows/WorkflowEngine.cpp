@@ -1,8 +1,11 @@
 #include "WorkflowEngine.h"
 #include <algorithm>
 
-WorkflowEngine::WorkflowEngine(ISensorRegistry* registry)
-    : _registry(registry), _root(nullptr), _default(nullptr), _activeWorkflow(nullptr) {}
+#include <Arduino.h>
+
+WorkflowEngine::WorkflowEngine(ISensorRegistry* registry, uint32_t transitionPauseMs)
+    : _registry(registry), _root(nullptr), _default(nullptr), _activeWorkflow(nullptr),
+      _transitionPauseMs(transitionPauseMs), _lastScreen(nullptr), _transitionStartTime(0), _isTransitioning(false) {}
 
 void WorkflowEngine::setRootWorkflow(IWorkflow* root) {
     _root = root;
@@ -24,6 +27,14 @@ void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, ITrigger* trigger, 
 }
 
 void WorkflowEngine::update() {
+    if (_isTransitioning) {
+        if (millis() - _transitionStartTime >= _transitionPauseMs) {
+            _isTransitioning = false;
+        } else {
+            return; // Stay on previous screen visually
+        }
+    }
+
     if (_activeWorkflow) {
         _activeWorkflow->update();
     }
@@ -49,6 +60,15 @@ void WorkflowEngine::update() {
         }
     }
 
+    // Detect Transition
+    if (nextActive != _activeWorkflow) {
+        if (_transitionPauseMs > 0 && _activeWorkflow) {
+            _lastScreen = _activeWorkflow->getActiveScreen();
+            _isTransitioning = true;
+            _transitionStartTime = millis();
+        }
+    }
+
     _activeWorkflow = nextActive;
 }
 
@@ -57,5 +77,6 @@ IWorkflow* WorkflowEngine::getActiveWorkflow() const {
 }
 
 IScreen* WorkflowEngine::getActiveScreen() const {
+    if (_isTransitioning && _lastScreen) return _lastScreen;
     return _activeWorkflow ? _activeWorkflow->getActiveScreen() : nullptr;
 }

@@ -1,6 +1,8 @@
 #ifndef ISCREEN_H
 #define ISCREEN_H
 
+#include "SensorTypes.h"
+
 class IPainter;
 
 /**
@@ -13,8 +15,12 @@ public:
     virtual void update() = 0;
     virtual bool isDone() const = 0;
     
-    // Bridge to new IPainter pattern
-    virtual void paint(IPainter& painter) {}
+    // The Manifest: Subclasses describe their UI here
+    virtual ScreenComposition getComposition() const = 0;
+
+    // Bridge: Calls the painter with our composition
+    // Note: Most screens have their own _registry member
+    virtual void paint(IPainter& painter) = 0;
 };
 
 #endif

@@ -17,11 +17,7 @@ public:
     
     // IPainter implementation
     void setLayout(uint8_t cols, uint8_t rows) override;
-    void drawBlocker(const char* title, const char* message, float progress, bool isAlert) override;
-    void drawGauge(const char* label, float value, float min, float max) override;
-    void drawStatus(const char* label, const char* value, bool isAlert) override;
-    void drawDashboard(class ISensorRegistry* registry) override;
-    void drawShotTimer(class ISensorRegistry* registry) override;
+    void draw(const ScreenComposition& composition, class ISensorRegistry* registry) override;
 
     ScreenLayout* getLayout();
 
@@ -35,7 +31,9 @@ private:
     lv_obj_t* _parent;
     ITheme* _theme;
     
-    BlockerWidget* _blockerWidget;
+    // Cache for current composition to prevent flickering
+    uint32_t _compositionHash = 0;
+    uint32_t calculateHash(const ScreenComposition& comp);
 };
 
 #endif

@@ -12,8 +12,11 @@ class TestScreen : public IScreen {
 public:
     void update() override {}
     bool isDone() const override { return true; }
+    ScreenComposition getComposition() const override {
+        return ScreenComposition(1, 1).add(WidgetType::STATUS, "TestTag");
+    }
     void paint(IPainter& p) override {
-        p.drawBlocker("Test Title", "Test", 100.0f, false);
+        p.draw(getComposition(), nullptr);
     }
 };
 
@@ -21,31 +24,30 @@ void test_painter_infrastructure() {
     TestScreen screen;
     MockPainter painter;
     screen.paint(painter);
-    TEST_ASSERT_EQUAL(1, painter.drawBlockerCallCount);
+    TEST_ASSERT_EQUAL(1, painter.drawDashboardCallCount); // draw() incremented this for compatibility
+    TEST_ASSERT_EQUAL(1, painter.lastComposition.widgets.size());
 }
 
 void test_blockerscreen_painting() {
     BlockerStub blocker;
-    // We need a way to mock StatusMessage since BlockerScreen uses it.
-    // Wait, BlockerStub returns StatusMessage? Let's check BlockerStub below if needed.
-    // For now, let's just create the screen
-    BlockerScreen screen(&blocker);
+    SensorDispatcher registry;
+    BlockerScreen screen(&blocker, &registry);
     
     MockPainter painter;
-    screen.paint(painter); // Should call drawBlocker
+    screen.paint(painter); 
     
-    TEST_ASSERT_EQUAL(1, painter.drawBlockerCallCount);
+    TEST_ASSERT_EQUAL(1, painter.drawDashboardCallCount);
+    TEST_ASSERT_EQUAL(WidgetType::STATUS, painter.lastComposition.widgets[0].type);
 }
 
 void test_dashboardscreen_painting() {
-    // Pure logic test - DashboardScreen knows NOTHING about UI widgets or LVGL
-    DashboardScreen screen(nullptr); // nullptr registry is fine for this test
+    DashboardScreen screen(nullptr); 
     
     MockPainter painter;
     screen.paint(painter);
     
     TEST_ASSERT_EQUAL(1, painter.drawDashboardCallCount);
-    TEST_ASSERT_NULL(painter.lastRegistryPassed);
+    TEST_ASSERT_EQUAL(4, painter.lastComposition.widgets.size());
 }
 
 void test_shotscreen_painting() {
@@ -53,5 +55,6 @@ void test_shotscreen_painting() {
     MockPainter painter;
     screen.paint(painter);
     
-    TEST_ASSERT_EQUAL(1, painter.drawShotTimerCallCount);
+    TEST_ASSERT_EQUAL(1, painter.drawDashboardCallCount);
+    TEST_ASSERT_EQUAL(2, painter.lastComposition.widgets.size());
 }

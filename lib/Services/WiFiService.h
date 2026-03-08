@@ -18,6 +18,7 @@ public:
     
     // IBlocker Implementation
     StatusMessage getStatus() const override;
+    const char* getTagName() const override { return WiFiStatus::NAME; }
 
     // ISwitch Implementation
     void update() override;

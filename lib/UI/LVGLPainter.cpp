@@ -1,14 +1,18 @@
 #include "LVGLPainter.h"
 #include "SensorWidget.h"
+#include "GaugeWidget.h"
+#include "StatusWidget.h"
+#include "BlockerWidget.h"
 #include "../Interfaces/SensorTags.h"
+#include <cstring>
+#include <cstdint>
 
-LVGLPainter::LVGLPainter() : _layout(nullptr), _parent(nullptr), _theme(nullptr), _blockerWidget(nullptr) {
+LVGLPainter::LVGLPainter() : _layout(nullptr), _parent(nullptr), _theme(nullptr) {
     _layout = new ScreenLayout();
 }
 
 LVGLPainter::~LVGLPainter() {
     delete _layout;
-    if (_blockerWidget) delete _blockerWidget;
 }
 
 void LVGLPainter::init(lv_obj_t* parent, ITheme* initialTheme) {
@@ -33,73 +37,65 @@ ScreenLayout* LVGLPainter::getLayout() {
 
 void LVGLPainter::setLayout(uint8_t cols, uint8_t rows) {
     _layout->setDimensions(cols, rows);
-    // When layout changes, we might want to clear existing widgets logically,
-    // but ScreenLayout handles its internal grid.
 }
 
-void LVGLPainter::drawBlocker(const char* title, const char* message, float progress, bool isAlert) {
-    if (_activeScreen != ActiveScreen::BLOCKER) {
+// Internal Factory: The "Stage 1" simple dispatcher
+IWidget* createWidget(WidgetType type, const char* tagName, ISensorRegistry* registry) {
+    // 1. Gauge Specialized Mapping
+    if (type == WidgetType::GAUGE) {
+        if (strcmp(tagName, BoilerPressureReading::NAME) == 0) return new GaugeWidget<BoilerPressureReading>(registry);
+    } 
+
+    // 2. Status Specialized Mapping
+    if (type == WidgetType::STATUS) {
+        return new BlockerWidget(tagName); // Since BlockerWidget is now registry-aware
+    }
+
+    // 3. Sensor (Default) Mapping
+    if (strcmp(tagName, BoilerTempReading::NAME) == 0)   return new SensorWidget<BoilerTempReading>(registry);
+    if (strcmp(tagName, ShotTimeReading::NAME) == 0)     return new SensorWidget<ShotTimeReading>(registry);
+    if (strcmp(tagName, HeatingCycleReading::NAME) == 0) return new SensorWidget<HeatingCycleReading>(registry);
+    if (strcmp(tagName, LastValidShotReading::NAME) == 0) return new SensorWidget<LastValidShotReading>(registry);
+    
+    return nullptr;
+}
+
+uint32_t LVGLPainter::calculateHash(const ScreenComposition& comp) {
+    uint32_t h = comp.cols ^ (comp.rows << 8);
+    for (const auto& w : comp.widgets) {
+        h ^= (uint32_t)w.type;
+        // Simple string hash
+        if (w.tag) {
+            for (const char* p = w.tag; *p; p++) h = (h * 31) + *p;
+        }
+    }
+    return h;
+}
+
+void LVGLPainter::draw(const ScreenComposition& composition, ISensorRegistry* registry) {
+    _layout->setRegistry(registry);
+    uint32_t newHash = calculateHash(composition);
+    
+    // Only rebuild if the screen structure changed
+    if (newHash != _compositionHash) {
         _layout->reset();
-        _layout->setDimensions(1, 1);
-        _blockerWidget = new BlockerWidget(nullptr);
-        _layout->addWidget(_blockerWidget);
+        _layout->setDimensions(composition.cols, composition.rows);
+        
+        for (const auto& w : composition.widgets) {
+            IWidget* widget = createWidget(w.type, w.tag, registry);
+            if (widget) {
+                _layout->addWidget(widget);
+            }
+        }
+        
         if (_parent) {
             _layout->init(_parent);
             if (_theme) _layout->applyTheme(_theme);
         }
-        _activeScreen = ActiveScreen::BLOCKER;
+        
+        _compositionHash = newHash;
     }
     
-    StatusMessage statusMsg;
-    statusMsg.title = title ? title : "";
-    statusMsg.message = message ? message : "";
-    statusMsg.isFailed = isAlert;
-    statusMsg.progress = progress;
-    
-    _blockerWidget->setStatus(statusMsg);
-    _blockerWidget->refresh();
-}
-
-void LVGLPainter::drawGauge(const char* label, float value, float min, float max) {
-    // Unused directly; SensorWidget handles gauge drawing internally
-}
-
-void LVGLPainter::drawStatus(const char* label, const char* value, bool isAlert) {
-    // Unused directly
-}
-
-void LVGLPainter::drawDashboard(ISensorRegistry* registry) {
-    if (_activeScreen != ActiveScreen::DASHBOARD) {
-        _layout->reset();
-        _layout->setDimensions(2, 2);
-        _layout->addWidget(new SensorWidget<BoilerPressureReading>(registry));
-        _layout->addWidget(new SensorWidget<BoilerTempReading>(registry));
-        _layout->addWidget(new SensorWidget<HeatingCycleReading>(registry));
-        _layout->addWidget(new SensorWidget<LastValidShotReading>(registry));
-        if (_parent) {
-            _layout->init(_parent);
-            if (_theme) _layout->applyTheme(_theme);
-        }
-        _blockerWidget = nullptr; // Was deleted by reset()
-        _activeScreen = ActiveScreen::DASHBOARD;
-    }
-    
-    _layout->update();
-}
-
-void LVGLPainter::drawShotTimer(ISensorRegistry* registry) {
-    if (_activeScreen != ActiveScreen::SHOT_TIMER) {
-        _layout->reset();
-        _layout->setDimensions(2, 1);
-        _layout->addWidget(new SensorWidget<LastValidShotReading>(registry));
-        _layout->addWidget(new SensorWidget<ShotTimeReading>(registry));
-        if (_parent) {
-            _layout->init(_parent);
-            if (_theme) _layout->applyTheme(_theme);
-        }
-        _blockerWidget = nullptr;
-        _activeScreen = ActiveScreen::SHOT_TIMER;
-    }
-    
+    // Refresh data in all existing widgets
     _layout->update();
 }

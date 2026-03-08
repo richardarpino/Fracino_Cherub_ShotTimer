@@ -13,6 +13,12 @@ public:
     void update() override;
     bool isDone() const override;
     void paint(IPainter& p) override;
+    
+    ScreenComposition getComposition() const override {
+        return ScreenComposition(2, 1)
+            .add(WidgetType::SENSOR, LastValidShotReading::NAME)
+            .add(WidgetType::SENSOR, ShotTimeReading::NAME);
+    }
 
 private:
     ISensorRegistry* _registry;

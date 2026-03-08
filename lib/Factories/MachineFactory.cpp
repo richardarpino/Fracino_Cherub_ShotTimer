@@ -92,13 +92,13 @@ WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
 
 WorkflowEngine* MachineFactory::getWorkflowEngine() {
     if (!_workflowEngine) {
-        _workflowEngine = new WorkflowEngine(&_dispatcher);
+        _workflowEngine = new WorkflowEngine(&_dispatcher, 1500);
 
         // 1. Startup Sequence (Root)
         _startupWorkflow = new BasicWorkflow();
-        _wifiScreen = new BlockerScreen(getWiFiSwitch());
-        _otaScreen = new BlockerScreen(createOTA());
-        _warmupScreen = new BlockerScreen(getWarmingUpBlocker());
+        _wifiScreen = new BlockerScreen(getWiFiSwitch(), &_dispatcher);
+        _otaScreen = new BlockerScreen(createOTA(), &_dispatcher);
+        _warmupScreen = new BlockerScreen(getWarmingUpBlocker(), &_dispatcher);
         
         _startupWorkflow->addScreen(_wifiScreen);
         _startupWorkflow->addScreen(_otaScreen);

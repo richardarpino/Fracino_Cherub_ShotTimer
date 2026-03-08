@@ -38,6 +38,42 @@ enum class PhysicalQuantity {
 };
 
 /**
+ * Visual behavior types for widgets.
+ */
+enum class WidgetType {
+    SENSOR, // Standard: Value + Units
+    GAUGE,  // Analog: Circular meter
+    STATUS, // Logical: Multi-line text + progress
+    CLOCK   // Specialized: Time format (MM:SS)
+};
+
+/**
+ * A blueprint for a single widget slot.
+ */
+struct WidgetBlueprint {
+    WidgetType type;
+    const char* tag; // Registry Tag Name
+
+    WidgetBlueprint(WidgetType t, const char* tg) : type(t), tag(tg) {}
+};
+
+/**
+ * A data-driven description of a full screen.
+ */
+struct ScreenComposition {
+    uint8_t cols;
+    uint8_t rows;
+    std::vector<WidgetBlueprint> widgets;
+
+    ScreenComposition(uint8_t c = 1, uint8_t r = 1) : cols(c), rows(r) {}
+    
+    ScreenComposition& add(WidgetType type, const char* tag) {
+        widgets.emplace_back(type, tag);
+        return *this;
+    }
+};
+
+/**
  * Trigger direction for ThresholdSwitch.
  */
 enum class ThresholdMode {

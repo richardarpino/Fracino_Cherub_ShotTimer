@@ -13,9 +13,8 @@ public:
     }
     
     // IBlocker Implementation
-    StatusMessage getStatus() const override { 
-        return StatusMessage(_title, _message, _progress, _failed); 
-    }
+    StatusMessage getStatus() const override { return StatusMessage(_title, _message, _progress, _failed); }
+    const char* getTagName() const override { return "MockBlocker"; }
     
     bool isActive() const override { return _active; }
     bool justStarted() const override { return _justStarted; }

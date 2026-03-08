@@ -21,5 +21,5 @@ bool ShotScreen::isDone() const {
 }
 
 void ShotScreen::paint(IPainter& p) {
-    p.drawShotTimer(_registry);
+    p.draw(getComposition(), _registry);
 }

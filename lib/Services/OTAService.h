@@ -18,6 +18,7 @@ public:
     
     // IBlocker implementation
     StatusMessage getStatus() const override;
+    const char* getTagName() const override { return OTAStatus::NAME; }
 
     // ISwitch implementation
     void update() override;

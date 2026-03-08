@@ -13,6 +13,14 @@ public:
     void update() override {}
     bool isDone() const override { return false; }
     void paint(IPainter& p) override;
+    
+    ScreenComposition getComposition() const override {
+        return ScreenComposition(2, 2)
+            .add(WidgetType::GAUGE, BoilerPressureReading::NAME)
+            .add(WidgetType::SENSOR, BoilerTempReading::NAME)
+            .add(WidgetType::SENSOR, HeatingCycleReading::NAME)
+            .add(WidgetType::SENSOR, LastValidShotReading::NAME);
+    }
 
 private:
     ISensorRegistry* _registry;

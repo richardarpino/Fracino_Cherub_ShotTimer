@@ -5,6 +5,7 @@
 #include "../../lib/Logic/Workflows/WorkflowEngine.cpp"
 #include "../../lib/Logic/Workflows/BasicWorkflow.h"
 #include "../../lib/Logic/Workflows/BasicWorkflow.cpp"
+#include "../../lib/Interfaces/IPainter.h"
 #include "../_common/stubs/SensorStub.h"
 #include "../../lib/Logic/SensorDispatcher.h"
 #include "../../lib/Logic/SensorDispatcher.cpp"
@@ -30,6 +31,13 @@ public:
     void update() override {}
     bool isDone() const override { return _isDone; }
     void setDone(bool done) { _isDone = done; }
+
+    ScreenComposition getComposition() const override {
+        return ScreenComposition(1, 1).add(WidgetType::SENSOR, _name);
+    }
+    void paint(IPainter& p) override {
+        p.draw(getComposition(), nullptr);
+    }
 private:
     const char* _name;
     bool _isDone;
@@ -40,6 +48,13 @@ public:
     MockBlockerScreen(IBlocker* blocker) : _blocker(blocker) {}
     void update() override {}
     bool isDone() const override { return !_blocker->isActive(); }
+
+    ScreenComposition getComposition() const override {
+        return ScreenComposition(1, 1).add(WidgetType::STATUS, "blocker");
+    }
+    void paint(IPainter& p) override {
+        p.draw(getComposition(), nullptr);
+    }
 private:
     IBlocker* _blocker;
 };
@@ -179,10 +194,50 @@ void test_workflow_engine_default_fallback() {
     TEST_ASSERT_EQUAL_PTR(&dashboard, engine.getActiveWorkflow());
 }
 
+void test_workflow_engine_transition_pause() {
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry, 1000); // 1s pause
+    
+    BasicWorkflow rootWf;
+    MockScreen screen1("Screen 1");
+    rootWf.addScreen(&screen1);
+    engine.setRootWorkflow(&rootWf);
+
+    BasicWorkflow triggeredWf;
+    MockScreen screen2("Screen 2");
+    triggeredWf.addScreen(&screen2);
+    
+    MockTrigger trigger;
+    engine.addTriggerWorkflow(&triggeredWf, &trigger, 100);
+
+    setHardwareTime(1000);
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+
+    // 1. Activate Trigger
+    trigger.setActive(true);
+    engine.update();
+    
+    // Should still see screen 1 visually because transition started
+    TEST_ASSERT_EQUAL_PTR(&triggeredWf, engine.getActiveWorkflow());
+    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+
+    // 2. Move time forward 500ms (Still in transition)
+    addHardwareTime(500);
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+
+    // 3. Move time past 1000ms
+    addHardwareTime(600);
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
+}
+
 void test_painter_infrastructure(); // From test_painter.cpp
 void test_blockerscreen_painting(); // From test_painter.cpp
 void test_dashboardscreen_painting(); // From test_painter.cpp
 void test_shotscreen_painting(); // From test_painter.cpp
+void test_workflow_engine_transition_pause();
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
@@ -195,5 +250,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_workflow_auto_advance_on_blocker_done);
     RUN_TEST(test_workflow_engine_switching);
     RUN_TEST(test_workflow_engine_default_fallback);
+    RUN_TEST(test_workflow_engine_transition_pause);
     return UNITY_END();
 }

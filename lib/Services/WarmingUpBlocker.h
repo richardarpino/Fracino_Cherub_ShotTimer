@@ -16,6 +16,7 @@ public:
     virtual ~WarmingUpBlocker() = default;
     // IBlocker Implementation
     StatusMessage getStatus() const override;
+    const char* getTagName() const override { return WarmingUpStatus::NAME; }
 
     void update() override;
 

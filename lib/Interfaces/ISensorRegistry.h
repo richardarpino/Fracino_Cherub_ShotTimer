@@ -122,6 +122,12 @@ public:
         return T::getMetadata();
     }
 
+    /**
+     * Public string-based lookup (needed for generic Painter/Factory)
+     */
+    virtual Reading getLatestReading(const char* name) { return getReadingByName(name); }
+    virtual StatusMessage getLatestStatus(const char* name) { return getStatusByName(name); }
+
 protected:
     // Internal bridging to allow templates to work with virtual methods
     virtual Reading getReadingByName(const char* name) = 0;
