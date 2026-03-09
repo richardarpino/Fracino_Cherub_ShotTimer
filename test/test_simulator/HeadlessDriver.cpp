@@ -62,7 +62,7 @@ struct BMPInfo {
 
 void HeadlessDriver::saveSnapshot(lv_obj_t* obj, const std::string& filename) {
     // Process layout and any pending tasks
-    addMillis(100);
+    addHardwareTime(100);
     lv_timer_handler();
     
     uint32_t w = lv_obj_get_width(obj);
