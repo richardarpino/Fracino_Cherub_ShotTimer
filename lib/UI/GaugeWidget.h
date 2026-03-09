@@ -66,4 +66,32 @@ private:
 private:
     ISensorRegistry* _registry;
 };
+
+/**
+ * Late-binding specialization for string-based registration.
+ */
+template<>
+class GaugeWidget<void> : public GaugeWidgetBase {
+public:
+    GaugeWidget(const char* tagName, ISensorRegistry* registry = nullptr) 
+        : _tagName(tagName), _registry(registry) {}
+
+    void setRegistry(ISensorRegistry* registry) override {
+        _registry = registry;
+    }
+
+    void refresh() override {
+        if (_registry) {
+            Reading r = _registry->getLatestReading(_tagName.c_str());
+            // Need a way to get metadata without type...
+            // Let's add a virtual or bridging helper to ISensorRegistry.
+            // For now, let's assume default gauge scaling or a generic lookup.
+            update(r);
+        }
+    }
+
+private:
+    std::string _tagName;
+    ISensorRegistry* _registry;
+};
 #endif

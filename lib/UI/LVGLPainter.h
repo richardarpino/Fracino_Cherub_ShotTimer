@@ -23,8 +23,6 @@ public:
     ScreenLayout* getLayout();
 
 private:
-    void ensureWidget(int slot, WidgetType type, const char* tagName, class ISensorRegistry* registry);
-
     enum class ActiveScreen { NONE, BLOCKER, DASHBOARD, SHOT_TIMER };
     ActiveScreen _activeScreen = ActiveScreen::NONE;
 

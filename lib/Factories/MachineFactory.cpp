@@ -34,9 +34,27 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _dashScreen(nullptr),
       _shotWorkflow(nullptr),
       _shotScreen(nullptr),
-      _config(config) {
+      _config(config),
+      _widgetRegistry(&_dispatcher)
+#if !defined(NATIVE) || defined(SIMULATOR)
+      , _lvglFactory(&_widgetRegistry) 
+#endif
+{
     
     _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
+
+    // Register Widgets with Registry
+    _widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
+    _widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        { PhysicalQuantity::PRESSURE, PhysicalQuantity::TEMPERATURE } 
+    ));
+    _widgetRegistry.registerWidget<BlockerWidgetTag>(WidgetCompatibility(DataCategory::SERVICE));
+    _widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        {}, // No specific quantities
+        { ShotTimeReading::NAME } 
+    ));
 
     // Register Hardware Sensors for central polling
     _dispatcher.provide<SystemUptimeReading>(&_uptimeSensor);
@@ -98,17 +116,17 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _startupWorkflow = new BasicWorkflow();
         
         _wifiScreen = new GenericScreen(
-            ScreenComposition(1, 1).add(WidgetType::STATUS, getWiFiSwitch()->getTagName()),
+            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, getWiFiSwitch()->getTagName()),
             &_dispatcher,
             getWiFiSwitch()
         );
         _otaScreen = new GenericScreen(
-            ScreenComposition(1, 1).add(WidgetType::STATUS, createOTA()->getTagName()),
+            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, createOTA()->getTagName()),
             &_dispatcher,
             createOTA()
         );
         _warmupScreen = new GenericScreen(
-            ScreenComposition(1, 1).add(WidgetType::STATUS, getWarmingUpBlocker()->getTagName()),
+            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, getWarmingUpBlocker()->getTagName()),
             &_dispatcher,
             getWarmingUpBlocker()
         );
@@ -123,10 +141,10 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _dashboardWorkflow = new BasicWorkflow();
         _dashScreen = new GenericScreen(
             ScreenComposition(2, 2)
-                .add(WidgetType::GAUGE, BoilerPressureReading::NAME)
-                .add(WidgetType::SENSOR, BoilerTempReading::NAME)
-                .add(WidgetType::SENSOR, HeatingCycleReading::NAME)
-                .add(WidgetType::SENSOR, LastValidShotReading::NAME),
+                .add(GaugeWidgetTag::NAME, BoilerPressureReading::NAME)
+                .add(SensorWidgetTag::NAME, BoilerTempReading::NAME)
+                .add(SensorWidgetTag::NAME, HeatingCycleReading::NAME)
+                .add(SensorWidgetTag::NAME, LastValidShotReading::NAME),
             &_dispatcher
         );
         _dashboardWorkflow->addScreen(_dashScreen);
@@ -137,8 +155,8 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _shotWorkflow = new BasicWorkflow();
         _shotScreen = new GenericScreen(
             ScreenComposition(2, 1)
-                .add(WidgetType::SENSOR, LastValidShotReading::NAME)
-                .add(WidgetType::SENSOR, ShotTimeReading::NAME),
+                .add(SensorWidgetTag::NAME, LastValidShotReading::NAME)
+                .add(ShotTimerWidgetTag::NAME, ShotTimeReading::NAME),
             &_dispatcher
         );
         _shotScreen->setTransitionDelay(0);

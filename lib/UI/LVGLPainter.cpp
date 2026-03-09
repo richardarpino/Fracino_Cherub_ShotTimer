@@ -39,13 +39,15 @@ void LVGLPainter::setLayout(uint8_t cols, uint8_t rows) {
     _layout->setDimensions(cols, rows);
 }
 
-// Replaced by IWidgetFactory
 
 uint32_t LVGLPainter::calculateHash(const ScreenComposition& comp) {
     uint32_t h = comp.cols ^ (comp.rows << 8);
     for (const auto& w : comp.widgets) {
-        h ^= (uint32_t)w.type;
-        // Simple string hash
+        // Hash widget name
+        if (w.widgetName) {
+            for (const char* p = w.widgetName; *p; p++) h = (h * 31) + *p;
+        }
+        // Simple string hash for tag
         if (w.tag) {
             for (const char* p = w.tag; *p; p++) h = (h * 31) + *p;
         }
@@ -64,7 +66,7 @@ void LVGLPainter::draw(const ScreenComposition& composition, ISensorRegistry* re
         
         for (const auto& w : composition.widgets) {
             if (_widgetFactory) {
-                IWidget* widget = _widgetFactory->createWidget(w.type, w.tag, registry);
+                IWidget* widget = _widgetFactory->createWidget(w.widgetName, w.tag, registry);
                 if (widget) {
                     _layout->addWidget(widget);
                 }

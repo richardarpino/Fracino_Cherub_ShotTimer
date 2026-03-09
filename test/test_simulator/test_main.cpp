@@ -28,6 +28,7 @@
 #include "../../lib/Logic/SensorDispatcher.h"
 #include "../../lib/Registry/ISensorRegistry.h"
 #include "../../lib/Interfaces/SensorTags.h"
+#include "../../lib/Registry/WidgetTags.h"
 #include <functional>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -360,8 +361,8 @@ void test_shot_timer_visualization() {
     
     // Simulate a shot in progress
     ScreenComposition shotComp(2, 1);
-    shotComp.add(WidgetType::SENSOR, LastValidShotReading::NAME)
-            .add(WidgetType::SENSOR, ShotTimeReading::NAME);
+    shotComp.add(SensorWidgetTag::NAME, LastValidShotReading::NAME)
+            .add(SensorWidgetTag::NAME, ShotTimeReading::NAME);
     painter.draw(shotComp, &dispatcher);
     
     // Check layout dimensions

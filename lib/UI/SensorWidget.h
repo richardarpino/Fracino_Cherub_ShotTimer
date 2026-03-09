@@ -54,4 +54,28 @@ public:
 private:
     ISensorRegistry* _registry;
 };
+
+/**
+ * Late-binding specialization for string-based registration.
+ */
+template<>
+class SensorWidget<void> : public SensorWidgetBase {
+public:
+    SensorWidget(const char* tagName, ISensorRegistry* registry = nullptr) 
+        : _tagName(tagName), _registry(registry) {}
+
+    void setRegistry(ISensorRegistry* registry) override {
+        _registry = registry;
+    }
+
+    void refresh() override {
+        if (_registry) {
+            update(_registry->getLatestReading(_tagName.c_str()));
+        }
+    }
+
+private:
+    std::string _tagName;
+    ISensorRegistry* _registry;
+};
 #endif

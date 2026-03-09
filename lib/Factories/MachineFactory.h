@@ -27,6 +27,12 @@
 #include "../Themes/ChristmasTheme.h"
 #include "../../include/pins.h"
 
+#include "../Registry/WidgetRegistry.h"
+#include "../Registry/WidgetTags.h"
+#if !defined(NATIVE) || defined(SIMULATOR)
+#include "LVGLWidgetFactory.h"
+#endif
+
 /**
  * Concrete Machine Factory.
  * Lifetime manager for all machine components.
@@ -41,6 +47,7 @@ public:
 
     // ISensorProvider
     ISensorRegistry* getRegistry() override { return &_dispatcher; }
+    IWidgetRegistry* getWidgetRegistry() { return &_widgetRegistry; }
 
     // ISwitchProvider
     ISwitch* getPump() override { return &_pumpRegSw; }
@@ -105,6 +112,11 @@ private:
     IScreen* _shotScreen;
 
     MachineConfig _config;
+
+    WidgetRegistry _widgetRegistry;
+#if !defined(NATIVE) || defined(SIMULATOR)
+    LVGLWidgetFactory _lvglFactory;
+#endif
 
     DefaultTheme _defaultTheme;
     CandyTheme _candyTheme;

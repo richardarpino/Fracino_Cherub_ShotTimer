@@ -5,9 +5,15 @@
 #include <vector>
 
 struct WidgetCompatibility {
-    DataCategory category;
+    DataCategory category = DataCategory::TELEMETRY;
     std::vector<PhysicalQuantity> quantities;
     std::vector<const char*> specificTags;
+
+    WidgetCompatibility() = default;
+    WidgetCompatibility(DataCategory cat, 
+                        std::vector<PhysicalQuantity> q = {}, 
+                        std::vector<const char*> tags = {})
+        : category(cat), quantities(q), specificTags(tags) {}
 };
 
 class IWidgetRegistry {

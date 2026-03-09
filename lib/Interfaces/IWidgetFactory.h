@@ -13,9 +13,9 @@ public:
     virtual ~IWidgetFactory() {}
 
     /**
-     * Creates a widget of the specified type bound to a tag.
+     * Creates a widget by its registered name bound to a tag.
      */
-    virtual IWidget* createWidget(WidgetType type, const char* tagName, class ISensorRegistry* registry) = 0;
+    virtual IWidget* createWidget(const char* widgetName, const char* tagName, class ISensorRegistry* registry) = 0;
 };
 
 #endif

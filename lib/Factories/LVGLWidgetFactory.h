@@ -11,31 +11,50 @@
  */
 #include "../Interfaces/SensorTags.h"
 
+#include "../Registry/IWidgetRegistry.h"
+#include "../Registry/WidgetTags.h"
+
 /**
  * Concrete factory for LVGL-based widgets.
  * Maps runtime tags to specific templated widget types.
  */
 class LVGLWidgetFactory : public IWidgetFactory {
 public:
-    IWidget* createWidget(WidgetType type, const char* tagName, ISensorRegistry* registry) override {
-        if (type == WidgetType::STATUS) {
+    LVGLWidgetFactory(IWidgetRegistry* registry = nullptr) : _registry(registry) {}
+
+    void setRegistry(IWidgetRegistry* registry) {
+        _registry = registry;
+    }
+
+    IWidget* createWidget(const char* widgetName, const char* tagName, ISensorRegistry* sensorRegistry) override {
+        // 1. Compatibility Check
+        if (_registry && !_registry->isCompatible(widgetName, tagName)) {
+            return nullptr;
+        }
+
+        // 2. Late-binding instantiation
+        if (strcmp(widgetName, BlockerWidgetTag::NAME) == 0) {
             return new BlockerWidget(tagName);
         }
 
-        if (type == WidgetType::GAUGE) {
-            if (strcmp(tagName, BoilerPressureReading::NAME) == 0) return new GaugeWidget<BoilerPressureReading>(registry);
+        if (strcmp(widgetName, GaugeWidgetTag::NAME) == 0) {
+            return new GaugeWidget<void>(tagName, sensorRegistry);
         }
 
-        if (type == WidgetType::SENSOR) {
-            if (strcmp(tagName, BoilerTempReading::NAME) == 0)   return new SensorWidget<BoilerTempReading>(registry);
-            if (strcmp(tagName, ShotTimeReading::NAME) == 0)     return new SensorWidget<ShotTimeReading>(registry);
-            if (strcmp(tagName, HeatingCycleReading::NAME) == 0) return new SensorWidget<HeatingCycleReading>(registry);
-            if (strcmp(tagName, LastValidShotReading::NAME) == 0) return new SensorWidget<LastValidShotReading>(registry);
-            if (strcmp(tagName, SystemUptimeReading::NAME) == 0) return new SensorWidget<SystemUptimeReading>(registry);
+        if (strcmp(widgetName, SensorWidgetTag::NAME) == 0) {
+            return new SensorWidget<void>(tagName, sensorRegistry);
+        }
+
+        // Default or specialized overrides (like ShotTimer)
+        if (strcmp(widgetName, ShotTimerWidgetTag::NAME) == 0) {
+            return new SensorWidget<void>(tagName, sensorRegistry); // ShotTimer currently uses SensorWidget base logic
         }
 
         return nullptr;
     }
+
+private:
+    IWidgetRegistry* _registry;
 };
 
 #endif
