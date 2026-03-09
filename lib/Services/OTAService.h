@@ -9,7 +9,7 @@
 // No-op for native
 #endif
 
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
 
 class OTAService : public IBlocker {

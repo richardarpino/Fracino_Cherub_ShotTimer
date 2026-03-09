@@ -2,7 +2,7 @@
 #define SENSOR_TRIGGER_FACTORY_H
 
 #include "../Interfaces/ITriggerFactory.h"
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 #include "../Logic/Triggers/ThresholdSwitch.h"
 #include "../Interfaces/SensorTags.h"
 

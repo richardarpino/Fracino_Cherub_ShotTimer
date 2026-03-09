@@ -57,3 +57,14 @@ void SensorDispatcher::triggerResolution(const char* name) {
         it->second->update();
     }
 }
+
+DataCategory SensorDispatcher::getCategory(const char* name) {
+    if (_statusCache.find(name) != _statusCache.end()) return DataCategory::SERVICE;
+    return DataCategory::TELEMETRY; // Default
+}
+
+PhysicalQuantity SensorDispatcher::getQuantity(const char* name) {
+    auto it = _cache.find(name);
+    if (it != _cache.end()) return it->second.quantity;
+    return PhysicalQuantity::NONE;
+}

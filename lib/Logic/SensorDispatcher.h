@@ -1,7 +1,8 @@
 #ifndef SENSOR_DISPATCHER_H
 #define SENSOR_DISPATCHER_H
 
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
+#include "../Registry/IWidgetRegistry.h"
 #include "../Interfaces/HardwareSensor.h"
 #include "../Interfaces/ITagProcessor.h"
 #include "../Interfaces/SensorTags.h"
@@ -48,6 +49,8 @@ public:
 
     void update() override;
     bool hasProcessor(const char* name) override;
+    DataCategory getCategory(const char* name) override;
+    PhysicalQuantity getQuantity(const char* name) override;
 
 protected:
     void triggerResolution(const char* name) override;

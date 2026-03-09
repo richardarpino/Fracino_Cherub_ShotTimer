@@ -3,7 +3,7 @@
 
 #include <lvgl.h>
 #include "IWidget.h"
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 
 /**
  * Base class for Gauge UI logic.

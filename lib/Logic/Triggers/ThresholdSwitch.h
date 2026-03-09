@@ -2,7 +2,7 @@
 #define THRESHOLD_SWITCH_H
 
 #include "../../Interfaces/ISwitch.h"
-#include "../../Interfaces/ISensorRegistry.h"
+#include "../../Registry/ISensorRegistry.h"
 #include "../../Interfaces/SensorTags.h"
 #include <cstring>
 

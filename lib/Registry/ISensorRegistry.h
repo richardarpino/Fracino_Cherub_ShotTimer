@@ -18,6 +18,10 @@ public:
      */
     virtual void update() = 0;
 
+    // Helpers for compatibility checks
+    virtual DataCategory getCategory(const char* name) = 0;
+    virtual PhysicalQuantity getQuantity(const char* name) = 0;
+
     /**
      * Returns the latest cached data for a specific Type-Tag.
      */

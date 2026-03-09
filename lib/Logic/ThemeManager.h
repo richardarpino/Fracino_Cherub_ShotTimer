@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "../Themes/IThemeable.h"
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
 #include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Themes/ITheme.h"

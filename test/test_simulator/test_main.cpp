@@ -26,7 +26,7 @@
 #include "Hardware/BoilerPressure.h"
 #include "Hardware/WeightSensor.h"
 #include "../../lib/Logic/SensorDispatcher.h"
-#include "../../lib/Interfaces/ISensorRegistry.h"
+#include "../../lib/Registry/ISensorRegistry.h"
 #include "../../lib/Interfaces/SensorTags.h"
 #include <functional>
 #include <sys/stat.h>

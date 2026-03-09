@@ -4,6 +4,12 @@
 #include <Arduino.h>
 #include <vector>
 #include <initializer_list>
+#include <cstring>
+
+enum class DataCategory {
+    TELEMETRY,
+    SERVICE
+};
 
 /**
  * Utility for defining lists of tags at compile-time.

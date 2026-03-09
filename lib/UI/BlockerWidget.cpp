@@ -1,5 +1,5 @@
 #include "BlockerWidget.h"
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 
 BlockerWidget::BlockerWidget(const char* tagName) 
     : _container(nullptr), _title_label(nullptr), _status_label(nullptr), _bar(nullptr), _registry(nullptr), _tagName(tagName) {}

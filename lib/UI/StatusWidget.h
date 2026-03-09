@@ -4,7 +4,7 @@
 #include <lvgl.h>
 #include <Arduino.h>
 #include "IWidget.h"
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTypes.h"
 
 /**
