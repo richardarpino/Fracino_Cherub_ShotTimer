@@ -33,6 +33,11 @@ The historical log of major technical decisions.
 *   [ADR 0001: Coordinator-Logic Pattern](adr/0001-coordinator-logic-pattern.md)
 *   [ADR 0002: Native-First Verification](adr/0002-native-first-verification.md)
 *   [ADR 0003: ISensor vs IBlocker Segregation](adr/0003-isensor-vs-iblocker-segregation.md)
+*   [ADR 0007: Widget Registry & Late-Binding Factory](adr/0007-widget-registration-factory.md)
+
+### 📈 [Feature Design History](features/)
+Detailed planning documents for major feature shifts.
+*   [Issue #15: Widget Registry & Late-Binding Architecture](features/issue_15_widget_registry.md)
 
 ---
 

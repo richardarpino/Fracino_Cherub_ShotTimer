@@ -2,17 +2,17 @@
 
 Visualizing BoilerPressure data.
 
-## SensorWidget
+## Sensor
 | Theme | Low (0) | Init (0) | High (3) | Error | Scaled (Init) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| Default | ![low](../1x1/boilerpressure-sensorwidget-default-low.bmp) | ![init](../1x1/boilerpressure-sensorwidget-default-init.bmp) | ![high](../1x1/boilerpressure-sensorwidget-default-high.bmp) | ![error](../1x1/boilerpressure-sensorwidget-default-error.bmp) | ![1x2](../1x2/boilerpressure-sensorwidget-default-init.bmp) ![2x2](../2x2/boilerpressure-sensorwidget-default-init.bmp) |
-| Candy | ![low](../1x1/boilerpressure-sensorwidget-candy-low.bmp) | ![init](../1x1/boilerpressure-sensorwidget-candy-init.bmp) | ![high](../1x1/boilerpressure-sensorwidget-candy-high.bmp) | ![error](../1x1/boilerpressure-sensorwidget-candy-error.bmp) | ![1x2](../1x2/boilerpressure-sensorwidget-candy-init.bmp) ![2x2](../2x2/boilerpressure-sensorwidget-candy-init.bmp) |
-| Christmas | ![low](../1x1/boilerpressure-sensorwidget-christmas-low.bmp) | ![init](../1x1/boilerpressure-sensorwidget-christmas-init.bmp) | ![high](../1x1/boilerpressure-sensorwidget-christmas-high.bmp) | ![error](../1x1/boilerpressure-sensorwidget-christmas-error.bmp) | ![1x2](../1x2/boilerpressure-sensorwidget-christmas-init.bmp) ![2x2](../2x2/boilerpressure-sensorwidget-christmas-init.bmp) |
+| Default | ![low](../1x1/boilerpressure-sensor-default-low.bmp) | ![init](../1x1/boilerpressure-sensor-default-init.bmp) | ![high](../1x1/boilerpressure-sensor-default-high.bmp) | ![error](../1x1/boilerpressure-sensor-default-error.bmp) | ![1x2](../1x2/boilerpressure-sensor-default-init.bmp) ![2x2](../2x2/boilerpressure-sensor-default-init.bmp) |
+| Candy | ![low](../1x1/boilerpressure-sensor-candy-low.bmp) | ![init](../1x1/boilerpressure-sensor-candy-init.bmp) | ![high](../1x1/boilerpressure-sensor-candy-high.bmp) | ![error](../1x1/boilerpressure-sensor-candy-error.bmp) | ![1x2](../1x2/boilerpressure-sensor-candy-init.bmp) ![2x2](../2x2/boilerpressure-sensor-candy-init.bmp) |
+| Christmas | ![low](../1x1/boilerpressure-sensor-christmas-low.bmp) | ![init](../1x1/boilerpressure-sensor-christmas-init.bmp) | ![high](../1x1/boilerpressure-sensor-christmas-high.bmp) | ![error](../1x1/boilerpressure-sensor-christmas-error.bmp) | ![1x2](../1x2/boilerpressure-sensor-christmas-init.bmp) ![2x2](../2x2/boilerpressure-sensor-christmas-init.bmp) |
 
-## GaugeWidget
+## Gauge
 | Theme | Low (0) | Init (0) | High (3) | Error | Scaled (Init) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| Default | ![low](../1x1/boilerpressure-gaugewidget-default-low.bmp) | ![init](../1x1/boilerpressure-gaugewidget-default-init.bmp) | ![high](../1x1/boilerpressure-gaugewidget-default-high.bmp) | ![error](../1x1/boilerpressure-gaugewidget-default-error.bmp) | ![1x2](../1x2/boilerpressure-gaugewidget-default-init.bmp) ![2x2](../2x2/boilerpressure-gaugewidget-default-init.bmp) |
-| Candy | ![low](../1x1/boilerpressure-gaugewidget-candy-low.bmp) | ![init](../1x1/boilerpressure-gaugewidget-candy-init.bmp) | ![high](../1x1/boilerpressure-gaugewidget-candy-high.bmp) | ![error](../1x1/boilerpressure-gaugewidget-candy-error.bmp) | ![1x2](../1x2/boilerpressure-gaugewidget-candy-init.bmp) ![2x2](../2x2/boilerpressure-gaugewidget-candy-init.bmp) |
-| Christmas | ![low](../1x1/boilerpressure-gaugewidget-christmas-low.bmp) | ![init](../1x1/boilerpressure-gaugewidget-christmas-init.bmp) | ![high](../1x1/boilerpressure-gaugewidget-christmas-high.bmp) | ![error](../1x1/boilerpressure-gaugewidget-christmas-error.bmp) | ![1x2](../1x2/boilerpressure-gaugewidget-christmas-init.bmp) ![2x2](../2x2/boilerpressure-gaugewidget-christmas-init.bmp) |
+| Default | ![low](../1x1/boilerpressure-gauge-default-low.bmp) | ![init](../1x1/boilerpressure-gauge-default-init.bmp) | ![high](../1x1/boilerpressure-gauge-default-high.bmp) | ![error](../1x1/boilerpressure-gauge-default-error.bmp) | ![1x2](../1x2/boilerpressure-gauge-default-init.bmp) ![2x2](../2x2/boilerpressure-gauge-default-init.bmp) |
+| Candy | ![low](../1x1/boilerpressure-gauge-candy-low.bmp) | ![init](../1x1/boilerpressure-gauge-candy-init.bmp) | ![high](../1x1/boilerpressure-gauge-candy-high.bmp) | ![error](../1x1/boilerpressure-gauge-candy-error.bmp) | ![1x2](../1x2/boilerpressure-gauge-candy-init.bmp) ![2x2](../2x2/boilerpressure-gauge-candy-init.bmp) |
+| Christmas | ![low](../1x1/boilerpressure-gauge-christmas-low.bmp) | ![init](../1x1/boilerpressure-gauge-christmas-init.bmp) | ![high](../1x1/boilerpressure-gauge-christmas-high.bmp) | ![error](../1x1/boilerpressure-gauge-christmas-error.bmp) | ![1x2](../1x2/boilerpressure-gauge-christmas-init.bmp) ![2x2](../2x2/boilerpressure-gauge-christmas-init.bmp) |
 

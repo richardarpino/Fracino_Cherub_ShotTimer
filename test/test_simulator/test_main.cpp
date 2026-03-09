@@ -21,6 +21,7 @@
 #include "../../lib/UI/BlockerWidget.cpp"
 #include "../../lib/UI/LVGLPainter.cpp"
 #include "../../lib/UI/ScreenLayout.cpp"
+#include "../../lib/Registry/WidgetRegistry.h"
 
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
@@ -61,13 +62,16 @@ struct BlockerInfo {
         bool failed;
     };
     std::vector<State> states;
+    std::function<void(ISensorRegistry*)> publishInit;
 };
 
 struct DocEntry {
     std::string name;
     std::function<SensorMetadata()> getMetadata;
+    const char* widgetTagName;
     std::function<IWidget*()> createSensorWidget;
     std::function<IWidget*()> createGaugeWidget;
+    std::function<void(ISensorRegistry*)> publishInit;
     std::function<void(SensorDispatcher*)> registerFunc;
 };
 
@@ -92,8 +96,10 @@ DocEntry createEntry(std::string name, HardwareSensor* hw = nullptr) {
     return {
         name,
         []() { return Tag::getMetadata(); },
+        Tag::NAME,
         []() { return new SensorWidget<Tag>(); },
         []() { return new GaugeWidget<Tag>(); },
+        [](ISensorRegistry* r) { r->publish<Tag>(Tag::getMetadata().init); },
         [hw](SensorDispatcher* d) { if (hw) d->provide<Tag>(hw); }
     };
 }
@@ -107,7 +113,7 @@ BlockerInfo createServiceEntry(std::string name, IBlocker* b = nullptr) {
         {"Ready", std::string(meta.ready.title), std::string(meta.ready.message), meta.ready.progress, meta.ready.isFailed},
         {"Failed", std::string(meta.failed.title), std::string(meta.failed.message), meta.failed.progress, meta.failed.isFailed}
     };
-    return { name, b, states };
+    return { name, b, states, [](ISensorRegistry* r) { r->publish<Tag>(Tag::getMetadata().pending); } };
 }
 
 void test_generate_examples() {
@@ -132,6 +138,20 @@ void test_generate_examples() {
     };
 
     SensorDispatcher dispatcher;
+    WidgetRegistry widgetRegistry(&dispatcher);
+    
+    // Mirror MachineFactory registrations
+    widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
+    widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        { PhysicalQuantity::PRESSURE, PhysicalQuantity::TEMPERATURE } 
+    ));
+    widgetRegistry.registerWidget<BlockerWidgetTag>(WidgetCompatibility(DataCategory::SERVICE));
+    widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        {}, // No specific quantities
+        { ShotTimeReading::NAME } 
+    ));
 
     std::vector<BlockerInfo> blockers = {
         createServiceEntry<WiFiStatus>("WiFiService", new WiFiService(&dispatcher)),
@@ -165,6 +185,13 @@ void test_generate_examples() {
     HeadlessDriver::init(320, 320);
 
     for (auto& entry : docEntries) {
+        entry.publishInit(&dispatcher);
+    }
+    for (auto& bInfo : blockers) {
+        bInfo.publishInit(&dispatcher);
+    }
+
+    for (auto& entry : docEntries) {
         std::string sensorDir = "lib/Sensors/examples/" + entry.name;
         ensure_dir(sensorDir);
 
@@ -176,12 +203,19 @@ void test_generate_examples() {
         sensorReadme << "Visualizing " << entry.name << " data." << "\n\n";
 
         std::vector<std::pair<std::string, std::function<IWidget*()>>> widgetVariants = {
-            {"SensorWidget", entry.createSensorWidget},
-            {"GaugeWidget", entry.createGaugeWidget}
+            {SensorWidgetTag::NAME, entry.createSensorWidget},
+            {GaugeWidgetTag::NAME, entry.createGaugeWidget}
         };
 
         for (auto& wVariant : widgetVariants) {
-            std::string wName = wVariant.first;
+            const char* wName = wVariant.first.c_str();
+            
+            // Filtering: Only generate if compatible
+            if (!widgetRegistry.isCompatible(wName, entry.widgetTagName)) {
+                std::cout << "Skipping incompatible variant: " << entry.name << " in " << wName << std::endl;
+                continue;
+            }
+
             std::cout << "Generating " << entry.name << " in " << wName << "..." << std::endl;
 
             sensorReadme << "## " << wName << "\n";
@@ -209,14 +243,6 @@ void test_generate_examples() {
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
 
-                    // Registry setup for each snapshot to ensure fresh data
-                    SensorDispatcher tempDispatcher;
-                    entry.registerFunc(&tempDispatcher);
-                    
-                    // Force the "current" reading to the one we want to snapshot
-                    // Since dispatcher::update normally polls, we need to mock the registry behavior here
-                    // Actually, the simplest way is to manually update the widget with state.second
-                    
                     IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, sizes[0].cols, sizes[0].rows);
                     widget->applyTheme(themeInfo.theme);

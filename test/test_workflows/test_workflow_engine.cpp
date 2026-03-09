@@ -12,6 +12,7 @@
 
 #include "../_common/stubs/BlockerStub.h"
 #include "../../lib/Interfaces/ITrigger.h"
+#include "../../lib/Registry/WidgetTags.h"
 
 class MockTrigger : public ITrigger {
 public:
@@ -33,7 +34,7 @@ public:
     void setDone(bool done) { _isDone = done; }
 
     ScreenComposition getComposition() const override {
-        return ScreenComposition(1, 1).add(WidgetType::SENSOR, _name);
+        return ScreenComposition(1, 1).add(SensorWidgetTag::NAME, _name);
     }
     void paint(IPainter& p) override {
         p.draw(getComposition(), nullptr);
@@ -50,7 +51,7 @@ public:
     bool isDone() const override { return !_blocker->isActive(); }
 
     ScreenComposition getComposition() const override {
-        return ScreenComposition(1, 1).add(WidgetType::STATUS, "blocker");
+        return ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, "blocker");
     }
     void paint(IPainter& p) override {
         p.draw(getComposition(), nullptr);

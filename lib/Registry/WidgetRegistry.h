@@ -4,7 +4,7 @@
 #include "IWidgetRegistry.h"
 #include "ISensorRegistry.h"
 
-#include "WidgetRegistry.h"
+#include <cstring>
 #include <algorithm>
 #include <map>
 #include <string>
@@ -39,6 +39,10 @@ public:
         }
 
         // Telemetry: Match by PhysicalQuantity
+        if (comp.quantities.empty() && comp.specificTags.empty()) {
+            return true; // Wildcard for category
+        }
+
         PhysicalQuantity tagQuantity = _sensorRegistry->getQuantity(tagName);
         for (auto q : comp.quantities) {
             if (q == tagQuantity) return true;
