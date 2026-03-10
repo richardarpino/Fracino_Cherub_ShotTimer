@@ -16,11 +16,20 @@
  */
 class GenericScreen : public IScreen {
 public:
-    GenericScreen(const ScreenComposition& composition, class ISensorRegistry* registry, IBlocker* blocker = nullptr)
-        : _composition(composition), _registry(registry), _blocker(blocker), _transitionDelay(-1) {}
+    GenericScreen(const ScreenComposition& composition, class ISensorRegistry* registry, 
+                  const char* name = "Unnamed Screen", 
+                  const char* description = "No description provided",
+                  const char* exitCondition = "No exit condition documented",
+                  IBlocker* blocker = nullptr)
+        : _composition(composition), _registry(registry), _blocker(blocker), _transitionDelay(-1),
+          _name(name), _description(description), _exitCondition(exitCondition) {}
 
     void setTransitionDelay(int delayMs) { _transitionDelay = delayMs; }
     int getTransitionDelay() const override { return _transitionDelay; }
+
+    const char* getName() const override { return _name; }
+    const char* getDescription() const override { return _description; }
+    const char* getExitCondition() const override { return _exitCondition; }
 
     void update() override {
         if (_blocker) _blocker->update();
@@ -44,6 +53,9 @@ private:
     class ISensorRegistry* _registry;
     IBlocker* _blocker;
     int _transitionDelay;
+    const char* _name;
+    const char* _description;
+    const char* _exitCondition;
 };
 
 #endif

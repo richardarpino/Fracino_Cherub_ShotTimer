@@ -12,6 +12,9 @@ class TestScreen : public IScreen {
 public:
     void update() override {}
     bool isDone() const override { return true; }
+    const char* getName() const override { return "Test Screen"; }
+    const char* getDescription() const override { return "Test Description"; }
+    const char* getExitCondition() const override { return "Test Exit"; }
     ScreenComposition getComposition() const override {
         return ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, "TestTag");
     }

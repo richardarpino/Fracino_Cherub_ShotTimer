@@ -28,12 +28,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _workflowEngine(nullptr),
       _startupWorkflow(nullptr),
       _dashboardWorkflow(nullptr),
-      _wifiScreen(nullptr),
-      _otaScreen(nullptr),
-      _warmupScreen(nullptr),
-      _dashScreen(nullptr),
       _shotWorkflow(nullptr),
-      _shotScreen(nullptr),
       _config(config),
       _widgetRegistry(&_dispatcher)
 #if !defined(NATIVE) || defined(SIMULATOR)
@@ -86,12 +81,7 @@ MachineFactory::~MachineFactory() {
     if (_workflowEngine) delete _workflowEngine;
     if (_startupWorkflow) delete _startupWorkflow;
     if (_dashboardWorkflow) delete _dashboardWorkflow;
-    if (_wifiScreen) delete _wifiScreen;
-    if (_otaScreen) delete _otaScreen;
-    if (_warmupScreen) delete _warmupScreen;
-    if (_dashScreen) delete _dashScreen;
     if (_shotWorkflow) delete _shotWorkflow;
-    if (_shotScreen) delete _shotScreen;
 }
 
 OTAService* MachineFactory::createOTA() {
@@ -108,59 +98,18 @@ WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
     return _warmingUpBlocker;
 }
 
+#include "WorkflowFactory.h"
+
 WorkflowEngine* MachineFactory::getWorkflowEngine() {
     if (!_workflowEngine) {
         _workflowEngine = new WorkflowEngine(&_dispatcher, 1500);
 
-        // 1. Startup Sequence (Root)
-        _startupWorkflow = new BasicWorkflow();
-        
-        _wifiScreen = new GenericScreen(
-            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, getWiFiSwitch()->getTagName()),
-            &_dispatcher,
-            getWiFiSwitch()
-        );
-        _otaScreen = new GenericScreen(
-            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, createOTA()->getTagName()),
-            &_dispatcher,
-            createOTA()
-        );
-        _warmupScreen = new GenericScreen(
-            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, getWarmingUpBlocker()->getTagName()),
-            &_dispatcher,
-            getWarmingUpBlocker()
-        );
-        
-        _startupWorkflow->addScreen(_wifiScreen);
-        _startupWorkflow->addScreen(_otaScreen);
-        _startupWorkflow->addScreen(_warmupScreen);
-        
+        _startupWorkflow = WorkflowFactory::createSystemWorkflow(&_dispatcher, getWiFiSwitch(), createOTA(), getWarmingUpBlocker());
+        _dashboardWorkflow = WorkflowFactory::createDashboardWorkflow(&_dispatcher);
+        _shotWorkflow = WorkflowFactory::createShotWorkflow(&_dispatcher);
+
         _workflowEngine->setRootWorkflow(_startupWorkflow);
-
-        // 2. Main Dashboard (Default fallback)
-        _dashboardWorkflow = new BasicWorkflow();
-        _dashScreen = new GenericScreen(
-            ScreenComposition(2, 2)
-                .add(GaugeWidgetTag::NAME, BoilerPressureReading::NAME)
-                .add(SensorWidgetTag::NAME, BoilerTempReading::NAME)
-                .add(SensorWidgetTag::NAME, HeatingCycleReading::NAME)
-                .add(SensorWidgetTag::NAME, LastValidShotReading::NAME),
-            &_dispatcher
-        );
-        _dashboardWorkflow->addScreen(_dashScreen);
-        
         _workflowEngine->setDefaultWorkflow(_dashboardWorkflow);
-
-        // 3. Shot Workflow (Triggered by Pump)
-        _shotWorkflow = new BasicWorkflow();
-        _shotScreen = new GenericScreen(
-            ScreenComposition(2, 1)
-                .add(SensorWidgetTag::NAME, LastValidShotReading::NAME)
-                .add(ShotTimerWidgetTag::NAME, ShotTimeReading::NAME),
-            &_dispatcher
-        );
-        _shotScreen->setTransitionDelay(0);
-        _shotWorkflow->addScreen(_shotScreen);
         _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100);
     }
     return _workflowEngine;

@@ -13,6 +13,8 @@
 #include "../_common/stubs/BlockerStub.h"
 #include "../../lib/Interfaces/ITrigger.h"
 #include "../../lib/Registry/WidgetTags.h"
+#include "../../lib/Factories/WorkflowFactory.h"
+#include "../../lib/Logic/Workflows/GenericScreen.h"
 
 class MockTrigger : public ITrigger {
 public:
@@ -33,6 +35,10 @@ public:
     bool isDone() const override { return _isDone; }
     void setDone(bool done) { _isDone = done; }
 
+    const char* getName() const override { return _name; }
+    const char* getDescription() const override { return "Mock Description"; }
+    const char* getExitCondition() const override { return "Mock Exit"; }
+
     ScreenComposition getComposition() const override {
         return ScreenComposition(1, 1).add(SensorWidgetTag::NAME, _name);
     }
@@ -50,6 +56,10 @@ public:
     void update() override {}
     bool isDone() const override { return !_blocker->isActive(); }
 
+    const char* getName() const override { return "Mock Blocker Screen"; }
+    const char* getDescription() const override { return "Mock Blocker Description"; }
+    const char* getExitCondition() const override { return "Blocker Finished"; }
+
     ScreenComposition getComposition() const override {
         return ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, "blocker");
     }
@@ -62,28 +72,28 @@ private:
 
 void test_workflow_sequential_navigation() {
     BasicWorkflow workflow;
-    MockScreen screen1("Screen 1");
-    MockScreen screen2("Screen 2");
+    MockScreen* screen1 = new MockScreen("Screen 1");
+    MockScreen* screen2 = new MockScreen("Screen 2");
 
-    workflow.addScreen(&screen1);
-    workflow.addScreen(&screen2);
+    workflow.addScreen(screen1);
+    workflow.addScreen(screen2);
 
     // 1. Initial State
-    TEST_ASSERT_EQUAL_PTR(&screen1, workflow.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen1, workflow.getActiveScreen());
 
     // 2. Advance
     workflow.next();
-    TEST_ASSERT_EQUAL_PTR(&screen2, workflow.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen2, workflow.getActiveScreen());
 
     // 3. Boundaries
     workflow.next();
-    TEST_ASSERT_EQUAL_PTR(&screen2, workflow.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen2, workflow.getActiveScreen());
 }
 
 void test_workflow_lifecycle() {
     BasicWorkflow workflow;
-    MockScreen screen1("Screen 1");
-    workflow.addScreen(&screen1);
+    MockScreen* screen1 = new MockScreen("Screen 1");
+    workflow.addScreen(screen1);
 
     TEST_ASSERT_FALSE(workflow.isFinished());
     
@@ -98,26 +108,26 @@ void test_workflow_auto_advance_on_blocker_done() {
 
     BlockerStub blocker1;
     blocker1.setActive(true);
-    MockBlockerScreen screen1(&blocker1);
+    MockBlockerScreen* screen1 = new MockBlockerScreen(&blocker1);
 
     BlockerStub blocker2;
     blocker2.setActive(true);
-    MockBlockerScreen screen2(&blocker2);
+    MockBlockerScreen* screen2 = new MockBlockerScreen(&blocker2);
 
-    startupWorkflow.addScreen(&screen1);
-    startupWorkflow.addScreen(&screen2);
+    startupWorkflow.addScreen(screen1);
+    startupWorkflow.addScreen(screen2);
     engine.setRootWorkflow(&startupWorkflow);
 
     // 1. Initially on screen 1
     engine.update();
-    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen1, engine.getActiveScreen());
 
     // 2. Unblock 1
     blocker1.setActive(false);
     engine.update();
     
     // Should have advanced to screen 2
-    TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen2, engine.getActiveScreen());
 
     // 3. Unblock 2
     blocker2.setActive(false);
@@ -132,17 +142,17 @@ void test_workflow_engine_switching() {
     WorkflowEngine engine(&registry);
 
     BasicWorkflow workflowA;
-    MockScreen screenA("A");
-    workflowA.addScreen(&screenA);
+    MockScreen* screenA = new MockScreen("Screen A");
+    workflowA.addScreen(screenA);
 
     BasicWorkflow workflowB;
-    MockScreen screenB("B");
-    workflowB.addScreen(&screenB);
+    MockScreen* screenB = new MockScreen("Screen B");
+    workflowB.addScreen(screenB);
 
     // Initial Workflow
     engine.setRootWorkflow(&workflowA);
     TEST_ASSERT_EQUAL_PTR(&workflowA, engine.getActiveWorkflow());
-    TEST_ASSERT_EQUAL_PTR(&screenA, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screenA, engine.getActiveScreen());
 
     // Switch via Trigger (Precedence)
     SensorStub triggerStub;
@@ -161,7 +171,7 @@ void test_workflow_engine_switching() {
     mockTrigger.setActive(true);
     engine.update();
     TEST_ASSERT_EQUAL_PTR(&workflowB, engine.getActiveWorkflow());
-    TEST_ASSERT_EQUAL_PTR(&screenB, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screenB, engine.getActiveScreen());
 }
 
 // No includes for real BlockerScreen to avoid UI dependencies in native
@@ -173,12 +183,12 @@ void test_workflow_engine_default_fallback() {
     BasicWorkflow startup;
     BlockerStub blocker;
     blocker.setActive(true);
-    MockBlockerScreen startupScreen(&blocker);
-    startup.addScreen(&startupScreen);
+    MockBlockerScreen* startupScreen = new MockBlockerScreen(&blocker);
+    startup.addScreen(startupScreen);
 
     BasicWorkflow dashboard;
-    MockScreen dashScreen("Dash");
-    dashboard.addScreen(&dashScreen);
+    MockScreen* dashScreen = new MockScreen("Dash");
+    dashboard.addScreen(dashScreen);
 
     engine.setRootWorkflow(&startup);
     engine.setDefaultWorkflow(&dashboard);
@@ -200,20 +210,20 @@ void test_workflow_engine_transition_pause() {
     WorkflowEngine engine(&registry, 1000); // 1s pause
     
     BasicWorkflow rootWf;
-    MockScreen screen1("Screen 1");
-    rootWf.addScreen(&screen1);
+    MockScreen* screen1 = new MockScreen("Screen 1");
+    rootWf.addScreen(screen1);
     engine.setRootWorkflow(&rootWf);
 
     BasicWorkflow triggeredWf;
-    MockScreen screen2("Screen 2");
-    triggeredWf.addScreen(&screen2);
+    MockScreen* screen2 = new MockScreen("Screen 2");
+    triggeredWf.addScreen(screen2);
     
     MockTrigger trigger;
     engine.addTriggerWorkflow(&triggeredWf, &trigger, 100);
 
     setHardwareTime(1000);
     engine.update();
-    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen1, engine.getActiveScreen());
 
     // 1. Activate Trigger
     trigger.setActive(true);
@@ -221,17 +231,17 @@ void test_workflow_engine_transition_pause() {
     
     // Should still see screen 1 visually because transition started
     TEST_ASSERT_EQUAL_PTR(&triggeredWf, engine.getActiveWorkflow());
-    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen1, engine.getActiveScreen());
 
     // 2. Move time forward 500ms (Still in transition)
     addHardwareTime(500);
     engine.update();
-    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen1, engine.getActiveScreen());
 
     // 3. Move time past 1000ms
     addHardwareTime(600);
     engine.update();
-    TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen2, engine.getActiveScreen());
 }
 
 class FastMockScreen : public MockScreen {
@@ -245,20 +255,20 @@ void test_workflow_engine_transition_override() {
     WorkflowEngine engine(&registry, 1000); // 1s global pause
     
     BasicWorkflow rootWf;
-    MockScreen screen1("Screen 1");
-    rootWf.addScreen(&screen1);
+    MockScreen* screen1 = new MockScreen("Screen 1");
+    rootWf.addScreen(screen1);
     engine.setRootWorkflow(&rootWf);
 
     BasicWorkflow triggeredWf;
-    FastMockScreen screen2("Screen 2"); // Returns 0ms delay
-    triggeredWf.addScreen(&screen2);
+    FastMockScreen* screen2 = new FastMockScreen("Screen 2"); // Returns 0ms delay
+    triggeredWf.addScreen(screen2);
     
     MockTrigger trigger;
     engine.addTriggerWorkflow(&triggeredWf, &trigger, 100);
 
     setHardwareTime(1000);
     engine.update();
-    TEST_ASSERT_EQUAL_PTR(&screen1, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen1, engine.getActiveScreen());
 
     // 1. Activate Trigger - Should switch INSTANTLY
     trigger.setActive(true);
@@ -266,13 +276,53 @@ void test_workflow_engine_transition_override() {
     
     // Should see screen 2 immediately because it overrides to 0ms
     TEST_ASSERT_EQUAL_PTR(&triggeredWf, engine.getActiveWorkflow());
-    TEST_ASSERT_EQUAL_PTR(&screen2, engine.getActiveScreen());
+    TEST_ASSERT_EQUAL_PTR(screen2, engine.getActiveScreen());
 }
 
 void test_painter_infrastructure(); // From test_painter.cpp
 void test_blockerscreen_painting(); // From test_painter.cpp
 void test_dashboardscreen_painting(); // From test_painter.cpp
 void test_shotscreen_painting(); // From test_painter.cpp
+
+void test_screen_metadata() {
+    SensorDispatcher registry;
+    ScreenComposition comp(1, 1);
+    
+    GenericScreen screen(
+        comp, 
+        &registry, 
+        "Test Screen", 
+        "A screen for testing metadata", 
+        "Condition Met"
+    );
+
+    TEST_ASSERT_EQUAL_STRING("Test Screen", screen.getName());
+    TEST_ASSERT_EQUAL_STRING("A screen for testing metadata", screen.getDescription());
+    TEST_ASSERT_EQUAL_STRING("Condition Met", screen.getExitCondition());
+}
+
+void test_workflow_metadata() {
+    BasicWorkflow workflow("Test Workflow", "A workflow for testing metadata");
+
+    TEST_ASSERT_EQUAL_STRING("Test Workflow", workflow.getName());
+    TEST_ASSERT_EQUAL_STRING("A workflow for testing metadata", workflow.getDescription());
+}
+
+void test_workflow_factory_assembly() {
+    SensorDispatcher registry;
+    BlockerStub wifi, ota, warmup;
+    
+    IWorkflow* systemWf = WorkflowFactory::createSystemWorkflow(&registry, &wifi, &ota, &warmup);
+    
+    TEST_ASSERT_NOT_NULL(systemWf);
+    TEST_ASSERT_EQUAL_STRING("System Startup", systemWf->getName());
+    
+    // Check screens (WiFi, OTA, Warmup)
+    // We can't easily iterate without adding more interface methods, but we can check if it finishes
+    // For now, metadata is the priority
+    
+    delete systemWf;
+}
 
 int main(int argc, char **argv) {
     UNITY_BEGIN();
@@ -287,5 +337,8 @@ int main(int argc, char **argv) {
     RUN_TEST(test_workflow_engine_default_fallback);
     RUN_TEST(test_workflow_engine_transition_pause);
     RUN_TEST(test_workflow_engine_transition_override);
+    RUN_TEST(test_screen_metadata);
+    RUN_TEST(test_workflow_metadata);
+    RUN_TEST(test_workflow_factory_assembly);
     return UNITY_END();
 }

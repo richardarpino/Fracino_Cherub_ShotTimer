@@ -99,17 +99,9 @@ private:
     WarmingUpProcessor _warmingUpProc;
  
     WorkflowEngine* _workflowEngine;
-    BasicWorkflow* _startupWorkflow;
-    BasicWorkflow* _dashboardWorkflow;
-    
-    IScreen* _wifiScreen;
-    IScreen* _otaScreen;
-    IScreen* _warmupScreen;
-    IScreen* _dashScreen;
-    
-    // Shot Workflow
+    IWorkflow* _startupWorkflow;
+    IWorkflow* _dashboardWorkflow;
     IWorkflow* _shotWorkflow;
-    IScreen* _shotScreen;
 
     MachineConfig _config;
 

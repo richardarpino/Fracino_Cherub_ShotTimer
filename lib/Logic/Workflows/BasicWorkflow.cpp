@@ -1,6 +1,13 @@
 #include "BasicWorkflow.h"
 
-BasicWorkflow::BasicWorkflow() : _currentIndex(0), _isFinished(false) {}
+BasicWorkflow::BasicWorkflow(const char* name, const char* description) 
+    : _currentIndex(0), _isFinished(false), _name(name), _description(description) {}
+
+BasicWorkflow::~BasicWorkflow() {
+    for (auto screen : _screens) {
+        delete screen;
+    }
+}
 
 void BasicWorkflow::addScreen(IScreen* screen) {
     if (screen) {

@@ -14,6 +14,9 @@ public:
     virtual ~IScreen() {}
     virtual void update() = 0;
     virtual bool isDone() const = 0;
+    virtual const char* getName() const = 0;
+    virtual const char* getDescription() const = 0;
+    virtual const char* getExitCondition() const = 0;
     
     // The Manifest: Subclasses describe their UI here
     virtual ScreenComposition getComposition() const = 0;
