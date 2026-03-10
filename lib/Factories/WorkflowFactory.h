@@ -16,7 +16,7 @@ public:
     static IWorkflow* createDashboardWorkflow(ISensorRegistry* registry);
     static IWorkflow* createShotWorkflow(ISensorRegistry* registry);
 
-    // TODO: createAllWorkflows for automated discovery in Iteration 2
+    static std::vector<IWorkflow*> createAllWorkflows(ISensorRegistry* registry, IBlocker* wifi, IBlocker* ota, IBlocker* warmup);
 };
 
 #endif

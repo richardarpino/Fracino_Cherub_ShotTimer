@@ -41,6 +41,8 @@
 #include "../../lib/Logic/Processors/BoilerTemperatureProcessor.h"
 #include "../../lib/Logic/Processors/ShotMonitorProcessor.h"
 #include "../../lib/Logic/Processors/TaredWeightProcessor.h"
+#include "../../lib/Factories/WorkflowFactory.h"
+#include "WorkflowSnapshotter.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -102,6 +104,22 @@ DocEntry createEntry(std::string name, HardwareSensor* hw = nullptr) {
         [](ISensorRegistry* r) { r->publish<Tag>(Tag::getMetadata().init); },
         [hw](SensorDispatcher* d) { if (hw) d->provide<Tag>(hw); }
     };
+}
+
+void seedDispatcherWithInit(SensorDispatcher* dispatcher) {
+    dispatcher->publish<BoilerPressureReading>(BoilerPressureReading::getMetadata().init);
+    dispatcher->publish<BoilerTempReading>(BoilerTempReading::getMetadata().init);
+    dispatcher->publish<ShotTimeReading>(ShotTimeReading::getMetadata().init);
+    dispatcher->publish<LastValidShotReading>(LastValidShotReading::getMetadata().init);
+    dispatcher->publish<WeightReading>(WeightReading::getMetadata().init);
+    dispatcher->publish<TaredWeightReading>(TaredWeightReading::getMetadata().init);
+    dispatcher->publish<HeatingCycleReading>(HeatingCycleReading::getMetadata().init);
+    dispatcher->publish<SystemUptimeReading>(SystemUptimeReading::getMetadata().init);
+    
+    // Seed service initial states
+    dispatcher->publish<WiFiStatus>(WiFiStatus::getMetadata().pending);
+    dispatcher->publish<OTAStatus>(OTAStatus::getMetadata().pending);
+    dispatcher->publish<WarmingUpStatus>(WarmingUpStatus::getMetadata().pending);
 }
 
 template<typename Tag>
@@ -180,9 +198,13 @@ void test_generate_examples() {
         {"2x2", (uint32_t)TFT_HEIGHT / 2, (uint32_t)TFT_WIDTH / 2, 2, 2}
     };
 
-    HeadlessDriver::init(320, 320);
-
-    HeadlessDriver::init(320, 320);
+    HeadlessDriver::init(240, 135);
+    
+    // Ensure the root screen is sized correctly and has no default padding
+    lv_obj_set_size(lv_scr_act(), 240, 135);
+    lv_obj_set_style_pad_all(lv_scr_act(), 0, 0);
+    lv_obj_set_style_border_width(lv_scr_act(), 0, 0);
+    lv_obj_set_style_radius(lv_scr_act(), 0, 0);
 
     for (auto& entry : docEntries) {
         entry.publishInit(&dispatcher);
@@ -242,6 +264,7 @@ void test_generate_examples() {
                     lv_obj_set_style_pad_all(parent, 0, 0);
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
+                    lv_obj_update_layout(parent); // Ensure layout is computed before widget init
 
                     IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, sizes[0].cols, sizes[0].rows);
@@ -272,6 +295,7 @@ void test_generate_examples() {
                     lv_obj_set_style_pad_all(parent, 0, 0);
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
+                    lv_obj_update_layout(parent);
 
                     IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, size.cols, size.rows);
@@ -397,9 +421,54 @@ void test_shot_timer_visualization() {
     std::cout << "Shot timer visualization initialized successfully." << std::endl;
 }
 
+#include "../../lib/Factories/LVGLWidgetFactory.h"
+
+void test_capture_workflow_previews() {
+    HeadlessDriver::init(TFT_HEIGHT, TFT_HEIGHT); // Ensure a square workspace large enough for both orientations
+    SensorDispatcher registry;
+    WidgetRegistry widgetRegistry(&registry);
+    
+    // Register basic widgets for discovery
+    widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
+    widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY, {PhysicalQuantity::PRESSURE, PhysicalQuantity::TEMPERATURE}));
+    widgetRegistry.registerWidget<BlockerWidgetTag>(WidgetCompatibility(DataCategory::SERVICE));
+    widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY, {}, {ShotTimeReading::NAME}));
+
+    LVGLWidgetFactory factory(&widgetRegistry);
+    LVGLPainter painter;
+    DefaultTheme theme;
+    
+    // Create a 240x135 (Landscape) container for the machine previews as requested
+    lv_obj_t* machine_screen = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(machine_screen, 240, 135);
+    lv_obj_set_style_pad_all(machine_screen, 0, 0);
+    lv_obj_set_style_border_width(machine_screen, 0, 0);
+    lv_obj_set_style_radius(machine_screen, 0, 0);
+
+    painter.init(machine_screen, &theme, &factory);
+    
+    // Seed all sensors with 'init' values to prevent 'error' states in previews
+    seedDispatcherWithInit(&registry);
+    
+    // Stubs for Service Workflows
+    WiFiService wifi(&registry);
+    OTAService ota(&registry, "Cherub-Timer");
+    WarmingUpBlocker warmup(&registry);
+
+    std::vector<IWorkflow*> workflows = WorkflowFactory::createAllWorkflows(&registry, &wifi, &ota, &warmup);
+    
+    WorkflowSnapshotter snapshotter(&painter, &registry);
+    
+    for (IWorkflow* wf : workflows) {
+        snapshotter.capture(wf);
+        delete wf;
+    }
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_generate_examples);
     RUN_TEST(test_shot_timer_visualization);
+    RUN_TEST(test_capture_workflow_previews);
     return UNITY_END();
 }

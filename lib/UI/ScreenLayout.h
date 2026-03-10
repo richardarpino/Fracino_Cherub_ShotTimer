@@ -20,6 +20,7 @@ public:
     void addWidget(IWidget* widget);
     void showMessage(const char* text);
     void setRegistry(class ISensorRegistry* registry);
+    lv_obj_t* getGrid() { return _grid; }
 
 private:
     void initializeWidget(IWidget* widget, int slot);

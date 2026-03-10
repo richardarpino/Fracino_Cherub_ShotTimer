@@ -76,3 +76,11 @@ IWorkflow* WorkflowFactory::createShotWorkflow(ISensorRegistry* registry) {
 
     return wf;
 }
+
+std::vector<IWorkflow*> WorkflowFactory::createAllWorkflows(ISensorRegistry* registry, IBlocker* wifi, IBlocker* ota, IBlocker* warmup) {
+    std::vector<IWorkflow*> workflows;
+    workflows.push_back(createSystemWorkflow(registry, wifi, ota, warmup));
+    workflows.push_back(createDashboardWorkflow(registry));
+    workflows.push_back(createShotWorkflow(registry));
+    return workflows;
+}
