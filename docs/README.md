@@ -28,16 +28,17 @@ Specific instructions and requirements for AI Agentic systems contributing to th
 *   Verification Standards
 
 ### 📜 [Architecture Decision Records (ADR)](adr/)
-The historical log of major technical decisions.
-*   [ADR 0000: Hardware Abstraction via IRawSource](adr/0000-hardware-abstraction-irawsource.md)
-*   [ADR 0001: Coordinator-Logic Pattern](adr/0001-coordinator-logic-pattern.md)
-*   [ADR 0002: Native-First Verification](adr/0002-native-first-verification.md)
-*   [ADR 0003: ISensor vs IBlocker Segregation](adr/0003-isensor-vs-iblocker-segregation.md)
-*   [ADR 0007: Widget Registry & Late-Binding Factory](adr/0007-widget-registration-factory.md)
+The historical log of major technical decisions. Check the [ADR Index](adr/README.md) for a full list.
 
 ### 📈 [Feature Design History](features/)
 Detailed planning documents for major feature shifts.
-*   [Issue #15: Widget Registry & Late-Binding Architecture](features/issue_15_widget_registry.md)
+*   [Issue #15: Widget Registration & Late-Binding Factory](features/issue-15-widget-registration-factory.md)
+*   [Issue #16: Automated Workflow Previews](features/issue-16-automated-workflow-previews.md)
+
+### 📸 [UI Galleries](previews/)
+Automated visual documentation of the user experience and component states.
+*   [**Machine Journeys Gallery**](previews/README.md) - Visual walkthroughs of user flows.
+*   [**Sensor & Widget Gallery**](../lib/Sensors/examples/README.md) - Matrix of every sensor vs every theme.
 
 ---
 

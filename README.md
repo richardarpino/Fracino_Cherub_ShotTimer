@@ -46,33 +46,16 @@ For a deep dive into the code structure and how components are linked, see the *
 
 ---
 
-## 🎨 UI Gallery & Automated Documentation
-
-The project includes an automated visual documentation system to ensure UI consistency across themes and sensors.
-
-### 📸 Sensor Gallery (TOC)
-A cross-product of all sensors, widgets, and themes is generated automatically:
-- [**View Documentation Gallery**](lib/Sensors/examples/README.md) - Automated visual documentation driven by **Type-Tag Domain Contracts**.
-
-### ⚙️ How it works
-The UI is built using **LVGL**. To verify visual changes without physical hardware, we use a **Simulator Framework**:
-1. **Snapshots**: Running `pio test -e simulator` executes a specialized test suite (`test_main.cpp`) that uses the LVGL Snapshot extension.
-2. **Matrix Generation**: The test iterates through every sensor, applies every theme, and renders them in every widget type.
-3. **Markdown Sync**: The framework automatically updates the individual README files and BMP images in `lib/Sensors/examples/`, ensuring documentation stays in sync with code.
+### 📸 UI Snapshot Galleries
+The project maintains pixel-perfect visual documentation of all widgets and user journeys. These are captured automatically by the **Simulator Framework** (`test_main.cpp`) to ensure visual fidelity without physical hardware.
+- [**Explore All UI Galleries**](docs/README.md)
 
 ---
-
----
-
 
 ## 📖 Documentation & Thinking of Others
 
-For more in-depth information and the rules of the codebase, please refer to the following:
-
-- **[📜 Developer Standards & Principles](docs/README.md)**: **Mandatory reading** for all contributors. Covers our TDD charter, Coordinator-Logic patterns, and Agentic rules.
-- **[Internal Library Map](lib/README.md)**: A detailed guide to the project's file structure.
-- **[GitHub Wiki](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/wiki)**: Technical deep-dives, hardware schematics, and setup guides.
-- **[🐞 Issue Tracker](https://github.com/richardarpino/Fracino_Cherub_ShotTimer/issues)**: Found a bug or have a feature request? Please open an issue here!
+- **[📜 ADR Index (Architecture Decision Records)](docs/adr/README.md)**: The "Why" behind the "How." A chronological log of every high-impact design choice.
+- **[🧭 Developer Standards & Principles](docs/README.md)**: Mandatory reading covering TDD, Coordinator-Logic patterns, and Agentic rules.
 
 ---
 

@@ -12,6 +12,8 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
+#include "WorkflowSnapshotter.h"
+#include "MarkdownGenerator.h"
 #include "../../lib/Services/WiFiService.cpp"
 #include "../../lib/Services/OTAService.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
@@ -463,6 +465,8 @@ void test_capture_workflow_previews() {
         snapshotter.capture(wf);
         delete wf;
     }
+
+    MarkdownGenerator::generateGalleries(snapshotter.getResults());
 }
 
 int main() {

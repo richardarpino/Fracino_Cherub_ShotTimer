@@ -17,6 +17,17 @@
  */
 class WorkflowSnapshotter {
 public:
+    struct ScreenInfo {
+        std::string name;
+        std::string exitCondition;
+        std::string imagePath;
+    };
+
+    struct WorkflowResult {
+        std::string name;
+        std::vector<ScreenInfo> screens;
+    };
+
     WorkflowSnapshotter(LVGLPainter* painter, ISensorRegistry* registry)
         : _painter(painter), _registry(registry) {}
 
@@ -29,6 +40,9 @@ public:
         mkdir(wfDir.c_str(), 0777);
 
         std::cout << "Capturing Workflow: " << wf->getName() << " -> " << wfDir << std::endl;
+
+        WorkflowResult result;
+        result.name = wf->getName();
 
         int screenIndex = 0;
         while (!wf->isFinished()) {
@@ -48,12 +62,21 @@ public:
 
                 HeadlessDriver::saveSnapshot(_painter->getLayout()->getGrid(), fullPath);
                 
+                result.screens.push_back({
+                    screen->getName(),
+                    screen->getExitCondition(),
+                    filename
+                });
+
                 std::cout << "  [+] Captured Screen: " << screen->getName() << " to " << filename << std::endl;
             }
             wf->next();
             screenIndex++;
         }
+        _results.push_back(result);
     }
+
+    const std::vector<WorkflowResult>& getResults() const { return _results; }
 
 private:
     std::string sanitize(std::string data) {
@@ -69,6 +92,7 @@ private:
 
     LVGLPainter* _painter;
     ISensorRegistry* _registry;
+    std::vector<WorkflowResult> _results;
 };
 
 #endif
