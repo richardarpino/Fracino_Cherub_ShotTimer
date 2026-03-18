@@ -211,4 +211,29 @@ struct BoilerSafetyStatus : public BaseServiceTag {
     }
 };
 
+/**
+ * Centralized Type-Safe Whitelists for the System.
+ * These drive the configuration of both the SensorDispatcher and WidgetRegistry.
+ */
+using AllowedSensors = TagList<
+    SystemUptimeReading,
+    PumpReading,
+    ButtonRightReading,
+    ButtonLeftReading,
+    BoilerPressureReading,
+    WeightReading,
+    HeatingCycleReading,
+    BoilerTempReading,
+    ShotTimeReading,
+    LastValidShotReading,
+    TaredWeightReading
+>;
+
+using AllowedServices = TagList<
+    WiFiStatus,
+    OTAStatus,
+    WarmingUpStatus,
+    BoilerSafetyStatus
+>;
+
 #endif

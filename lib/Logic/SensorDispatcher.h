@@ -60,6 +60,8 @@ public:
     void triggerResolution(const char* name) override;
     DataCategory getCategory(const char* name) override;
     PhysicalQuantity getQuantity(const char* name) override;
+    SensorMetadata getSensorMetadataByName(const char* name) override;
+    ServiceMetadata getServiceMetadataByName(const char* name) override;
 
 protected:
     Reading getReadingByName(const char* name) override;
@@ -67,9 +69,6 @@ protected:
     StatusMessage getStatusByName(const char* name) override;
     void setStatusByName(const char* name, StatusMessage status) override;
     
-    SensorMetadata getSensorMetadataByName(const char* name) override;
-    ServiceMetadata getServiceMetadataByName(const char* name) override;
-
     void storeMetadataInternal(const char* name, SensorMetadata meta) override;
     void storeMetadataInternal(const char* name, ServiceMetadata meta) override;
 

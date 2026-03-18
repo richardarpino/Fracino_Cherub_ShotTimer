@@ -18,6 +18,12 @@ public:
         _widgets[T::NAME] = compatibility;
     }
 
+    template<typename... Sensors, typename... Services>
+    void applyTypeWhitelists(TagList<Sensors...>, TagList<Services...>) {
+        _allowedSensors = { Sensors::NAME... };
+        _allowedServices = { Services::NAME... };
+    }
+
     bool isCompatible(const char* widgetName, const char* tagName) override {
         // Step 0: Allowed Tags Whitelist (Architectural Guard)
         if (!_allowedSensors.empty() || !_allowedServices.empty()) {

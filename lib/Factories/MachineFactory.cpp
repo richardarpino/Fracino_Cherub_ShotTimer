@@ -52,55 +52,21 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     ));
 
     // Seed whitelists for Whitelist-First architecture
-    _widgetRegistry.seedAllowedTags(
-        { 
-            SystemUptimeReading::NAME, 
-            PumpReading::NAME, 
-            ButtonRightReading::NAME, 
-            ButtonLeftReading::NAME, 
-            BoilerPressureReading::NAME,
-            WeightReading::NAME,
-            HeatingCycleReading::NAME,
-            BoilerTempReading::NAME,
-            ShotTimeReading::NAME,
-            LastValidShotReading::NAME,
-            TaredWeightReading::NAME
-        },
-        { 
-            WarmingUpStatus::NAME, 
-            BoilerSafetyStatus::NAME,
-            "WiFi", // OTAService/WiFi tags
-            "OTA"
-        }
-    );
+    _widgetRegistry.applyTypeWhitelists(AllowedSensors{}, AllowedServices{});
 
     // Register Hardware Sensors for central polling
     _dispatcher.provide<SystemUptimeReading>(&_uptimeSensor);
-    _dispatcher.seed<SystemUptimeReading>();
-    
     _dispatcher.provide<PumpReading>(&_pumpSensor);
-    _dispatcher.seed<PumpReading>();
-    
     _dispatcher.provide<ButtonRightReading>(&_buttonRightSensor);
-    _dispatcher.seed<ButtonRightReading>();
-    
     _dispatcher.provide<ButtonLeftReading>(&_buttonLeftSensor);
-    _dispatcher.seed<ButtonLeftReading>();
-    
     _dispatcher.provide<BoilerPressureReading>(&_boilerPressure);
-    _dispatcher.seed<BoilerPressureReading>();
-    
     _dispatcher.provide<WeightReading>(&_weightSensor);
-    _dispatcher.seed<WeightReading>();
 
-    // Seed processors too
-    _dispatcher.seed<HeatingCycleReading>();
-    _dispatcher.seed<WarmingUpStatus>();
-    _dispatcher.seed<BoilerTempReading>();
-    _dispatcher.seed<ShotTimeReading>();
-    _dispatcher.seed<BoilerSafetyStatus>();
-    _dispatcher.seed<LastValidShotReading>();
-    _dispatcher.seed<TaredWeightReading>();
+    // Apply global whitelists to the Dispatcher (Auto-seeds all metadata)
+    _dispatcher.applyTypeWhitelists(AllowedSensors{});
+    _dispatcher.applyTypeWhitelists(AllowedServices{});
+
+    // Attach Reactive Processors
 
     // Attach Reactive Processors
     _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);

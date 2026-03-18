@@ -13,6 +13,15 @@ public:
     virtual ~ISensorRegistry() = default;
 
     /**
+     * Seeds the registry with a list of Allowed Tag Types.
+     * Pre-populates metadata for all tags in the TagList.
+     */
+    template<typename... T>
+    void applyTypeWhitelists(TagList<T...>) {
+        (storeMetadataInternal(T::NAME, T::getMetadata()), ...);
+    }
+
+    /**
      * Updates all registered sensors and caches their latest readings.
      * Should be called once per main loop.
      */
