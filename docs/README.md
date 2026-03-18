@@ -34,6 +34,7 @@ The historical log of major technical decisions. Check the [ADR Index](adr/READM
 Detailed planning documents for major feature shifts.
 *   [Issue #15: Widget Registration & Late-Binding Factory](features/issue-15-widget-registration-factory.md)
 *   [Issue #16: Automated Workflow Previews](features/issue-16-automated-workflow-previews.md)
+*   [Issue #18: Serial Logging & Boot Diagnostics](features/issue-18-serial-logging-diagnostics.md)
 
 ### 📸 [UI Galleries](previews/)
 Automated visual documentation of the user experience and component states.
