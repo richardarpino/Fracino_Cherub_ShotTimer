@@ -27,6 +27,10 @@ private:
     
     lv_obj_t* _grid;
     std::vector<IWidget*> _widgets;
+    lv_coord_t _col_dsc[10];
+    lv_coord_t _row_dsc[10];
+    bool _initialized = false;
+    lv_obj_t* _parent = nullptr;
     class ISensorRegistry* _registry;
     ITheme* _currentTheme;
     uint8_t _cols;

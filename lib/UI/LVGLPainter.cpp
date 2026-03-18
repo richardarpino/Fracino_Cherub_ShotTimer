@@ -56,6 +56,8 @@ uint32_t LVGLPainter::calculateHash(const ScreenComposition& comp) {
 }
 
 void LVGLPainter::draw(const ScreenComposition& composition, ISensorRegistry* registry) {
+    if (!_layout || !registry) return;
+
     _layout->setRegistry(registry);
     uint32_t newHash = calculateHash(composition);
     
@@ -64,8 +66,8 @@ void LVGLPainter::draw(const ScreenComposition& composition, ISensorRegistry* re
         _layout->reset();
         _layout->setDimensions(composition.cols, composition.rows);
         
-        for (const auto& w : composition.widgets) {
-            if (_widgetFactory) {
+        if (_widgetFactory) {
+            for (const auto& w : composition.widgets) {
                 IWidget* widget = _widgetFactory->createWidget(w.widgetName, w.tag, registry);
                 if (widget) {
                     _layout->addWidget(widget);
