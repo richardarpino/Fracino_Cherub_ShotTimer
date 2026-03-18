@@ -20,7 +20,9 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _boilerTempProc(&_dispatcher),
       _shotMonitorProc(&_dispatcher, config.debounceMs / 1000.0f),
       _safetyProc(&_dispatcher),
-      _wifi(nullptr),
+      _wifiService(nullptr),
+      _wifiProc(&_dispatcher),
+      _wifiBlocker(&_dispatcher),
       _ota(nullptr),
       _warmingUpBlocker(nullptr),
       _heatingCycleProc(&_dispatcher),
@@ -72,6 +74,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
     _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
     _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
+    _dispatcher.attachProcessor<WiFiRawReading>(&_wifiProc);
     _dispatcher.attachProcessor<BoilerSafetyStatus>(&_safetyProc);
 
 #if !defined(NATIVE) || defined(SIMULATOR)
@@ -105,15 +108,15 @@ IWidgetFactory* MachineFactory::getWidgetFactory() {
 #endif
 }
 
-WiFiService* MachineFactory::getWiFiSwitch() {
-    if (!_wifi) {
-        _wifi = new WiFiService(&_dispatcher, _config.wifiSsid, _config.wifiPassword);
+IBlocker* MachineFactory::getWiFiSwitch() {
+    if (!_wifiService) {
+        _wifiService = new WiFiService(&_dispatcher, _config.wifiSsid, _config.wifiPassword);
     }
-    return _wifi;
+    return &_wifiBlocker;
 }
 
 MachineFactory::~MachineFactory() {
-    if (_wifi) delete _wifi;
+    if (_wifiService) delete _wifiService;
     if (_ota) delete _ota;
     if (_warmingUpBlocker) delete _warmingUpBlocker;
     if (_workflowEngine) delete _workflowEngine;
@@ -122,14 +125,14 @@ MachineFactory::~MachineFactory() {
     if (_shotWorkflow) delete _shotWorkflow;
 }
 
-OTAService* MachineFactory::createOTA() {
+IBlocker* MachineFactory::createOTA() {
     if (!_ota) {
         _ota = new OTAService(&_dispatcher, _config.otaHostname);
     }
     return _ota;
 }
 
-WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
+IBlocker* MachineFactory::getWarmingUpBlocker() {
     if (!_warmingUpBlocker) {
         _warmingUpBlocker = new WarmingUpBlocker(&_dispatcher);
     }

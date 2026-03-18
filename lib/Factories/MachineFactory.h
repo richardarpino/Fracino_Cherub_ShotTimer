@@ -20,6 +20,8 @@
 #include "../Logic/Processors/HeatingCycleProcessor.h"
 #include "../Logic/Processors/WarmingUpProcessor.h"
 #include "../Services/WarmingUpBlocker.h"
+#include "../Logic/Processors/WiFiProcessor.h"
+#include "../Services/WiFiBlocker.h"
 #include "../Logic/SensorDispatcher.h"
 #include "../Interfaces/SensorTags.h"
 #include "../Themes/DefaultTheme.h"
@@ -53,10 +55,10 @@ public:
 
     // ISwitchProvider
     ISwitch* getPump() override { return &_pumpRegSw; }
-    WiFiService* getWiFiSwitch() override;
-    OTAService* getOTASwitch() override { return _ota; }
-    OTAService* createOTA() override;
-    WarmingUpBlocker* getWarmingUpBlocker() override;
+    IBlocker* getWiFiSwitch() override;
+    IBlocker* getOTASwitch() override { return _ota; }
+    IBlocker* createOTA() override;
+    IBlocker* getWarmingUpBlocker() override;
     ISwitch* getButtonRight() override { return &_buttonRightRegSw; }
     ISwitch* getButtonLeft() override { return &_buttonLeftRegSw; }
 
@@ -96,7 +98,9 @@ private:
     ShotMonitorProcessor _shotMonitorProc;
     BoilerSafetyProcessor _safetyProc;
 
-    WiFiService* _wifi;
+    WiFiService* _wifiService;
+    WiFiProcessor _wifiProc;
+    WiFiBlocker _wifiBlocker;
     OTAService* _ota;
     WarmingUpBlocker* _warmingUpBlocker;
     SystemTimeSensor _uptimeSensor;

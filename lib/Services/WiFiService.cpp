@@ -1,11 +1,13 @@
 #include "WiFiService.h"
 
+#ifdef ARDUINO
+#include <WiFi.h>
+#else
+#include "../../../test/_common/stubs/WiFi.h"
+#endif
+
 WiFiService::WiFiService(ISensorRegistry* registry, const char* ssid, const char* password) 
     : _ssid(ssid), _password(password), _isBegun(ssid != nullptr), _isActive(false), _justStarted(false), _justStopped(false), _lastActive(false), _registry(registry) {
-    // Note: Registry storing wifi state as a logical reading
-    if (_registry) {
-        _registry->publish<WiFiStatus>(StatusMessage("WiFi", "DISCONNECTED", -1.0f, false));
-    }
     
     if (_isBegun) {
 #ifdef VERBOSE_BOOT
@@ -14,6 +16,12 @@ WiFiService::WiFiService(ISensorRegistry* registry, const char* ssid, const char
 #endif
         WiFi.disconnect(true);
         WiFi.mode(WIFI_STA);
+        
+        if (_registry) {
+            // Initial raw state
+            _registry->publish<WiFiRawReading>(StatusMessage("WiFi", "DISCONNECTED", (float)WL_DISCONNECTED, false));
+        }
+
         delay(100);
         WiFi.begin(ssid, password);
     }
@@ -28,23 +36,8 @@ void WiFiService::update() {
     _lastActive = _isActive;
 
     if (_registry) {
-        _registry->publish<WiFiStatus>(getStatus());
+        // Publish raw status and IP for the processor to consume
+        const char* ip = _isActive ? WiFi.localIP().toString().c_str() : "";
+        _registry->publish<WiFiRawReading>(StatusMessage("RAW", ip, (float)status, false));
     }
-}
-
-StatusMessage WiFiService::getStatus() const {
-    wl_status_t status = WiFi.status();
-    const char* title = "WiFi";
-    const char* msg = "CONNECTING...";
-    bool failed = (status == WL_CONNECT_FAILED);
-    float progress = _isActive ? 100.0f : -1.0f;
-
-    if (_isActive) {
-        snprintf(_statusBuffer, sizeof(_statusBuffer), "CONNECTED: %s", WiFi.localIP().toString().c_str());
-        msg = _statusBuffer;
-    } else if (failed) {
-        msg = "CONNECTION FAILED";
-    }
-
-    return StatusMessage(title, msg, progress, failed);
 }

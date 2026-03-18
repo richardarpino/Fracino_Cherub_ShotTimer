@@ -63,14 +63,14 @@ void loop() {
   lv_timer_handler();
   delay(5);
 
-  // 1. Hardware Poll Pass
-  WiFiService* wifi = factory->getWiFiSwitch();
+  // Update network services and blockers
+  IBlocker* wifi = factory->getWiFiSwitch();
   if (wifi) wifi->update();
   
-  OTAService* ota = factory->getOTASwitch();
+  IBlocker* ota = factory->getOTASwitch();
   if (ota) ota->update();
 
-  WarmingUpBlocker* warmer = factory->getWarmingUpBlocker();
+  IBlocker* warmer = factory->getWarmingUpBlocker();
   if (warmer) warmer->update();
 
   // 2. Registry Pass - Triggers all reactive processors

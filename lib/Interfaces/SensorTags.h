@@ -34,7 +34,9 @@ struct PumpReading;
 struct ButtonRightReading;
 struct ButtonLeftReading;
 struct WiFiStatus;
+struct WiFiRawReading;
 struct OTAStatus;
+struct OTARawReading;
 struct WarmingUpStatus;
 struct BoilerSafetyStatus;
 struct SystemUptimeReading;
@@ -211,6 +213,30 @@ struct BoilerSafetyStatus : public BaseServiceTag {
     }
 };
 
+struct WiFiRawReading : public BaseServiceTag {
+    static constexpr const char* NAME = "WiFiRaw";
+    static ServiceMetadata getMetadata() {
+        return ServiceMetadata(
+            StatusMessage("WiFi", "RAW", 0.0f, false),
+            StatusMessage("WiFi", "RAW", 0.0f, false),
+            StatusMessage("WiFi", "RAW", 0.0f, false),
+            StatusMessage("WiFi", "RAW", 0.0f, false)
+        );
+    }
+};
+
+struct OTARawReading : public BaseServiceTag {
+    static constexpr const char* NAME = "OTARaw";
+    static ServiceMetadata getMetadata() {
+        return ServiceMetadata(
+            StatusMessage("OTA", "RAW", 0.0f, false),
+            StatusMessage("OTA", "RAW", 0.0f, false),
+            StatusMessage("OTA", "RAW", 0.0f, false),
+            StatusMessage("OTA", "RAW", 0.0f, false)
+        );
+    }
+};
+
 /**
  * Centralized Type-Safe Whitelists for the System.
  * These drive the configuration of both the SensorDispatcher and WidgetRegistry.
@@ -231,7 +257,9 @@ using AllowedSensors = TagList<
 
 using AllowedServices = TagList<
     WiFiStatus,
+    WiFiRawReading,
     OTAStatus,
+    OTARawReading,
     WarmingUpStatus,
     BoilerSafetyStatus
 >;

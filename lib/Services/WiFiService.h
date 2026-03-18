@@ -12,19 +12,18 @@
 #include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
 
-class WiFiService : public IBlocker {
+class WiFiService {
 public:
     WiFiService(ISensorRegistry* registry, const char* ssid = nullptr, const char* password = nullptr);
     
-    // IBlocker Implementation
-    StatusMessage getStatus() const override;
-    const char* getTagName() const override { return WiFiStatus::NAME; }
+    // Physical status reporting
+    const char* getTagName() const { return WiFiRawReading::NAME; }
 
     // ISwitch Implementation
-    void update() override;
-    bool isActive() const override { return _isActive; }
-    bool justStarted() const override { return _justStarted; }
-    bool justStopped() const override { return _justStopped; }
+    void update();
+    bool isActive() const { return _isActive; }
+    bool justStarted() const { return _justStarted; }
+    bool justStopped() const { return _justStopped; }
 
 private:
     ISensorRegistry* _registry;
