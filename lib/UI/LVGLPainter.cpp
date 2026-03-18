@@ -15,6 +15,9 @@ LVGLPainter::~LVGLPainter() {
 }
 
 void LVGLPainter::init(lv_obj_t* parent, ITheme* initialTheme, IWidgetFactory* widgetFactory) {
+#ifdef VERBOSE_BOOT
+    Serial.println("[BOOT] 010: Initializing LVGL Painter...");
+#endif
     _parent = parent;
     _theme = initialTheme;
     _widgetFactory = widgetFactory;

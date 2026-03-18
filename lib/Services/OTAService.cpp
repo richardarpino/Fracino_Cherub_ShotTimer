@@ -6,14 +6,24 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
         _registry->publish<OTAStatus>(StatusMessage("OTA", "OFF", 100.0f, false));
     }
 #ifdef ARDUINO
+#ifdef VERBOSE_BOOT
+    Serial.print("[BOOT] Starting OTA: ");
+    Serial.println(_hostname);
+#endif
     ArduinoOTA.setHostname(_hostname);
     
     ArduinoOTA.onStart([this]() {
+#ifdef VERBOSE_BOOT
+        Serial.println("[OTA] Update Started");
+#endif
         _isError = false;
         _progress = 0;
     });
     
     ArduinoOTA.onEnd([this]() {
+#ifdef VERBOSE_BOOT
+        Serial.println("[OTA] Update Finished");
+#endif
         _progress = 100.0f;
     });
     
@@ -24,6 +34,10 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
     });
     
     ArduinoOTA.onError([this](ota_error_t error) {
+#ifdef VERBOSE_BOOT
+        Serial.print("[OTA] Error: ");
+        Serial.println(error);
+#endif
         _isError = true;
         _progress = 0;
     });

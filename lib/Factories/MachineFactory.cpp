@@ -35,9 +35,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       , _lvglFactory(&_widgetRegistry) 
 #endif
 {
-    
-    _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
-
+    BOOT_LOG("001", "Registering Widgets...");
     // Register Widgets with Registry
     _widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
     _widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(
@@ -51,9 +49,11 @@ MachineFactory::MachineFactory(const MachineConfig& config)
         { ShotTimeReading::NAME } 
     ));
 
+    BOOT_LOG("002", "Seeding Whitelists...");
     // Seed whitelists for Whitelist-First architecture
     _widgetRegistry.applyTypeWhitelists(AllowedSensors{}, AllowedServices{});
 
+    BOOT_LOG("003", "Wiring Hardware Sensors...");
     // Register Hardware Sensors for central polling
     _dispatcher.provide<SystemUptimeReading>(&_uptimeSensor);
     _dispatcher.provide<PumpReading>(&_pumpSensor);
@@ -66,8 +66,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.applyTypeWhitelists(AllowedSensors{});
     _dispatcher.applyTypeWhitelists(AllowedServices{});
 
-    // Attach Reactive Processors
-
+    BOOT_LOG("004", "Attaching Reactive Processors...");
     // Attach Reactive Processors
     _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
@@ -76,8 +75,20 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.attachProcessor<BoilerSafetyStatus>(&_safetyProc);
 
 #if !defined(NATIVE) || defined(SIMULATOR)
+    BOOT_LOG("005", "Initializing UI Widget Factory...");
     // Register Widget Creators for Late-Binding
     LVGLWidgetFactory::registerStandardCreators(_lvglFactory);
+#endif
+}
+
+void MachineFactory::BOOT_LOG(const char* code, const char* msg) {
+#ifndef NATIVE
+    if (_config.verboseBoot) {
+        Serial.print("[BOOT] ");
+        Serial.print(code);
+        Serial.print(": ");
+        Serial.println(msg);
+    }
 #endif
 }
 

@@ -11,59 +11,70 @@ MachineConfig config = {
   .otaHostname = OTA_HOSTNAME,
   .wifiSsid = WIFI_SSID,
   .wifiPassword = WIFI_PASSWORD,
-  .debounceMs = 30
+  .debounceMs = 30,
+#ifdef VERBOSE_BOOT
+  .verboseBoot = (VERBOSE_BOOT == 1)
+#else
+  .verboseBoot = false
+#endif
 };
 
-MachineFactory factory(config);
+MachineFactory* factory = nullptr;
 
 #include "LVGLPainter.h"
 #include "../lib/Factories/LVGLWidgetFactory.h"
 
 // --- Coordination & Logic ---
 ShotDisplay shotDisplay;
-ThemeManager themeManager(&shotDisplay, factory.getRegistry());
+ThemeManager* themeManager = nullptr;
 WorkflowEngine* workflowEngine = nullptr;
 ScreenLayout* lastLayout = nullptr;
 LVGLPainter lvglPainter;
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("--- BOOTING FRACINO CHERUB SHOT TIMER ---");
+
+  factory = new MachineFactory(config);
 
   // Hardware Pins managed by Factory
   pinMode(backlightPin, OUTPUT);
   digitalWrite(backlightPin, HIGH);
  
-  for (ITheme* theme : factory.getThemes()) {
-      themeManager.addTheme(theme);
+  themeManager = new ThemeManager(&shotDisplay, factory->getRegistry());
+  for (ITheme* theme : factory->getThemes()) {
+      themeManager->addTheme(theme);
   }
  
   shotDisplay.init();
   Serial.println("Display Initialized");
   
   // Get the Workflow Engine (wires up Startup and Dashboard)
-  workflowEngine = factory.getWorkflowEngine();
+  workflowEngine = factory->getWorkflowEngine();
   Serial.println("Workflow Engine Ready");
   
   // Initialize painter with widget factory from the machine factory
-  lvglPainter.init(lv_scr_act(), nullptr, factory.getWidgetFactory()); 
+  lvglPainter.init(lv_scr_act(), nullptr, factory->getWidgetFactory()); 
 }
 
 void loop() {
+  if (!factory) return; // Safety guard
+
   lv_timer_handler();
   delay(5);
 
   // 1. Hardware Poll Pass
-  WiFiService* wifi = factory.getWiFiSwitch();
+  WiFiService* wifi = factory->getWiFiSwitch();
   if (wifi) wifi->update();
   
-  OTAService* ota = factory.getOTASwitch();
+  OTAService* ota = factory->getOTASwitch();
   if (ota) ota->update();
 
-  WarmingUpBlocker* warmer = factory.getWarmingUpBlocker();
+  WarmingUpBlocker* warmer = factory->getWarmingUpBlocker();
   if (warmer) warmer->update();
 
   // 2. Registry Pass - Triggers all reactive processors
-  factory.getRegistry()->update();
+  factory->getRegistry()->update();
 
   // 3. Workflow & Logic Coordination
   if (workflowEngine) {
@@ -86,7 +97,9 @@ void loop() {
     workflowEngine->update();
   }
 
-  themeManager.update();
+  if (themeManager) {
+    themeManager->update();
+  }
 
   // 4. UI Pass - RENDER STATE
   shotDisplay.update();

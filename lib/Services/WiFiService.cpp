@@ -8,6 +8,10 @@ WiFiService::WiFiService(ISensorRegistry* registry, const char* ssid, const char
     }
     
     if (_isBegun) {
+#ifdef VERBOSE_BOOT
+        Serial.print("[BOOT] Starting WiFi: ");
+        Serial.println(ssid);
+#endif
         WiFi.disconnect(true);
         WiFi.mode(WIFI_STA);
         delay(100);

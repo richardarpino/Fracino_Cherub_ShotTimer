@@ -16,6 +16,7 @@ struct MachineConfig {
     const char* wifiSsid;
     const char* wifiPassword;
     unsigned long debounceMs;
+    bool verboseBoot;
 };
 
 class ITheme;

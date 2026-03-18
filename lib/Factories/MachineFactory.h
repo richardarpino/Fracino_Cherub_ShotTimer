@@ -65,6 +65,9 @@ public:
     WorkflowEngine* getWorkflowEngine();
 
 private:
+    void BOOT_LOG(const char* code, const char* msg);
+
+private:
     SensorDispatcher _dispatcher;
 
     // Raw Sources

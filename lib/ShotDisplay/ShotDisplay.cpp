@@ -4,6 +4,9 @@ ShotDisplay::ShotDisplay()
     : _tft(TFT_eSPI()), _currentTheme(nullptr), _externalLayout(nullptr) {}
 
 void ShotDisplay::init() {
+#ifdef VERBOSE_BOOT
+    Serial.println("[BOOT] 006: Initializing TFT...");
+#endif
     _tft.init();
     _tft.setRotation(1); // Landscape
     _tft.setSwapBytes(false); // LVGL handles byte swapping via LV_COLOR_16_SWAP
@@ -14,13 +17,22 @@ void ShotDisplay::init() {
         _tft.fillScreen(TFT_BLACK);
     }
  
+#ifdef VERBOSE_BOOT
+    Serial.println("[BOOT] 007: Initializing LVGL...");
+#endif
     // LVGL Initialization
     lv_init();
  
+#ifdef VERBOSE_BOOT
+    Serial.println("[BOOT] 008: Allocating Display Buffer...");
+#endif
     // Buffer Allocation
     _buf = (lv_color_t*) malloc(BUF_SIZE * sizeof(lv_color_t));
     lv_disp_draw_buf_init(&_draw_buf, _buf, NULL, BUF_SIZE);
  
+#ifdef VERBOSE_BOOT
+    Serial.println("[BOOT] 009: Registering Display Driver...");
+#endif
     // Driver Registration
     lv_disp_drv_init(&_disp_drv);
     _disp_drv.hor_res = SCREEN_WIDTH;
