@@ -5,7 +5,15 @@ GaugeWidgetBase::GaugeWidgetBase()
     : _container(nullptr), _meter(nullptr), _scale(nullptr), _indic(nullptr), _unit_label(nullptr) {}
 
 lv_obj_t* GaugeWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
-    lv_obj_update_layout(parent);
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _meter = nullptr;
+    _scale = nullptr;
+    _indic = nullptr;
+    _unit_label = nullptr;
+
     lv_coord_t parent_w = lv_obj_get_width(parent);
     lv_coord_t parent_h = lv_obj_get_height(parent);
     
@@ -81,7 +89,7 @@ void GaugeWidgetBase::setMetadata(const SensorMetadata& meta) {
 }
 
 void GaugeWidgetBase::update(const Reading& reading) {
-    if (!_meter || !_indic) return;
+    if (!_meter || !_indic || !_scale) return;
     lv_meter_set_indicator_value(_meter, _indic, (int32_t)(reading.value * 10));
     if (_unit_label) {
         lv_label_set_text(_unit_label, reading.unit);

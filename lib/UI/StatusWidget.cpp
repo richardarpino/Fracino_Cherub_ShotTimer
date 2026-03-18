@@ -5,6 +5,12 @@ StatusWidgetBase::StatusWidgetBase()
     : _container(nullptr), _label(nullptr), _messageTimeout(0) {}
 
 lv_obj_t* StatusWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _label = nullptr;
+
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_pad_all(_container, 2, 0);

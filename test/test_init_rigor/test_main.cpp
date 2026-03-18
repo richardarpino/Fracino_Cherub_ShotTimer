@@ -86,10 +86,42 @@ void test_dangling_grid_crashes() {
     std::cout << "Step 5: Test Finished Successfully" << std::endl;
 }
 
+void test_factory_late_binding_safety() {
+    std::cout << "Testing Late-Binding Safety (RED Phase)..." << std::endl;
+    MockRegistry registry;
+    LVGLWidgetFactory factory; // No registry, empty map (eventually)
+    
+    // In the current hardcoded version, this will UNEXPECTEDLY return a widget.
+    // In the new Map-Based version, this should correctly return NULL until registered.
+    IWidget* widget = factory.createWidget(GaugeWidgetTag::NAME, "test_tag", &registry);
+    
+    std::cout << "Checking if widget was created (should be NULL for a fresh factory)..." << std::endl;
+    TEST_ASSERT_NULL(widget); 
+}
+
+void test_factory_registration_works() {
+    std::cout << "Testing Factory Registration (GREEN Phase)..." << std::endl;
+    MockRegistry registry;
+    LVGLWidgetFactory factory;
+    
+    // Register a mock creator
+    factory.registerCreator("MockWidget", [](const char* tag, ISensorRegistry* reg) {
+        return new SensorWidget<void>(tag, reg); 
+    });
+    
+    IWidget* widget = factory.createWidget("MockWidget", "test_tag", &registry);
+    
+    std::cout << "Checking if MockWidget was created..." << std::endl;
+    TEST_ASSERT_NOT_NULL(widget);
+    delete widget;
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_layout_init_with_null_parent_crashes);
     RUN_TEST(test_unsafe_static_cast_robustness);
     RUN_TEST(test_dangling_grid_crashes);
+    RUN_TEST(test_factory_late_binding_safety);
+    RUN_TEST(test_factory_registration_works);
     return UNITY_END();
 }

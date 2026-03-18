@@ -437,6 +437,7 @@ void test_capture_workflow_previews() {
     widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY, {}, {ShotTimeReading::NAME}));
 
     LVGLWidgetFactory factory(&widgetRegistry);
+    LVGLWidgetFactory::registerStandardCreators(factory);
     LVGLPainter painter;
     DefaultTheme theme;
     

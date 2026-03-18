@@ -5,6 +5,14 @@ BlockerWidget::BlockerWidget(const char* tagName)
     : _container(nullptr), _title_label(nullptr), _status_label(nullptr), _bar(nullptr), _registry(nullptr), _tagName(tagName) {}
 
 lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _title_label = nullptr;
+    _status_label = nullptr;
+    _bar = nullptr;
+
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_pad_all(_container, 10, 0);

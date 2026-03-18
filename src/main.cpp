@@ -25,12 +25,12 @@ ThemeManager themeManager(&shotDisplay, factory.getRegistry());
 WorkflowEngine* workflowEngine = nullptr;
 ScreenLayout* lastLayout = nullptr;
 LVGLPainter lvglPainter;
-LVGLWidgetFactory widgetFactory;
 
 void setup() {
   Serial.begin(115200);
 
   // Hardware Pins managed by Factory
+  pinMode(backlightPin, OUTPUT);
   digitalWrite(backlightPin, HIGH);
  
   for (ITheme* theme : factory.getThemes()) {
@@ -44,8 +44,8 @@ void setup() {
   workflowEngine = factory.getWorkflowEngine();
   Serial.println("Workflow Engine Ready");
   
-  // Initialize painter with widget factory
-  lvglPainter.init(lv_scr_act(), nullptr, &widgetFactory); 
+  // Initialize painter with widget factory from the machine factory
+  lvglPainter.init(lv_scr_act(), nullptr, factory.getWidgetFactory()); 
 }
 
 void loop() {

@@ -48,6 +48,7 @@ public:
     // ISensorProvider
     ISensorRegistry* getRegistry() override { return &_dispatcher; }
     IWidgetRegistry* getWidgetRegistry() { return &_widgetRegistry; }
+    IWidgetFactory* getWidgetFactory();
 
     // ISwitchProvider
     ISwitch* getPump() override { return &_pumpRegSw; }

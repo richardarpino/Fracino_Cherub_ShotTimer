@@ -10,6 +10,13 @@ SensorWidgetBase::SensorWidgetBase()
     : _container(nullptr), _value_label(nullptr), _unit_label(nullptr) {}
 
 lv_obj_t* SensorWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _value_label = nullptr;
+    _unit_label = nullptr;
+
     // Container
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));

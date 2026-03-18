@@ -32,6 +32,7 @@ void test_factory_creates_compatible_widget() {
     MockSensorRegistry sensorRegistry;
     WidgetRegistry widgetRegistry(&sensorRegistry);
     LVGLWidgetFactory factory(&widgetRegistry);
+    LVGLWidgetFactory::registerStandardCreators(factory);
 
     // We expect to be able to set the registry later, or it's passed in
     // For now, let's assume our new interface: createWidget(widgetName, tagName, registry)
@@ -53,6 +54,7 @@ void test_factory_rejects_incompatible_widget() {
     MockSensorRegistry sensorRegistry;
     WidgetRegistry widgetRegistry(&sensorRegistry);
     LVGLWidgetFactory factory(&widgetRegistry);
+    LVGLWidgetFactory::registerStandardCreators(factory);
 
     widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(
         DataCategory::TELEMETRY,

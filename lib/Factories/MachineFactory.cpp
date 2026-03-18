@@ -65,6 +65,19 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
     _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
     _dispatcher.attachProcessor<BoilerSafetyStatus>(&_safetyProc);
+
+#if !defined(NATIVE) || defined(SIMULATOR)
+    // Register Widget Creators for Late-Binding
+    LVGLWidgetFactory::registerStandardCreators(_lvglFactory);
+#endif
+}
+
+IWidgetFactory* MachineFactory::getWidgetFactory() {
+#if !defined(NATIVE) || defined(SIMULATOR)
+    return &_lvglFactory;
+#else
+    return nullptr;
+#endif
 }
 
 WiFiService* MachineFactory::getWiFiSwitch() {
