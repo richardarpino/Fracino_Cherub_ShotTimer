@@ -79,6 +79,11 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     // Register Widget Creators for Late-Binding
     LVGLWidgetFactory::registerStandardCreators(_lvglFactory);
 #endif
+
+    BOOT_LOG("011", "Registering Themes...");
+    _themes.push_back(&_defaultTheme);
+    _themes.push_back(&_candyTheme);
+    _themes.push_back(&_christmasTheme);
 }
 
 void MachineFactory::BOOT_LOG(const char* code, const char* msg) {
