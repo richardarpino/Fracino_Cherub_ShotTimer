@@ -19,6 +19,16 @@ public:
     }
 
     bool isCompatible(const char* widgetName, const char* tagName) override {
+        // Step 0: Allowed Tags Whitelist (Architectural Guard)
+        if (!_allowedSensors.empty() || !_allowedServices.empty()) {
+            bool found = false;
+            for (const auto& s : _allowedSensors) if (s == tagName) { found = true; break; }
+            if (!found) {
+                for (const auto& s : _allowedServices) if (s == tagName) { found = true; break; }
+            }
+            if (!found) return false;
+        }
+
         if (_widgets.find(widgetName) == _widgets.end()) {
             return false;
         }
@@ -51,9 +61,16 @@ public:
         return false;
     }
 
+    void seedAllowedTags(std::vector<std::string> sensors, std::vector<std::string> services) {
+        _allowedSensors = sensors;
+        _allowedServices = services;
+    }
+
 private:
     ISensorRegistry* _sensorRegistry;
     std::map<std::string, WidgetCompatibility> _widgets;
+    std::vector<std::string> _allowedSensors;
+    std::vector<std::string> _allowedServices;
 };
 
 #endif

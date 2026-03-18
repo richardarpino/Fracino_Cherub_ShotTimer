@@ -60,13 +60,19 @@ void BlockerWidget::refresh() {
     if (!_container) return; 
 
     StatusMessage status;
+    ServiceMetadata meta;
     if (_registry && _tagName) {
         status = _registry->getLatestStatus(_tagName);
+        meta = _registry->getServiceMetadataByName(_tagName);
     } else {
         status = _lastStatus;
     }
 
-    lv_label_set_text(_title_label, status.title);
+    // Fallback logic for titles
+    const char* title = (status.title && status.title[0] != '\0') ? status.title : meta.ready.title;
+    if (status.isFailed && meta.failed.title[0] != '\0') title = meta.failed.title;
+
+    lv_label_set_text(_title_label, title);
     lv_label_set_text(_status_label, status.message);
 
     if (status.progress >= 0) {

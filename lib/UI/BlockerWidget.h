@@ -15,6 +15,10 @@ public:
     void setTagName(const char* tagName);
     void applyTheme(ITheme* theme) override;
     
+    // For verification only
+    const char* getTitle() const { return _title_label ? lv_label_get_text(_title_label) : ""; }
+
+protected:
     // Explicitly push status when used by a Painter
     void setStatus(const StatusMessage& status);
 

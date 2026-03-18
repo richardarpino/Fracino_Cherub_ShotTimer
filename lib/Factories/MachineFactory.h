@@ -25,6 +25,7 @@
 #include "../Themes/DefaultTheme.h"
 #include "../Themes/CandyTheme.h"
 #include "../Themes/ChristmasTheme.h"
+#include "../Interfaces/IWidgetFactory.h"
 #include "../../include/pins.h"
 
 #include "../Registry/WidgetRegistry.h"

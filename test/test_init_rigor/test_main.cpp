@@ -19,6 +19,12 @@ public:
     void setReadingByName(const char* name, Reading reading) override {}
     StatusMessage getStatusByName(const char* name) override { return StatusMessage(); }
     void setStatusByName(const char* name, StatusMessage status) override {}
+    
+    SensorMetadata getSensorMetadataByName(const char*) override { return SensorMetadata(); }
+    ServiceMetadata getServiceMetadataByName(const char*) override { return ServiceMetadata(); }
+    void storeMetadataInternal(const char*, SensorMetadata) override {}
+    void storeMetadataInternal(const char*, ServiceMetadata) override {}
+
     void attachProcessorInternal(const char* targetTagName, class ITagProcessor* processor) override {}
 };
 

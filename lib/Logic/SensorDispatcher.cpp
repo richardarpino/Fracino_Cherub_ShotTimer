@@ -16,10 +16,15 @@ void SensorDispatcher::update() {
 
 Reading SensorDispatcher::getReadingByName(const char* name) {
     auto it = _cache.find(name);
-    if (it == _cache.end()) {
-        return Reading(0.0f, "", "", 1, true); 
+    if (it != _cache.end()) return it->second;
+    
+    // Fallback to init value from metadata if available
+    auto metaIt = _sensorMetadata.find(name);
+    if (metaIt != _sensorMetadata.end()) {
+        return metaIt->second.init;
     }
-    return it->second;
+    
+    return Reading(0.0f, "", "", 1, true); 
 }
 
 void SensorDispatcher::setReadingByName(const char* name, Reading reading) {
@@ -39,8 +44,29 @@ StatusMessage SensorDispatcher::getStatusByName(const char* name) {
 }
 
 void SensorDispatcher::setStatusByName(const char* name, StatusMessage status) {
+    storeMetadataInternal(name, ServiceMetadata(status, status, status, status)); // Default transition
     _statusCache[name] = status;
     _cache[name] = Reading(status.progress, "", status.message, 0, status.isFailed);
+}
+
+SensorMetadata SensorDispatcher::getSensorMetadataByName(const char* name) {
+    auto it = _sensorMetadata.find(name);
+    if (it != _sensorMetadata.end()) return it->second;
+    return SensorMetadata();
+}
+
+ServiceMetadata SensorDispatcher::getServiceMetadataByName(const char* name) {
+    auto it = _serviceMetadata.find(name);
+    if (it != _serviceMetadata.end()) return it->second;
+    return ServiceMetadata();
+}
+
+void SensorDispatcher::storeMetadataInternal(const char* name, SensorMetadata meta) {
+    _sensorMetadata[name] = meta;
+}
+
+void SensorDispatcher::storeMetadataInternal(const char* name, ServiceMetadata meta) {
+    _serviceMetadata[name] = meta;
 }
 
 bool SensorDispatcher::hasProcessor(const char* name) {

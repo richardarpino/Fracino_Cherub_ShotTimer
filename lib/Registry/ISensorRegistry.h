@@ -35,6 +35,7 @@ public:
      */
     template<typename T>
     void publish(typename T::DataType data) {
+        storeMetadataInternal(T::NAME, T::getMetadata());
         publishInternal<T>(data);
         resolveDerived(typename T::Children{});
     }
@@ -45,6 +46,7 @@ public:
      */
     template<typename T>
     void publish(float value, bool isError = false) {
+        storeMetadataInternal(T::NAME, T::getMetadata());
         SensorMetadata meta = T::getMetadata();
         Reading r;
         
@@ -131,6 +133,9 @@ public:
      */
     virtual Reading getLatestReading(const char* name) { return getReadingByName(name); }
     virtual StatusMessage getLatestStatus(const char* name) { return getStatusByName(name); }
+    
+    virtual SensorMetadata getSensorMetadataByName(const char* name) = 0;
+    virtual ServiceMetadata getServiceMetadataByName(const char* name) = 0;
 
 protected:
     // Internal bridging to allow templates to work with virtual methods
@@ -138,6 +143,10 @@ protected:
     virtual void setReadingByName(const char* name, Reading reading) = 0;
     virtual StatusMessage getStatusByName(const char* name) = 0;
     virtual void setStatusByName(const char* name, StatusMessage status) = 0;
+    
+    virtual void storeMetadataInternal(const char* name, SensorMetadata meta) = 0;
+    virtual void storeMetadataInternal(const char* name, ServiceMetadata meta) = 0;
+
     virtual void attachProcessorInternal(const char* targetTagName, class ITagProcessor* processor) = 0;
 };
 
