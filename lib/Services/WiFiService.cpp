@@ -37,7 +37,12 @@ void WiFiService::update() {
 
     if (_registry) {
         // Publish raw status and IP for the processor to consume
-        const char* ip = _isActive ? WiFi.localIP().toString().c_str() : "";
-        _registry->publish<WiFiRawReading>(StatusMessage("RAW", ip, (float)status, false));
+        if (_isActive) {
+            strncpy(_statusBuffer, WiFi.localIP().toString().c_str(), sizeof(_statusBuffer) - 1);
+            _statusBuffer[sizeof(_statusBuffer) - 1] = '\0';
+        } else {
+            strcpy(_statusBuffer, "");
+        }
+        _registry->publish<WiFiRawReading>(StatusMessage("RAW", _statusBuffer, (float)status, false));
     }
 }
