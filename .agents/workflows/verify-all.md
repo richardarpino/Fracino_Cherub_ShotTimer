@@ -10,9 +10,10 @@ Every task or phase must conclude with this sequence. No phase is considered "GR
 3. **GREEN State (Implementation)**: Apply implementation.
 4. **Bone Basic Verification**:
     // turbo
-    - Run `pio run -e lilygo-t-display` to verify hardware compilation.
-    - Run `pio test -e native` to verify logic regression.
-    - Run `pio test -e simulator` to verify UI rendering (if applicable).
+    // turbo
+    - Run `./pio run -e lilygo-t-display` to verify hardware compilation.
+    - Run `./pio test -e native` to verify logic regression.
+    - Run `./pio test -e simulator` to verify UI rendering (if applicable).
 5. **Report**: Link the output log in the Walkthrough.
 
 UNACCEPTABLE ACTIONS:

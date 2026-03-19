@@ -40,3 +40,6 @@ Each iteration must complete a "verify-all" pass before commitment:
 - **Test-Driven Debugging**: Every bug must be exposed by a failing test.
 - **3-Attempt Limit**: If a problem cannot be derived or fixed in 3 attempts, halt and discuss.
 - **No Guessing**: Changes must be justified by evidence (compiler errors or failing tests).
+
+## 5. Local Tooling & Environment
+- **PlatformIO Shim**: The project includes a local `./pio` script in the root. This is a shim that points to the system's `pio` core. Always use `./pio` in project-related commands and workflows to ensure portability and discoverability.

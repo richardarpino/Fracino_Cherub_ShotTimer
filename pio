@@ -1,0 +1,17 @@
+#!/bin/bash
+# Local shim to the PlatformIO core (relative to the project root)
+# This fulfills the "project-relative" requirement and avoids hardcoding home folder strings in workflows.
+
+PIO_PATH="/home/richardarpino/.platformio/penv/bin/pio"
+
+if [ -f "$PIO_PATH" ]; then
+    exec "$PIO_PATH" "$@"
+else
+    # Fallback to system path if the specific env is missing
+    if command -v pio >/dev/null 2>&1; then
+        exec pio "$@"
+    else
+        echo "Error: PlatformIO (pio) not found at $PIO_PATH or in PATH."
+        exit 1
+    fi
+fi

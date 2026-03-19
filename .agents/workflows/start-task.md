@@ -12,6 +12,7 @@ Every new task or session MUST begin with this sequence to ensure the environmen
     - Run `git status` to identify any uncommitted changes or untracked files.
 3. **Review Recent Environmental Changes**:
     - Run `git log -n 3 platformio.ini` to see if the build environment was recently modified.
+    - Run `./pio --version` and `./pio run --help` to confirm the local shim is working.
 4. **Report to User**:
     - Confirm: "Baseline is GREEN and Working Tree is CLEAN. Ready to proceed." 
     - OR: "I found a regression in [X]. We should address this before starting new work."

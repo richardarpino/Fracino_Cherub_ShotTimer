@@ -2,6 +2,9 @@
 
 This project adheres to a strict, data-first development workflow. Following these steps ensures high reliability in a project where hardware debugging is expensive.
 
+> [!TIP]
+> **Use the Local Shim**: Always invoke PlatformIO via `./pio` (e.g., `./pio test -e native`) instead of the global `pio`. This ensures the project uses the correct environment as defined in the local shim.
+
 ## 1. The TDD Charter (Mandatory)
 Any logic change, bug fix, or new feature **must** start with a test.
 
