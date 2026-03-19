@@ -41,3 +41,25 @@ When making changes, follow this tiered verification strategy:
 ## 3. Sensor Management
 *   **Filtering**: New sensors should inherit from `FilteredSensor` to get EMA smoothing and hysteresis for free.
 *   **Safety**: Always test edge cases (0.0 values, timeouts, disconnected sensors) in your `native` suite.
+
+---
+
+## 🛠 AI Slash Commands & Protocols
+
+These commands invoke specific automated sequences (Workflows) to ensure consistency and safety.
+
+### `/start-task` (Pre-flight Check)
+- **When**: Before beginning any new feature or fix.
+- **Action**: Verifies the baseline is GREEN and the working tree is CLEAN.
+
+### `/sync-context` (Recovery & Alignment)
+- **When**: After a crash, a long break, or if the AI seems misaligned.
+- **Action**: Performs an environmental audit, reads active artifacts, and pitches current state for alignment.
+
+### `/pivot` (Priority Shift)
+- **When**: During an investigation if a more urgent bug or path is discovered.
+- **Action**: Snapshots current progress, pauses current tasks, and safely instantiates the new priority.
+
+### `/verify-all` (Post-flight Verification)
+- **When**: After completing an implementation phase or bug fix.
+- **Action**: Runs the "Bone Basic" verification suite (Hardware Build, Native Tests, Simulator Tests).
