@@ -52,10 +52,6 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
 }
 
 void OTAService::update() {
-    _justStarted = _isActive && !_lastActive;
-    _justStopped = !_isActive && _lastActive;
-    _lastActive = _isActive;
-
 #ifdef ARDUINO
     if (_isActive) {
         ArduinoOTA.handle();

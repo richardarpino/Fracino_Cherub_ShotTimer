@@ -21,7 +21,7 @@ These principles provide **Guidance** rather than rigid Rules. The goal is struc
 *   **Hardware Sensors**: Passive observers of physical signals. They inherit from `HardwareSensor`, process raw values, and apply EMA filtering. They **never** contain machine logic.
 *   **Decouplers**: `IRawSource` separates the sensor's physical measurement from its logical representation.
 *   **Logic Components**: Derived calculators (like `BoilerTemperature`) or state orchestrators (like `ShotTimer`). They live in `lib/Logic`, use `HardwareSensor` values as inputs, and **publish** results to the `ISensorRegistry`.
-*   **Blockers**: Manage a specific startup gate.
+*   **Blockers**: Manage a specific startup gate. Preferred pattern is the **Passive Blocker** (ADR 0010), where the blocker is a pure observer of a background service's status in the registry.
 
 ## 3. Dependency Injection (DI) & The Factory
 **The Rule**: High-level logic modules MUST NOT instantiate their own dependencies. 
@@ -34,7 +34,7 @@ These principles provide **Guidance** rather than rigid Rules. The goal is struc
 
 *   **The Pattern**: Instead of components being "polled" by the UI, logic modules coordinate hardware and **push** high-level machine data (`ShotTimer`, `TaredWeight`) into the `ISensorRegistry`.
 *   **Type Tags as Domain Contracts**: Tags (e.g., `BoilerPressureReading`) are not just markers. They contain static `SensorMetadata` that defines the measurement limits, units, and nominal values. This ensures the Registry and UI always have a consistent "Contract" for the data.
-*   **Benefit**: The UI remains completely decoupled. It pulls from the Registry by a `TypeTag`, oblivious to whether the data came from a physical pin or a complex logical calculation.
+*   **Benefit**: The UI remains completely decoupled. It pulls from the Registry by a `TypeTag`, oblivious to whether the data came from a physical pin, a complex logical calculation, or a background **Passive Blocker**.
 *   **Verification**: This enables 100% test coverage in `native` by verifying that the correct data is "deposited" into the Registry during the update loop.
 
 ## 2. Passive UI (One-Way Data Flow)

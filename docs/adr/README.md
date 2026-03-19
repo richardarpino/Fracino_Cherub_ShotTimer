@@ -16,3 +16,4 @@ This directory contains records for all significant architectural decisions made
 | [0007](0007-widget-registration-factory.md) | Widget Registration Factory | Accepted |
 | [0008](0008-automated-workflow-previews.md) | Automated Workflow Mapping & Visual Documentation | Accepted |
 | [0009](0009-formal-boot-diagnostics.md) | Formal Boot Sequence Diagnostics | Accepted |
+| [0010](0010-passive-blocker-pattern.md) | Passive Blocker Pattern | Accepted |

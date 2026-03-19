@@ -18,7 +18,8 @@ public:
      */
     template<typename... T>
     void applyTypeWhitelists(TagList<T...>) {
-        (storeMetadataInternal(T::NAME, T::getMetadata()), ...);
+        int dummy[] = { 0, (storeMetadataInternal(T::NAME, T::getMetadata()), 0)... };
+        (void)dummy;
     }
 
     /**

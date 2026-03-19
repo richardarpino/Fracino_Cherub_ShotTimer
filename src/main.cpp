@@ -64,14 +64,7 @@ void loop() {
   delay(5);
 
   // Update network services and blockers
-  IBlocker* wifi = factory->getWiFiSwitch();
-  if (wifi) wifi->update();
-  
-  IBlocker* ota = factory->getOTASwitch();
-  if (ota) ota->update();
-
-  IBlocker* warmer = factory->getWarmingUpBlocker();
-  if (warmer) warmer->update();
+  factory->update();
 
   // 2. Registry Pass - Triggers all reactive processors
   factory->getRegistry()->update();

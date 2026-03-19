@@ -20,4 +20,4 @@ We formalized a split between **Telemetry** and **Blocking Gates**:
 *   **Positive**: `StartupLogic` became a clean orchestrator of `IBlocker` states without needing to know implementation details.
 *   **Positive**: Zero "Dummy Readings" in the telemetry stream.
 *   **Positive**: Consistent UI experience during boot (Dual-label status bars).
-*   **Negative**: Services that act as both (like a sensor that blocks until warm) require careful implementation of both interfaces or a proxy logic.
+*   **Negative**: Services that act as both (like a sensor that blocks until warm) require careful implementation of both interfaces or a proxy logic. This has been resolved by the **Passive Blocker Pattern** (see [ADR 0010](0010-passive-blocker-pattern.md)).

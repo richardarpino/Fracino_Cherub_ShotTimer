@@ -18,6 +18,7 @@
 #include "../../lib/Logic/Processors/WiFiProcessor.cpp"
 #include "../../lib/Services/WiFiBlocker.cpp"
 #include "../../lib/Services/OTAService.cpp"
+#include "../../lib/Services/OTABlocker.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
 #include "../../lib/UI/StatusWidget.cpp"
 #include "../../lib/UI/SensorWidget.cpp"
@@ -178,7 +179,7 @@ void test_generate_examples() {
     WiFiProcessor* wifiProc = new WiFiProcessor(&dispatcher);
     std::vector<BlockerInfo> blockers = {
         createServiceEntry<WiFiStatus>("WiFiBlocker", new WiFiBlocker(&dispatcher)),
-        createServiceEntry<OTAStatus>("OTAService", new OTAService(&dispatcher, "test")),
+        createServiceEntry<OTAStatus>("OTABlocker", new OTABlocker(&dispatcher)),
         createServiceEntry<WarmingUpStatus>("WarmingUpBlocker", nullptr)
     };
 
@@ -461,9 +462,10 @@ void test_capture_workflow_previews() {
     WiFiProcessor wifiProc(&registry);
     WiFiBlocker wifiBlocker(&registry);
     OTAService ota(&registry, "Cherub-Timer");
+    OTABlocker otaBlocker(&registry);
     WarmingUpBlocker warmup(&registry);
 
-    std::vector<IWorkflow*> workflows = WorkflowFactory::createAllWorkflows(&registry, &wifiBlocker, &ota, &warmup);
+    std::vector<IWorkflow*> workflows = WorkflowFactory::createAllWorkflows(&registry, &wifiBlocker, &otaBlocker, &warmup);
     
     WorkflowSnapshotter snapshotter(&painter, &registry);
     

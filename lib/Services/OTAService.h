@@ -12,26 +12,21 @@
 #include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
 
-class OTAService : public IBlocker {
+class OTAService {
 public:
     OTAService(ISensorRegistry* registry, const char* hostname);
+    virtual ~OTAService() = default;
     
-    // IBlocker implementation
-    StatusMessage getStatus() const override;
-    const char* getTagName() const override { return OTAStatus::NAME; }
+    // Background Service Implementation
+    void update();
+    const char* getTagName() const { return OTAStatus::NAME; }
 
-    // ISwitch implementation
-    void update() override;
-    bool isActive() const override { return _isActive; }
-    bool justStarted() const override { return _justStarted; }
-    bool justStopped() const override { return _justStopped; }
+    StatusMessage getStatus() const;
 
+private:
     ISensorRegistry* _registry;
     const char* _hostname;
     bool _isActive = false;
-    bool _lastActive = false;
-    bool _justStarted = false;
-    bool _justStopped = false;
     bool _isError = false;
     float _progress = 0;
     mutable char _statusBuffer[64];

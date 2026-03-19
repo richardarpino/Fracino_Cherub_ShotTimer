@@ -23,7 +23,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _wifiService(nullptr),
       _wifiProc(&_dispatcher),
       _wifiBlocker(&_dispatcher),
-      _ota(nullptr),
+      _otaService(nullptr),
+      _otaBlocker(&_dispatcher),
       _warmingUpBlocker(nullptr),
       _heatingCycleProc(&_dispatcher),
       _warmingUpProc(&_dispatcher),
@@ -117,7 +118,7 @@ IBlocker* MachineFactory::getWiFiSwitch() {
 
 MachineFactory::~MachineFactory() {
     if (_wifiService) delete _wifiService;
-    if (_ota) delete _ota;
+    if (_otaService) delete _otaService;
     if (_warmingUpBlocker) delete _warmingUpBlocker;
     if (_workflowEngine) delete _workflowEngine;
     if (_startupWorkflow) delete _startupWorkflow;
@@ -126,10 +127,10 @@ MachineFactory::~MachineFactory() {
 }
 
 IBlocker* MachineFactory::createOTA() {
-    if (!_ota) {
-        _ota = new OTAService(&_dispatcher, _config.otaHostname);
+    if (!_otaService) {
+        _otaService = new OTAService(&_dispatcher, _config.otaHostname);
     }
-    return _ota;
+    return &_otaBlocker;
 }
 
 IBlocker* MachineFactory::getWarmingUpBlocker() {
@@ -154,4 +155,15 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100);
     }
     return _workflowEngine;
+}
+
+void MachineFactory::update() {
+    // 1. Update background services (Active logic)
+    if (_wifiService) _wifiService->update();
+    if (_otaService) _otaService->update();
+
+    // 2. Update blockers (Passive polling)
+    _wifiBlocker.update();
+    _otaBlocker.update();
+    if (_warmingUpBlocker) _warmingUpBlocker->update();
 }

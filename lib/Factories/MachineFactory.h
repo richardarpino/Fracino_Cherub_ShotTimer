@@ -17,6 +17,7 @@
 #include "../Logic/Workflows/BasicWorkflow.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
+#include "../Services/OTABlocker.h"
 #include "../Logic/Processors/HeatingCycleProcessor.h"
 #include "../Logic/Processors/WarmingUpProcessor.h"
 #include "../Services/WarmingUpBlocker.h"
@@ -56,7 +57,7 @@ public:
     // ISwitchProvider
     ISwitch* getPump() override { return &_pumpRegSw; }
     IBlocker* getWiFiSwitch() override;
-    IBlocker* getOTASwitch() override { return _ota; }
+    IBlocker* getOTASwitch() override { return &_otaBlocker; }
     IBlocker* createOTA() override;
     IBlocker* getWarmingUpBlocker() override;
     ISwitch* getButtonRight() override { return &_buttonRightRegSw; }
@@ -65,6 +66,7 @@ public:
     TaredWeightProcessor* getTaredWeight() { return &_taredWeight; }
 
     WorkflowEngine* getWorkflowEngine();
+    void update();
 
 private:
     void BOOT_LOG(const char* code, const char* msg);
@@ -101,7 +103,8 @@ private:
     WiFiService* _wifiService;
     WiFiProcessor _wifiProc;
     WiFiBlocker _wifiBlocker;
-    OTAService* _ota;
+    OTAService* _otaService;
+    OTABlocker _otaBlocker;
     WarmingUpBlocker* _warmingUpBlocker;
     SystemTimeSensor _uptimeSensor;
     HeatingCycleProcessor _heatingCycleProc;
