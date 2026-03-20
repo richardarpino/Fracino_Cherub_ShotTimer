@@ -26,6 +26,10 @@ public:
         if (strcmp(name, BoilerPressureReading::NAME) == 0) return PhysicalQuantity::PRESSURE;
         return PhysicalQuantity::NONE;
     }
+    SensorMetadata getSensorMetadataByName(const char* name) override { return SensorMetadata(); }
+    ServiceMetadata getServiceMetadataByName(const char* name) override { return ServiceMetadata(); }
+    void storeMetadataInternal(const char* name, SensorMetadata meta) override {}
+    void storeMetadataInternal(const char* name, ServiceMetadata meta) override {}
 };
 
 void test_factory_creates_compatible_widget() {
