@@ -1,6 +1,8 @@
 #include "MachineFactory.h"
 #include "../Logic/Workflows/BasicWorkflow.h"
 #include "../Logic/Workflows/GenericScreen.h"
+#include "../Logic/Triggers/WorkflowRunningTrigger.h"
+#include "../Logic/Triggers/OTADownloadingTrigger.h"
 
 MachineFactory::MachineFactory(const MachineConfig& config) 
     : _dispatcher(),
@@ -32,6 +34,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _startupWorkflow(nullptr),
       _dashboardWorkflow(nullptr),
       _shotWorkflow(nullptr),
+      _otaUpdateWorkflow(nullptr),
+      _otaDownloadingTrigger(nullptr),
       _config(config),
       _widgetRegistry(&_dispatcher)
 #if !defined(NATIVE) || defined(SIMULATOR)
@@ -124,6 +128,8 @@ MachineFactory::~MachineFactory() {
     if (_startupWorkflow) delete _startupWorkflow;
     if (_dashboardWorkflow) delete _dashboardWorkflow;
     if (_shotWorkflow) delete _shotWorkflow;
+    if (_otaUpdateWorkflow) delete _otaUpdateWorkflow;
+    if (_otaDownloadingTrigger) delete _otaDownloadingTrigger;
 }
 
 IBlocker* MachineFactory::createOTA() {
@@ -149,19 +155,28 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _startupWorkflow = WorkflowFactory::createSystemWorkflow(&_dispatcher, getWiFiSwitch(), createOTA(), getWarmingUpBlocker());
         _dashboardWorkflow = WorkflowFactory::createDashboardWorkflow(&_dispatcher);
         _shotWorkflow = WorkflowFactory::createShotWorkflow(&_dispatcher);
+        _otaUpdateWorkflow = WorkflowFactory::createOTAUpdateWorkflow(&_dispatcher, createOTA());
 
-        _workflowEngine->setRootWorkflow(_startupWorkflow);
+        _otaDownloadingTrigger = new OTADownloadingTrigger(&_dispatcher);
+        _workflowEngine->addGlobalTrigger(_otaUpdateWorkflow, _otaDownloadingTrigger, 1000);
+
+        // Create a root container for all major modes
+        BasicWorkflow* systemRoot = new BasicWorkflow("System", "Root");
+        _workflowEngine->setRootWorkflow(systemRoot);
         
-        // Dashboard is a child of Startup. It should always be active if no higher precedence child matches.
-        // For now, we use a null trigger (Always) or a very simple true trigger.
+        // We use a "Sibling Fall-through" pattern (ADR 0011):
+        // Startup (10) and Dashboard (1) are children of the same System root.
+        // Once Startup reports isFinished(), the engine falls through to Dashboard.
         class AlwaysTrigger : public ITrigger {
         public:
             void update() override {}
             bool isActive() const override { return true; }
         };
         static AlwaysTrigger always;
+        static WorkflowRunningTrigger startupRunning(_startupWorkflow);
 
-        _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, &always, 1, _startupWorkflow);
+        _workflowEngine->addTriggerWorkflow(_startupWorkflow, &startupRunning, 10, systemRoot);
+        _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, &always, 1, systemRoot);
         
         // Shot is a child of Dashboard. It only triggers if focus is on Dashboard.
         _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100, _dashboardWorkflow);
@@ -170,12 +185,24 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
 }
 
 void MachineFactory::update() {
-    // 1. Update background services (Active logic)
+    // 1. Hardware Poll & Dispatch (Crucial for all sensors/processors)
+    _dispatcher.update();
+
+    // 2. Update background services (Active logic)
     if (_wifiService) _wifiService->update();
     if (_otaService) _otaService->update();
+    
+    // 3. Update triggers/switches needed for pre-emption
+    _pumpRegSw.update();
 
-    // 2. Update blockers (Passive polling)
+    // 4. Update blockers (Passive polling)
     _wifiBlocker.update();
     _otaBlocker.update();
     if (_warmingUpBlocker) _warmingUpBlocker->update();
+}
+
+void MachineFactory::setHeartbeat(std::function<void()> heartbeat) {
+    if (_otaService) {
+        _otaService->setHeartbeat(heartbeat);
+    }
 }

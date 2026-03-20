@@ -22,6 +22,7 @@ public:
     const char* getName() const override { return _name; }
     const char* getDescription() const override { return _description; }
     int getTransitionPause() const override;
+    void setTransitionPause(int delayMs) { _transitionPauseOverride = delayMs; }
 
 private:
     const char* _name;
@@ -29,6 +30,7 @@ private:
     std::vector<IScreen*> _screens;
     size_t _currentIndex;
     bool _isFinished;
+    int _transitionPauseOverride;
 };
 
 #endif

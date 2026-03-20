@@ -17,3 +17,5 @@ This directory contains records for all significant architectural decisions made
 | [0008](0008-automated-workflow-previews.md) | Automated Workflow Mapping & Visual Documentation | Accepted |
 | [0009](0009-formal-boot-diagnostics.md) | Formal Boot Sequence Diagnostics | Accepted |
 | [0010](0010-passive-blocker-pattern.md) | Passive Blocker Pattern | Accepted |
+| [0011](0011-workflow-succession-pattern.md) | Workflow Succession via Default Fallback | Accepted |
+| [0012](0012-ui-heartbeat-blocking-services.md) | UI Heartbeat for Blocking OTA Services | Accepted |

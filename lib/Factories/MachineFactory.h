@@ -15,6 +15,7 @@
 #include "../Logic/Processors/BoilerSafetyProcessor.h"
 #include "../Logic/Workflows/WorkflowEngine.h"
 #include "../Logic/Workflows/BasicWorkflow.h"
+#include "../Logic/Triggers/OTADownloadingTrigger.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Services/OTABlocker.h"
@@ -67,6 +68,7 @@ public:
 
     WorkflowEngine* getWorkflowEngine();
     void update();
+    void setHeartbeat(std::function<void()> heartbeat);
 
 private:
     void BOOT_LOG(const char* code, const char* msg);
@@ -114,6 +116,8 @@ private:
     IWorkflow* _startupWorkflow;
     IWorkflow* _dashboardWorkflow;
     IWorkflow* _shotWorkflow;
+    IWorkflow* _otaUpdateWorkflow;
+    OTADownloadingTrigger* _otaDownloadingTrigger;
 
     MachineConfig _config;
 

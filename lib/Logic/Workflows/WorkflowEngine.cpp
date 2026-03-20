@@ -74,13 +74,7 @@ IWorkflow* WorkflowEngine::findNextActiveWorkflow() const {
         }
         const_cast<WorkflowEngine*>(this)->_activeBreadcrumb += (wf ? wf->getName() : "Unknown");
 
-        // Check for blockers
-        IScreen* screen = wf ? wf->getActiveScreen() : nullptr;
-        if (screen && !screen->isDone()) {
-            return wf;
-        }
-
-        // Evaluate children
+        // 1. Evaluate children first (Pre-emption)
         WorkflowNode* nextNode = nullptr;
         int highestPrecedence = -1;
 
@@ -99,7 +93,13 @@ IWorkflow* WorkflowEngine::findNextActiveWorkflow() const {
         if (nextNode) {
             currentNode = nextNode;
         } else {
-            // Default fallback if root is finished
+            // 2. NO child pre-empted, so check if current node is still blocking
+            IScreen* screen = wf ? wf->getActiveScreen() : nullptr;
+            if (screen && !screen->isDone()) {
+                return wf;
+            }
+
+            // 3. Termination / Fallback
             if (wf && wf->isFinished() && _default && currentNode == _rootNode) {
                 const_cast<WorkflowEngine*>(this)->_activeBreadcrumb = "Default";
                 return _default;
@@ -114,8 +114,6 @@ void WorkflowEngine::update() {
     if (_isTransitioning) {
         if (millis() - _transitionStartTime >= _currentTransitionPauseMs) {
             _isTransitioning = false;
-        } else {
-            return; // Stay on previous screen visually
         }
     }
 
@@ -136,17 +134,34 @@ void WorkflowEngine::update() {
 
         if (pause > 0 && _activeWorkflow) {
             _lastScreen = _activeWorkflow->getActiveScreen();
+
+#ifdef ARDUINO
+#ifdef VERBOSE_BOOT
+            Serial.print("[WF] Transition: ");
+            Serial.print(_activeWorkflow ? _activeWorkflow->getName() : "NULL");
+            Serial.print(" -> ");
+            Serial.print(nextActive ? nextActive->getName() : "NULL");
+            Serial.print(" (Pause: ");
+            Serial.print(pause);
+            Serial.println("ms)");
+#endif
+#endif
+            
             _isTransitioning = true;
             _transitionStartTime = millis();
             _currentTransitionPauseMs = pause;
             _activeWorkflow = nextActive; // Step the pointer immediately
             
+            // Sync immediately so getActiveScreen() sees latest isDone() status
+            if (_activeWorkflow) _activeWorkflow->update();
+
             // If the requested pause is 0, we can skip the transition state entirely
             if (pause == 0) {
                 _isTransitioning = false;
             }
         } else {
              _activeWorkflow = nextActive;
+             if (_activeWorkflow) _activeWorkflow->update();
         }
     }
 }

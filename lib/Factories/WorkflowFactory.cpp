@@ -63,6 +63,7 @@ IWorkflow* WorkflowFactory::createDashboardWorkflow(ISensorRegistry* registry) {
 
 IWorkflow* WorkflowFactory::createShotWorkflow(ISensorRegistry* registry) {
     BasicWorkflow* wf = new BasicWorkflow("Shot Progress", "Visualizes the active espresso extraction.");
+    wf->setTransitionPause(0); // Show immediately
 
     wf->addScreen(new GenericScreen(
         ScreenComposition(2, 1)
@@ -77,10 +78,27 @@ IWorkflow* WorkflowFactory::createShotWorkflow(ISensorRegistry* registry) {
     return wf;
 }
 
+IWorkflow* WorkflowFactory::createOTAUpdateWorkflow(ISensorRegistry* registry, IBlocker* ota) {
+    BasicWorkflow* wf = new BasicWorkflow("OTA Update", "Firmware update in progress.");
+    wf->setTransitionPause(0); // Show immediately
+    if (ota) {
+        wf->addScreen(new GenericScreen(
+            ScreenComposition(1, 1).add(BlockerWidgetTag::NAME, ota->getTagName()),
+            registry,
+            "OTA Download",
+            "Downloading firmware update via WiFi.",
+            "Wait for completion",
+            ota
+        ));
+    }
+    return wf;
+}
+
 std::vector<IWorkflow*> WorkflowFactory::createAllWorkflows(ISensorRegistry* registry, IBlocker* wifi, IBlocker* ota, IBlocker* warmup) {
     std::vector<IWorkflow*> workflows;
     workflows.push_back(createSystemWorkflow(registry, wifi, ota, warmup));
     workflows.push_back(createDashboardWorkflow(registry));
     workflows.push_back(createShotWorkflow(registry));
+    workflows.push_back(createOTAUpdateWorkflow(registry, ota));
     return workflows;
 }

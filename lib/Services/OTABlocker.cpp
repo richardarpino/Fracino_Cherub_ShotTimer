@@ -11,6 +11,18 @@ void OTABlocker::update() {
         // isActive means "Gate is OPEN" (not blocking).
         // It is OPEN if progress is 100% or if it has failed (fail-safe).
         _isActive = (status.progress >= 100.0f || status.isFailed);
+
+#ifdef ARDUINO
+#ifdef VERBOSE_BOOT
+        if (!_isActive && _wasActive) {
+            Serial.print("[BK] OTA Blocker: ACTIVE (Progress: ");
+            Serial.print(status.progress);
+            Serial.println("%)");
+        } else if (_isActive && !_wasActive) {
+            Serial.println("[BK] OTA Blocker: STOPPED");
+        }
+#endif
+#endif
     }
 }
 

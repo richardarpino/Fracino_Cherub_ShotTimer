@@ -20,6 +20,7 @@ void WarmingUpProcessor::update() {
         _firstUpdate = false;
         _startTimeSecs = _registry->getLatest<SystemUptimeReading>().value;
         Reading pressure = _registry->getLatest<BoilerPressureReading>();
+        // Reverted to 0.1 bar baseline as per user review
         if (pressure.value > 0.1f) {
             _isFinished = true;
         }

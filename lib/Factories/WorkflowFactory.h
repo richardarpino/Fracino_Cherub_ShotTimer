@@ -15,6 +15,7 @@ public:
     static IWorkflow* createSystemWorkflow(ISensorRegistry* registry, IBlocker* wifi, IBlocker* ota, IBlocker* warmup);
     static IWorkflow* createDashboardWorkflow(ISensorRegistry* registry);
     static IWorkflow* createShotWorkflow(ISensorRegistry* registry);
+    static IWorkflow* createOTAUpdateWorkflow(ISensorRegistry* registry, IBlocker* ota);
 
     static std::vector<IWorkflow*> createAllWorkflows(ISensorRegistry* registry, IBlocker* wifi, IBlocker* ota, IBlocker* warmup);
 };

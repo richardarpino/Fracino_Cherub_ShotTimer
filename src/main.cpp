@@ -28,7 +28,6 @@ MachineFactory* factory = nullptr;
 ShotDisplay shotDisplay;
 ThemeManager* themeManager = nullptr;
 WorkflowEngine* workflowEngine = nullptr;
-ScreenLayout* lastLayout = nullptr;
 LVGLPainter lvglPainter;
 
 void setup() {
@@ -55,6 +54,25 @@ void setup() {
   
   // Initialize painter with widget factory from the machine factory
   lvglPainter.init(lv_scr_act(), nullptr, factory->getWidgetFactory()); 
+
+  // Register Heartbeat to keep UI/Logic alive during blocking OTA downloads
+  factory->setHeartbeat([]() {
+    static IScreen* lastScreenH = nullptr;
+    if (workflowEngine) {
+        // Sync UI with active workflow
+        IScreen* activeScreen = workflowEngine->getActiveScreen();
+        if (activeScreen) {
+            activeScreen->paint(lvglPainter);
+            if (activeScreen != lastScreenH) {
+                shotDisplay.setLayout(lvglPainter.getLayout());
+                lastScreenH = activeScreen;
+            }
+        }
+        workflowEngine->update();
+    }
+    lv_timer_handler();
+    shotDisplay.update();
+  });
 }
 
 void loop() {
@@ -73,17 +91,21 @@ void loop() {
   if (workflowEngine) {
     // Sync UI with active workflow BEFORE update
     IScreen* activeScreen = workflowEngine->getActiveScreen();
+    
+    static IScreen* lastScreen = nullptr;
     if (activeScreen) {
         // Provide the painter to the logic screen so it can draw itself
         activeScreen->paint(lvglPainter);
         
-        // Retrieve the populated layout from the painter
-        ScreenLayout* targetLayout = lvglPainter.getLayout();
-
-        if (targetLayout != lastLayout && targetLayout != nullptr) {
-            Serial.println("Switching Screen Layout...");
-            shotDisplay.setLayout(targetLayout);
-            lastLayout = targetLayout;
+        if (activeScreen != lastScreen) {
+#ifdef VERBOSE_BOOT
+            Serial.print("[UI] Screen Switch: ");
+            Serial.print(lastScreen ? lastScreen->getName() : "NONE");
+            Serial.print(" -> ");
+            Serial.println(activeScreen->getName());
+#endif
+            shotDisplay.setLayout(lvglPainter.getLayout());
+            lastScreen = activeScreen;
         }
     }
 

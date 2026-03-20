@@ -14,7 +14,7 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
     
     ArduinoOTA.onStart([this]() {
 #ifdef VERBOSE_BOOT
-        Serial.println("[OTA] Update Started");
+        Serial.println("[OTA] Update Started (Bridge)");
 #endif
         _isError = false;
         _progress = 0;
@@ -30,6 +30,26 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
         if (total > 0) {
             _progress = (progress / (total / 100.0f));
+            
+#ifdef VERBOSE_BOOT
+            static int lastLoggedP = -1;
+            int p = (int)_progress;
+            if (p % 10 == 0 && p != lastLoggedP) { 
+                Serial.print("[OTA] Progress: ");
+                Serial.print(p);
+                Serial.println("%");
+                lastLoggedP = p;
+            }
+#endif
+            
+            // Throttle UI/Logic updates to 5Hz (200ms) to avoid starving the CPU
+            if (millis() - _lastHeartbeatMillis > 200) {
+                if (_registry) {
+                    _registry->publish<OTAStatus>(getStatus());
+                }
+                if (_heartbeat) _heartbeat();
+                _lastHeartbeatMillis = millis();
+            }
         }
     });
     

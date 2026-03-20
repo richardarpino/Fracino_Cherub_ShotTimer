@@ -1,7 +1,7 @@
 #include "BasicWorkflow.h"
 
 BasicWorkflow::BasicWorkflow(const char* name, const char* description) 
-    : _currentIndex(0), _isFinished(false), _name(name), _description(description) {}
+    : _currentIndex(0), _isFinished(false), _name(name), _description(description), _transitionPauseOverride(-1) {}
 
 BasicWorkflow::~BasicWorkflow() {
     for (auto screen : _screens) {
@@ -49,6 +49,7 @@ bool BasicWorkflow::isFinished() const {
 }
 
 int BasicWorkflow::getTransitionPause() const {
+    if (_transitionPauseOverride >= 0) return _transitionPauseOverride;
     IScreen* active = getActiveScreen();
     return active ? active->getTransitionDelay() : -1;
 }

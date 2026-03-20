@@ -27,6 +27,8 @@
 #include "../../lib/UI/LVGLPainter.cpp"
 #include "../../lib/UI/ScreenLayout.cpp"
 #include "../../lib/Registry/WidgetRegistry.h"
+#include "../../lib/Logic/Workflows/WorkflowEngine.cpp"
+#include "../../lib/Logic/Triggers/OTADownloadingTrigger.h"
 
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
@@ -477,6 +479,11 @@ void test_capture_workflow_previews() {
         if (name == "WiFi Service") label = "System > WiFi";
         if (name == "OTA Service") label = "System > OTA";
         if (name == "Warming Up") label = "System > Warming Up";
+        if (name == "OTA Update") {
+            label = "Global Override > OTA";
+            // Simulate 50% download for the screenshot
+            registry.publish<OTAStatus>(StatusMessage("OTA Update", "DOWNLOADING...", 50.0f, false));
+        }
 
         snapshotter.capture(wf, "docs/previews", label);
         delete wf;
