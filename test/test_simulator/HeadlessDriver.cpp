@@ -16,17 +16,17 @@ void HeadlessDriver::init(uint32_t width, uint32_t height) {
     
     lv_init();
 
-    // Allocate draw buffer
+    // Allocate draw buffer (enough for 480x480)
     static lv_disp_draw_buf_t disp_buf;
-    static lv_color_t buf1[320 * 320]; 
-    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, 320 * 320);
+    static lv_color_t buf1[480 * 480]; 
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, 480 * 480);
 
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.draw_buf = &disp_buf;
     disp_drv.flush_cb = flush_cb;
-    disp_drv.hor_res = 320;
-    disp_drv.ver_res = 320;
+    disp_drv.hor_res = width;
+    disp_drv.ver_res = height;
     lv_disp_drv_register(&disp_drv);
     
     is_init = true;

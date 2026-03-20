@@ -1,7 +1,7 @@
 #ifndef TARED_WEIGHT_PROCESSOR_H
 #define TARED_WEIGHT_PROCESSOR_H
 
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
 #include "Registry/RegistrySwitch.h"
 

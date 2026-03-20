@@ -12,19 +12,31 @@
 #include "../../test/_common/stubs/WiFi.cpp"
 
 // Implementation files
+#include "WorkflowSnapshotter.h"
+#include "MarkdownGenerator.h"
 #include "../../lib/Services/WiFiService.cpp"
+#include "../../lib/Logic/Processors/WiFiProcessor.cpp"
+#include "../../lib/Services/WiFiBlocker.cpp"
 #include "../../lib/Services/OTAService.cpp"
+#include "../../lib/Services/OTABlocker.cpp"
 #include "../../lib/Services/WarmingUpBlocker.cpp"
 #include "../../lib/UI/StatusWidget.cpp"
 #include "../../lib/UI/SensorWidget.cpp"
 #include "../../lib/UI/GaugeWidget.cpp"
 #include "../../lib/UI/BlockerWidget.cpp"
+#include "../../lib/UI/LVGLPainter.cpp"
+#include "../../lib/UI/ScreenLayout.cpp"
+#include "../../lib/Registry/WidgetRegistry.h"
+#include "../../lib/Logic/Workflows/WorkflowEngine.cpp"
+#include "../../lib/Logic/Triggers/OTADownloadingTrigger.h"
 
 // Headers for header-only sensors/classes
 #include "Hardware/BoilerPressure.h"
 #include "Hardware/WeightSensor.h"
 #include "../../lib/Logic/SensorDispatcher.h"
+#include "../../lib/Registry/ISensorRegistry.h"
 #include "../../lib/Interfaces/SensorTags.h"
+#include "../../lib/Registry/WidgetTags.h"
 #include <functional>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -36,6 +48,8 @@
 #include "../../lib/Logic/Processors/BoilerTemperatureProcessor.h"
 #include "../../lib/Logic/Processors/ShotMonitorProcessor.h"
 #include "../../lib/Logic/Processors/TaredWeightProcessor.h"
+#include "../../lib/Factories/WorkflowFactory.h"
+#include "WorkflowSnapshotter.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -57,13 +71,16 @@ struct BlockerInfo {
         bool failed;
     };
     std::vector<State> states;
+    std::function<void(ISensorRegistry*)> publishInit;
 };
 
 struct DocEntry {
     std::string name;
     std::function<SensorMetadata()> getMetadata;
+    const char* widgetTagName;
     std::function<IWidget*()> createSensorWidget;
     std::function<IWidget*()> createGaugeWidget;
+    std::function<void(ISensorRegistry*)> publishInit;
     std::function<void(SensorDispatcher*)> registerFunc;
 };
 
@@ -88,10 +105,28 @@ DocEntry createEntry(std::string name, HardwareSensor* hw = nullptr) {
     return {
         name,
         []() { return Tag::getMetadata(); },
+        Tag::NAME,
         []() { return new SensorWidget<Tag>(); },
         []() { return new GaugeWidget<Tag>(); },
+        [](ISensorRegistry* r) { r->publish<Tag>(Tag::getMetadata().init); },
         [hw](SensorDispatcher* d) { if (hw) d->provide<Tag>(hw); }
     };
+}
+
+void seedDispatcherWithInit(SensorDispatcher* dispatcher) {
+    dispatcher->publish<BoilerPressureReading>(BoilerPressureReading::getMetadata().init);
+    dispatcher->publish<BoilerTempReading>(BoilerTempReading::getMetadata().init);
+    dispatcher->publish<ShotTimeReading>(ShotTimeReading::getMetadata().init);
+    dispatcher->publish<LastValidShotReading>(LastValidShotReading::getMetadata().init);
+    dispatcher->publish<WeightReading>(WeightReading::getMetadata().init);
+    dispatcher->publish<TaredWeightReading>(TaredWeightReading::getMetadata().init);
+    dispatcher->publish<HeatingCycleReading>(HeatingCycleReading::getMetadata().init);
+    dispatcher->publish<SystemUptimeReading>(SystemUptimeReading::getMetadata().init);
+    
+    // Seed service initial states
+    dispatcher->publish<WiFiStatus>(WiFiStatus::getMetadata().pending);
+    dispatcher->publish<OTAStatus>(OTAStatus::getMetadata().pending);
+    dispatcher->publish<WarmingUpStatus>(WarmingUpStatus::getMetadata().pending);
 }
 
 template<typename Tag>
@@ -103,7 +138,7 @@ BlockerInfo createServiceEntry(std::string name, IBlocker* b = nullptr) {
         {"Ready", std::string(meta.ready.title), std::string(meta.ready.message), meta.ready.progress, meta.ready.isFailed},
         {"Failed", std::string(meta.failed.title), std::string(meta.failed.message), meta.failed.progress, meta.failed.isFailed}
     };
-    return { name, b, states };
+    return { name, b, states, [](ISensorRegistry* r) { r->publish<Tag>(Tag::getMetadata().pending); } };
 }
 
 void test_generate_examples() {
@@ -128,10 +163,25 @@ void test_generate_examples() {
     };
 
     SensorDispatcher dispatcher;
+    WidgetRegistry widgetRegistry(&dispatcher);
+    
+    // Mirror MachineFactory registrations
+    widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
+    widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        { PhysicalQuantity::PRESSURE, PhysicalQuantity::TEMPERATURE } 
+    ));
+    widgetRegistry.registerWidget<BlockerWidgetTag>(WidgetCompatibility(DataCategory::SERVICE));
+    widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        {}, // No specific quantities
+        { ShotTimeReading::NAME } 
+    ));
 
+    WiFiProcessor* wifiProc = new WiFiProcessor(&dispatcher);
     std::vector<BlockerInfo> blockers = {
-        createServiceEntry<WiFiStatus>("WiFiService", new WiFiService(&dispatcher)),
-        createServiceEntry<OTAStatus>("OTAService", new OTAService(&dispatcher, "test")),
+        createServiceEntry<WiFiStatus>("WiFiBlocker", new WiFiBlocker(&dispatcher)),
+        createServiceEntry<OTAStatus>("OTABlocker", new OTABlocker(&dispatcher)),
         createServiceEntry<WarmingUpStatus>("WarmingUpBlocker", nullptr)
     };
 
@@ -156,9 +206,20 @@ void test_generate_examples() {
         {"2x2", (uint32_t)TFT_HEIGHT / 2, (uint32_t)TFT_WIDTH / 2, 2, 2}
     };
 
-    HeadlessDriver::init(320, 320);
+    HeadlessDriver::init(240, 135);
+    
+    // Ensure the root screen is sized correctly and has no default padding
+    lv_obj_set_size(lv_scr_act(), 240, 135);
+    lv_obj_set_style_pad_all(lv_scr_act(), 0, 0);
+    lv_obj_set_style_border_width(lv_scr_act(), 0, 0);
+    lv_obj_set_style_radius(lv_scr_act(), 0, 0);
 
-    HeadlessDriver::init(320, 320);
+    for (auto& entry : docEntries) {
+        entry.publishInit(&dispatcher);
+    }
+    for (auto& bInfo : blockers) {
+        bInfo.publishInit(&dispatcher);
+    }
 
     for (auto& entry : docEntries) {
         std::string sensorDir = "lib/Sensors/examples/" + entry.name;
@@ -172,12 +233,19 @@ void test_generate_examples() {
         sensorReadme << "Visualizing " << entry.name << " data." << "\n\n";
 
         std::vector<std::pair<std::string, std::function<IWidget*()>>> widgetVariants = {
-            {"SensorWidget", entry.createSensorWidget},
-            {"GaugeWidget", entry.createGaugeWidget}
+            {SensorWidgetTag::NAME, entry.createSensorWidget},
+            {GaugeWidgetTag::NAME, entry.createGaugeWidget}
         };
 
         for (auto& wVariant : widgetVariants) {
-            std::string wName = wVariant.first;
+            const char* wName = wVariant.first.c_str();
+            
+            // Filtering: Only generate if compatible
+            if (!widgetRegistry.isCompatible(wName, entry.widgetTagName)) {
+                std::cout << "Skipping incompatible variant: " << entry.name << " in " << wName << std::endl;
+                continue;
+            }
+
             std::cout << "Generating " << entry.name << " in " << wName << "..." << std::endl;
 
             sensorReadme << "## " << wName << "\n";
@@ -204,15 +272,8 @@ void test_generate_examples() {
                     lv_obj_set_style_pad_all(parent, 0, 0);
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
+                    lv_obj_update_layout(parent); // Ensure layout is computed before widget init
 
-                    // Registry setup for each snapshot to ensure fresh data
-                    SensorDispatcher tempDispatcher;
-                    entry.registerFunc(&tempDispatcher);
-                    
-                    // Force the "current" reading to the one we want to snapshot
-                    // Since dispatcher::update normally polls, we need to mock the registry behavior here
-                    // Actually, the simplest way is to manually update the widget with state.second
-                    
                     IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, sizes[0].cols, sizes[0].rows);
                     widget->applyTheme(themeInfo.theme);
@@ -242,6 +303,7 @@ void test_generate_examples() {
                     lv_obj_set_style_pad_all(parent, 0, 0);
                     lv_obj_set_style_border_width(parent, 0, 0);
                     lv_obj_set_style_radius(parent, 0, 0);
+                    lv_obj_update_layout(parent);
 
                     IWidget* widget = wVariant.second();
                     lv_obj_t* root = widget->init(parent, size.cols, size.rows);
@@ -346,8 +408,94 @@ void test_generate_examples() {
     for(auto& b : blockers) delete b.blocker;
 }
 
+void test_shot_timer_visualization() {
+    HeadlessDriver::init(240, 135);
+    
+    SensorDispatcher dispatcher;
+    LVGLPainter painter;
+    DefaultTheme theme;
+    
+    painter.init(lv_scr_act(), &theme);
+    
+    // Simulate a shot in progress
+    ScreenComposition shotComp(2, 1);
+    shotComp.add(SensorWidgetTag::NAME, LastValidShotReading::NAME)
+            .add(SensorWidgetTag::NAME, ShotTimeReading::NAME);
+    painter.draw(shotComp, &dispatcher);
+    
+    // Check layout dimensions
+    ScreenLayout* layout = painter.getLayout();
+    
+    std::cout << "Shot timer visualization initialized successfully." << std::endl;
+}
+
+#include "../../lib/Factories/LVGLWidgetFactory.h"
+
+void test_capture_workflow_previews() {
+    HeadlessDriver::init(TFT_HEIGHT, TFT_HEIGHT); // Ensure a square workspace large enough for both orientations
+    SensorDispatcher registry;
+    WidgetRegistry widgetRegistry(&registry);
+    
+    // Register basic widgets for discovery
+    widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
+    widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY, {PhysicalQuantity::PRESSURE, PhysicalQuantity::TEMPERATURE}));
+    widgetRegistry.registerWidget<BlockerWidgetTag>(WidgetCompatibility(DataCategory::SERVICE));
+    widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY, {}, {ShotTimeReading::NAME}));
+
+    LVGLWidgetFactory factory(&widgetRegistry);
+    LVGLWidgetFactory::registerStandardCreators(factory);
+    LVGLPainter painter;
+    DefaultTheme theme;
+    
+    // Create a 240x135 (Landscape) container for the machine previews as requested
+    lv_obj_t* machine_screen = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(machine_screen, 240, 135);
+    lv_obj_set_style_pad_all(machine_screen, 0, 0);
+    lv_obj_set_style_border_width(machine_screen, 0, 0);
+    lv_obj_set_style_radius(machine_screen, 0, 0);
+
+    painter.init(machine_screen, &theme, &factory);
+    
+    // Seed all sensors with 'init' values to prevent 'error' states in previews
+    seedDispatcherWithInit(&registry);
+    
+    // Stubs for Service Workflows
+    WiFiService wifi(&registry);
+    WiFiProcessor wifiProc(&registry);
+    WiFiBlocker wifiBlocker(&registry);
+    OTAService ota(&registry, "Cherub-Timer");
+    OTABlocker otaBlocker(&registry);
+    WarmingUpBlocker warmup(&registry);
+
+    std::vector<IWorkflow*> workflows = WorkflowFactory::createAllWorkflows(&registry, &wifiBlocker, &otaBlocker, &warmup);
+    
+    WorkflowSnapshotter snapshotter(&painter, &registry);
+    
+    for (IWorkflow* wf : workflows) {
+        std::string label = "System";
+        std::string name = wf->getName();
+        if (name == "Main Dashboard") label = "System > Dashboard";
+        if (name == "Shot Progress") label = "System > Dashboard > Shot";
+        if (name == "WiFi Service") label = "System > WiFi";
+        if (name == "OTA Service") label = "System > OTA";
+        if (name == "Warming Up") label = "System > Warming Up";
+        if (name == "OTA Update") {
+            label = "Global Override > OTA";
+            // Simulate 50% download for the screenshot
+            registry.publish<OTAStatus>(StatusMessage("OTA Update", "DOWNLOADING...", 50.0f, false));
+        }
+
+        snapshotter.capture(wf, "docs/previews", label);
+        delete wf;
+    }
+
+    MarkdownGenerator::generateGalleries(snapshotter.getResults());
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_generate_examples);
+    RUN_TEST(test_shot_timer_visualization);
+    RUN_TEST(test_capture_workflow_previews);
     return UNITY_END();
 }

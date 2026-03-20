@@ -1,11 +1,13 @@
 #ifndef ISWITCH_H
 #define ISWITCH_H
 
+#include "ITrigger.h"
+
 /**
  * Interface for a logical binary state with edge detection.
  * Used to decouple discrete event logic (Start/Stop) from continuous sensing.
  */
-class ISwitch {
+class ISwitch : public ITrigger {
 public:
     virtual ~ISwitch() {}
     

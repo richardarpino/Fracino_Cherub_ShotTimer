@@ -10,6 +10,13 @@ SensorWidgetBase::SensorWidgetBase()
     : _container(nullptr), _value_label(nullptr), _unit_label(nullptr) {}
 
 lv_obj_t* SensorWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _value_label = nullptr;
+    _unit_label = nullptr;
+
     // Container
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
@@ -35,6 +42,7 @@ lv_obj_t* SensorWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
 }
 
 void SensorWidgetBase::update(const Reading& reading) {
+    if (!_container) return;
     char buf[16];
     if (reading.precision == 0) {
         snprintf(buf, sizeof(buf), "%.0f", reading.value);
@@ -56,6 +64,7 @@ void SensorWidgetBase::update(const Reading& reading) {
 }
 
 void SensorWidgetBase::applyTheme(ITheme* theme) {
+    if (!_container) return;
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F;
         uint8_t g = (c >> 5) & 0x3F;

@@ -1,7 +1,8 @@
 #ifndef SENSOR_DISPATCHER_H
 #define SENSOR_DISPATCHER_H
 
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
+#include "../Registry/IWidgetRegistry.h"
 #include "../Interfaces/HardwareSensor.h"
 #include "../Interfaces/ITagProcessor.h"
 #include "../Interfaces/SensorTags.h"
@@ -46,23 +47,39 @@ public:
         _pollers.push_back(new PollTask<T>(this, sensor));
     }
 
+    /**
+     * Pre-populates metadata for a tag without publishing data.
+     */
+    template<typename T>
+    void seed() {
+        storeMetadataInternal(T::NAME, T::getMetadata());
+    }
+
     void update() override;
     bool hasProcessor(const char* name) override;
-
-protected:
     void triggerResolution(const char* name) override;
+    DataCategory getCategory(const char* name) override;
+    PhysicalQuantity getQuantity(const char* name) override;
+    SensorMetadata getSensorMetadataByName(const char* name) override;
+    ServiceMetadata getServiceMetadataByName(const char* name) override;
 
 protected:
     Reading getReadingByName(const char* name) override;
     void setReadingByName(const char* name, Reading reading) override;
     StatusMessage getStatusByName(const char* name) override;
     void setStatusByName(const char* name, StatusMessage status) override;
+    
+    void storeMetadataInternal(const char* name, SensorMetadata meta) override;
+    void storeMetadataInternal(const char* name, ServiceMetadata meta) override;
+
     void attachProcessorInternal(const char* targetTagName, class ITagProcessor* processor) override;
 
 private:
     std::map<std::string, HardwareSensor*> _sensors;
     std::map<std::string, Reading> _cache;
     std::map<std::string, StatusMessage> _statusCache;
+    std::map<std::string, SensorMetadata> _sensorMetadata;
+    std::map<std::string, ServiceMetadata> _serviceMetadata;
     std::map<std::string, class ITagProcessor*> _processors;
     std::vector<IPollTask*> _pollers;
 };

@@ -1,4 +1,8 @@
 #include "MachineFactory.h"
+#include "../Logic/Workflows/BasicWorkflow.h"
+#include "../Logic/Workflows/GenericScreen.h"
+#include "../Logic/Triggers/WorkflowRunningTrigger.h"
+#include "../Logic/Triggers/OTADownloadingTrigger.h"
 
 MachineFactory::MachineFactory(const MachineConfig& config) 
     : _dispatcher(),
@@ -18,15 +22,45 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _boilerTempProc(&_dispatcher),
       _shotMonitorProc(&_dispatcher, config.debounceMs / 1000.0f),
       _safetyProc(&_dispatcher),
-      _wifi(nullptr),
-      _ota(nullptr),
+      _wifiService(nullptr),
+      _wifiProc(&_dispatcher),
+      _wifiBlocker(&_dispatcher),
+      _otaService(nullptr),
+      _otaBlocker(&_dispatcher),
       _warmingUpBlocker(nullptr),
       _heatingCycleProc(&_dispatcher),
       _warmingUpProc(&_dispatcher),
-      _config(config) {
-    
-    _themes = {&_defaultTheme, &_candyTheme, &_christmasTheme};
+      _workflowEngine(nullptr),
+      _startupWorkflow(nullptr),
+      _dashboardWorkflow(nullptr),
+      _shotWorkflow(nullptr),
+      _otaUpdateWorkflow(nullptr),
+      _otaDownloadingTrigger(nullptr),
+      _config(config),
+      _widgetRegistry(&_dispatcher)
+#if !defined(NATIVE) || defined(SIMULATOR)
+      , _lvglFactory(&_widgetRegistry) 
+#endif
+{
+    BOOT_LOG("001", "Registering Widgets...");
+    // Register Widgets with Registry
+    _widgetRegistry.registerWidget<SensorWidgetTag>(WidgetCompatibility(DataCategory::TELEMETRY));
+    _widgetRegistry.registerWidget<GaugeWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        { PhysicalQuantity::PRESSURE, PhysicalQuantity::TEMPERATURE } 
+    ));
+    _widgetRegistry.registerWidget<BlockerWidgetTag>(WidgetCompatibility(DataCategory::SERVICE));
+    _widgetRegistry.registerWidget<ShotTimerWidgetTag>(WidgetCompatibility(
+        DataCategory::TELEMETRY,
+        {}, // No specific quantities
+        { ShotTimeReading::NAME } 
+    ));
 
+    BOOT_LOG("002", "Seeding Whitelists...");
+    // Seed whitelists for Whitelist-First architecture
+    _widgetRegistry.applyTypeWhitelists(AllowedSensors{}, AllowedServices{});
+
+    BOOT_LOG("003", "Wiring Hardware Sensors...");
     // Register Hardware Sensors for central polling
     _dispatcher.provide<SystemUptimeReading>(&_uptimeSensor);
     _dispatcher.provide<PumpReading>(&_pumpSensor);
@@ -35,37 +69,140 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.provide<BoilerPressureReading>(&_boilerPressure);
     _dispatcher.provide<WeightReading>(&_weightSensor);
 
+    // Apply global whitelists to the Dispatcher (Auto-seeds all metadata)
+    _dispatcher.applyTypeWhitelists(AllowedSensors{});
+    _dispatcher.applyTypeWhitelists(AllowedServices{});
+
+    BOOT_LOG("004", "Attaching Reactive Processors...");
     // Attach Reactive Processors
     _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
     _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
     _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
+    _dispatcher.attachProcessor<WiFiRawReading>(&_wifiProc);
     _dispatcher.attachProcessor<BoilerSafetyStatus>(&_safetyProc);
+
+#if !defined(NATIVE) || defined(SIMULATOR)
+    BOOT_LOG("005", "Initializing UI Widget Factory...");
+    // Register Widget Creators for Late-Binding
+    LVGLWidgetFactory::registerStandardCreators(_lvglFactory);
+#endif
+
+    BOOT_LOG("011", "Registering Themes...");
+    _themes.push_back(&_defaultTheme);
+    _themes.push_back(&_candyTheme);
+    _themes.push_back(&_christmasTheme);
 }
 
-WiFiService* MachineFactory::getWiFiSwitch() {
-    if (!_wifi) {
-        _wifi = new WiFiService(&_dispatcher, _config.wifiSsid, _config.wifiPassword);
+void MachineFactory::BOOT_LOG(const char* code, const char* msg) {
+#ifndef NATIVE
+    if (_config.verboseBoot) {
+        Serial.print("[BOOT] ");
+        Serial.print(code);
+        Serial.print(": ");
+        Serial.println(msg);
     }
-    return _wifi;
+#endif
+}
+
+IWidgetFactory* MachineFactory::getWidgetFactory() {
+#if !defined(NATIVE) || defined(SIMULATOR)
+    return &_lvglFactory;
+#else
+    return nullptr;
+#endif
+}
+
+IBlocker* MachineFactory::getWiFiSwitch() {
+    if (!_wifiService) {
+        _wifiService = new WiFiService(&_dispatcher, _config.wifiSsid, _config.wifiPassword);
+    }
+    return &_wifiBlocker;
 }
 
 MachineFactory::~MachineFactory() {
-    if (_wifi) delete _wifi;
-    if (_ota) delete _ota;
+    if (_wifiService) delete _wifiService;
+    if (_otaService) delete _otaService;
     if (_warmingUpBlocker) delete _warmingUpBlocker;
+    if (_workflowEngine) delete _workflowEngine;
+    if (_startupWorkflow) delete _startupWorkflow;
+    if (_dashboardWorkflow) delete _dashboardWorkflow;
+    if (_shotWorkflow) delete _shotWorkflow;
+    if (_otaUpdateWorkflow) delete _otaUpdateWorkflow;
+    if (_otaDownloadingTrigger) delete _otaDownloadingTrigger;
 }
 
-OTAService* MachineFactory::createOTA() {
-    if (!_ota) {
-        _ota = new OTAService(&_dispatcher, _config.otaHostname);
+IBlocker* MachineFactory::createOTA() {
+    if (!_otaService) {
+        _otaService = new OTAService(&_dispatcher, _config.otaHostname);
     }
-    return _ota;
+    return &_otaBlocker;
 }
 
-WarmingUpBlocker* MachineFactory::getWarmingUpBlocker() {
+IBlocker* MachineFactory::getWarmingUpBlocker() {
     if (!_warmingUpBlocker) {
         _warmingUpBlocker = new WarmingUpBlocker(&_dispatcher);
     }
     return _warmingUpBlocker;
+}
+
+#include "WorkflowFactory.h"
+
+WorkflowEngine* MachineFactory::getWorkflowEngine() {
+    if (!_workflowEngine) {
+        _workflowEngine = new WorkflowEngine(&_dispatcher, 1500);
+
+        _startupWorkflow = WorkflowFactory::createSystemWorkflow(&_dispatcher, getWiFiSwitch(), createOTA(), getWarmingUpBlocker());
+        _dashboardWorkflow = WorkflowFactory::createDashboardWorkflow(&_dispatcher);
+        _shotWorkflow = WorkflowFactory::createShotWorkflow(&_dispatcher);
+        _otaUpdateWorkflow = WorkflowFactory::createOTAUpdateWorkflow(&_dispatcher, createOTA());
+
+        _otaDownloadingTrigger = new OTADownloadingTrigger(&_dispatcher);
+        _workflowEngine->addGlobalTrigger(_otaUpdateWorkflow, _otaDownloadingTrigger, 1000);
+
+        // Create a root container for all major modes
+        BasicWorkflow* systemRoot = new BasicWorkflow("System", "Root");
+        _workflowEngine->setRootWorkflow(systemRoot);
+        
+        // We use a "Sibling Fall-through" pattern (ADR 0011):
+        // Startup (10) and Dashboard (1) are children of the same System root.
+        // Once Startup reports isFinished(), the engine falls through to Dashboard.
+        class AlwaysTrigger : public ITrigger {
+        public:
+            void update() override {}
+            bool isActive() const override { return true; }
+        };
+        static AlwaysTrigger always;
+        static WorkflowRunningTrigger startupRunning(_startupWorkflow);
+
+        _workflowEngine->addTriggerWorkflow(_startupWorkflow, &startupRunning, 10, systemRoot);
+        _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, &always, 1, systemRoot);
+        
+        // Shot is a child of Dashboard. It only triggers if focus is on Dashboard.
+        _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100, _dashboardWorkflow);
+    }
+    return _workflowEngine;
+}
+
+void MachineFactory::update() {
+    // 1. Hardware Poll & Dispatch (Crucial for all sensors/processors)
+    _dispatcher.update();
+
+    // 2. Update background services (Active logic)
+    if (_wifiService) _wifiService->update();
+    if (_otaService) _otaService->update();
+    
+    // 3. Update triggers/switches needed for pre-emption
+    _pumpRegSw.update();
+
+    // 4. Update blockers (Passive polling)
+    _wifiBlocker.update();
+    _otaBlocker.update();
+    if (_warmingUpBlocker) _warmingUpBlocker->update();
+}
+
+void MachineFactory::setHeartbeat(std::function<void()> heartbeat) {
+    if (_otaService) {
+        _otaService->setHeartbeat(heartbeat);
+    }
 }

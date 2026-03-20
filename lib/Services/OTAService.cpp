@@ -6,24 +6,58 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
         _registry->publish<OTAStatus>(StatusMessage("OTA", "OFF", 100.0f, false));
     }
 #ifdef ARDUINO
+#ifdef VERBOSE_BOOT
+    Serial.print("[BOOT] Starting OTA: ");
+    Serial.println(_hostname);
+#endif
     ArduinoOTA.setHostname(_hostname);
     
     ArduinoOTA.onStart([this]() {
+#ifdef VERBOSE_BOOT
+        Serial.println("[OTA] Update Started (Bridge)");
+#endif
         _isError = false;
         _progress = 0;
     });
     
     ArduinoOTA.onEnd([this]() {
+#ifdef VERBOSE_BOOT
+        Serial.println("[OTA] Update Finished");
+#endif
         _progress = 100.0f;
     });
     
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
         if (total > 0) {
             _progress = (progress / (total / 100.0f));
+            
+#ifdef VERBOSE_BOOT
+            static int lastLoggedP = -1;
+            int p = (int)_progress;
+            if (p % 10 == 0 && p != lastLoggedP) { 
+                Serial.print("[OTA] Progress: ");
+                Serial.print(p);
+                Serial.println("%");
+                lastLoggedP = p;
+            }
+#endif
+            
+            // Throttle UI/Logic updates to 5Hz (200ms) to avoid starving the CPU
+            if (millis() - _lastHeartbeatMillis > 200) {
+                if (_registry) {
+                    _registry->publish<OTAStatus>(getStatus());
+                }
+                if (_heartbeat) _heartbeat();
+                _lastHeartbeatMillis = millis();
+            }
         }
     });
     
     ArduinoOTA.onError([this](ota_error_t error) {
+#ifdef VERBOSE_BOOT
+        Serial.print("[OTA] Error: ");
+        Serial.println(error);
+#endif
         _isError = true;
         _progress = 0;
     });
@@ -38,10 +72,6 @@ OTAService::OTAService(ISensorRegistry* registry, const char* hostname)
 }
 
 void OTAService::update() {
-    _justStarted = _isActive && !_lastActive;
-    _justStopped = !_isActive && _lastActive;
-    _lastActive = _isActive;
-
 #ifdef ARDUINO
     if (_isActive) {
         ArduinoOTA.handle();

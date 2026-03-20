@@ -6,19 +6,31 @@
 
 class BlockerWidget : public IWidget {
 public:
-    BlockerWidget(IBlocker* blocker);
+    BlockerWidget(const char* tagName = nullptr);
     
     lv_obj_t* init(lv_obj_t* parent, uint8_t cols, uint8_t rows) override;
     void update(const Reading& reading) override;
     void refresh() override;
+    void setRegistry(class ISensorRegistry* registry) override;
+    void setTagName(const char* tagName);
     void applyTheme(ITheme* theme) override;
+    
+    // For verification only
+    const char* getTitle() const { return _title_label ? lv_label_get_text(_title_label) : ""; }
+
+protected:
+    // Explicitly push status when used by a Painter
+    void setStatus(const StatusMessage& status);
 
 private:
     lv_obj_t* _container;
     lv_obj_t* _title_label;
     lv_obj_t* _status_label;
     lv_obj_t* _bar;
-    IBlocker* _blocker;
+    class ISensorRegistry* _registry;
+    const char* _tagName;
+    
+    StatusMessage _lastStatus;
     
     lv_color_t _bgColor;
     lv_color_t _textColor;

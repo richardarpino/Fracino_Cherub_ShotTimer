@@ -9,31 +9,32 @@
 // No-op for native
 #endif
 
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 #include "../Interfaces/SensorTags.h"
+#include <functional>
 
-class OTAService : public IBlocker {
+class OTAService {
 public:
     OTAService(ISensorRegistry* registry, const char* hostname);
+    virtual ~OTAService() = default;
     
-    // IBlocker implementation
-    StatusMessage getStatus() const override;
+    // Background Service Implementation
+    void update();
+    const char* getTagName() const { return OTAStatus::NAME; }
 
-    // ISwitch implementation
-    void update() override;
-    bool isActive() const override { return _isActive; }
-    bool justStarted() const override { return _justStarted; }
-    bool justStopped() const override { return _justStopped; }
+    StatusMessage getStatus() const;
 
+    void setHeartbeat(std::function<void()> heartbeat) { _heartbeat = heartbeat; }
+
+private:
     ISensorRegistry* _registry;
     const char* _hostname;
     bool _isActive = false;
-    bool _lastActive = false;
-    bool _justStarted = false;
-    bool _justStopped = false;
     bool _isError = false;
-    float _progress = 0;
+    float _progress = 100.0f;
     mutable char _statusBuffer[64];
+    std::function<void()> _heartbeat = nullptr;
+    unsigned long _lastHeartbeatMillis = 0;
 };
 
 #endif

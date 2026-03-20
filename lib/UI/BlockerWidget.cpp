@@ -1,9 +1,18 @@
 #include "BlockerWidget.h"
+#include "../Registry/ISensorRegistry.h"
 
-BlockerWidget::BlockerWidget(IBlocker* blocker) 
-    : _container(nullptr), _title_label(nullptr), _status_label(nullptr), _bar(nullptr), _blocker(blocker) {}
+BlockerWidget::BlockerWidget(const char* tagName) 
+    : _container(nullptr), _title_label(nullptr), _status_label(nullptr), _bar(nullptr), _registry(nullptr), _tagName(tagName) {}
 
 lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _title_label = nullptr;
+    _status_label = nullptr;
+    _bar = nullptr;
+
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_pad_all(_container, 10, 0);
@@ -35,11 +44,35 @@ lv_obj_t* BlockerWidget::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
     return _container;
 }
 
-void BlockerWidget::refresh() {
-    if (!_blocker) return;
+void BlockerWidget::setStatus(const StatusMessage& status) {
+    _lastStatus = status;
+}
 
-    StatusMessage status = _blocker->getStatus();
-    lv_label_set_text(_title_label, status.title);
+void BlockerWidget::setRegistry(ISensorRegistry* registry) {
+    _registry = registry;
+}
+
+void BlockerWidget::setTagName(const char* tagName) {
+    _tagName = tagName;
+}
+
+void BlockerWidget::refresh() {
+    if (!_container) return; 
+
+    StatusMessage status;
+    ServiceMetadata meta;
+    if (_registry && _tagName) {
+        status = _registry->getLatestStatus(_tagName);
+        meta = _registry->getServiceMetadataByName(_tagName);
+    } else {
+        status = _lastStatus;
+    }
+
+    // Fallback logic for titles
+    const char* title = (status.title && status.title[0] != '\0') ? status.title : meta.ready.title;
+    if (status.isFailed && meta.failed.title[0] != '\0') title = meta.failed.title;
+
+    lv_label_set_text(_title_label, title);
     lv_label_set_text(_status_label, status.message);
 
     if (status.progress >= 0) {
@@ -65,6 +98,7 @@ void BlockerWidget::update(const Reading& reading) {
 }
 
 void BlockerWidget::applyTheme(ITheme* theme) {
+    if (!_container) return;
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F; r = (r * 255) / 31;
         uint8_t g = (c >> 5) & 0x3F;  g = (g * 255) / 63;

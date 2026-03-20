@@ -2,7 +2,7 @@
 #define HEATING_CYCLE_PROCESSOR_H
 
 #include "../../Interfaces/ITagProcessor.h"
-#include "../../Interfaces/ISensorRegistry.h"
+#include "../../Registry/ISensorRegistry.h"
 #include "../../Interfaces/SensorTags.h"
 #include <vector>
 

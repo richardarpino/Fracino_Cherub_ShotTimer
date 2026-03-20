@@ -3,7 +3,7 @@
 
 #include <lvgl.h>
 #include "IWidget.h"
-#include "../Interfaces/ISensorRegistry.h"
+#include "../Registry/ISensorRegistry.h"
 
 /**
  * Base class for Gauge UI logic.
@@ -29,9 +29,15 @@ protected:
     
     lv_color_t _bgColor, _textColor, _errorColor, _labelColor, _alertBgColor;
     
+    float getMin() const { return _minValue; }
+    float getMax() const { return _maxValue; }
+
+protected:
     uint16_t _tick_count;
     lv_coord_t _tick_len, _major_tick_len, _label_gap;
+    float _minValue, _maxValue;
 
+protected:
     static void meter_event_cb(lv_event_t* e);
 };
 
@@ -64,6 +70,33 @@ private:
     }
 
 private:
+    ISensorRegistry* _registry;
+};
+
+/**
+ * Late-binding specialization for string-based registration.
+ */
+template<>
+class GaugeWidget<void> : public GaugeWidgetBase {
+public:
+    GaugeWidget(const char* tagName, ISensorRegistry* registry = nullptr) 
+        : _tagName(tagName), _registry(registry) {}
+
+    void setRegistry(ISensorRegistry* registry) override {
+        _registry = registry;
+    }
+
+    void refresh() override {
+        if (_registry) {
+            SensorMetadata meta = _registry->getSensorMetadataByName(_tagName.c_str());
+            setMetadata(meta);
+            Reading r = _registry->getLatestReading(_tagName.c_str());
+            update(r);
+        }
+    }
+
+private:
+    std::string _tagName;
     ISensorRegistry* _registry;
 };
 #endif

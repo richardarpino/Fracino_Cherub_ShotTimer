@@ -4,6 +4,12 @@
 #include <Arduino.h>
 #include <vector>
 #include <initializer_list>
+#include <cstring>
+
+enum class DataCategory {
+    TELEMETRY,
+    SERVICE
+};
 
 /**
  * Utility for defining lists of tags at compile-time.
@@ -35,6 +41,31 @@ enum class PhysicalQuantity {
     SIGNAL_LEVEL, // dBm
     BOOLEAN,      // Pump, Buttons, etc.
     COUNTER       // Heating cycles, etc.
+};
+/**
+ * A blueprint for a single widget slot.
+ */
+struct WidgetBlueprint {
+    const char* widgetName;
+    const char* tag; // Registry Tag Name
+
+    WidgetBlueprint(const char* wn, const char* tg) : widgetName(wn), tag(tg) {}
+};
+
+/**
+ * A data-driven description of a full screen.
+ */
+struct ScreenComposition {
+    uint8_t cols;
+    uint8_t rows;
+    std::vector<WidgetBlueprint> widgets;
+
+    ScreenComposition(uint8_t c = 1, uint8_t r = 1) : cols(c), rows(r) {}
+    
+    ScreenComposition& add(const char* widgetName, const char* tag) {
+        widgets.emplace_back(widgetName, tag);
+        return *this;
+    }
 };
 
 /**

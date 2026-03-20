@@ -15,8 +15,8 @@ Continuous data streams visualized across different widgets and themes.
 ## System Services (Blockers)
 Procedural services that manage system state and connectivity.
 
-- [**WiFiService**](WiFiService/README.md)
-- [**OTAService**](OTAService/README.md)
+- [**WiFiBlocker**](WiFiBlocker/README.md)
+- [**OTABlocker**](OTABlocker/README.md)
 - [**WarmingUpBlocker**](WarmingUpBlocker/README.md)
 
 ---

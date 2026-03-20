@@ -5,6 +5,12 @@ StatusWidgetBase::StatusWidgetBase()
     : _container(nullptr), _label(nullptr), _messageTimeout(0) {}
 
 lv_obj_t* StatusWidgetBase::init(lv_obj_t* parent, uint8_t cols, uint8_t rows) {
+    if (!parent) return nullptr;
+
+    // Pointer Safety: Reset handles to prevent dangling usage during re-init
+    _container = nullptr;
+    _label = nullptr;
+
     _container = lv_obj_create(parent);
     lv_obj_set_size(_container, LV_PCT(100), LV_PCT(100));
     lv_obj_set_style_pad_all(_container, 2, 0);
@@ -30,6 +36,7 @@ void StatusWidgetBase::setText(const char* text) {
 }
 
 void StatusWidgetBase::update(const Reading& reading) {
+    if (!_container) return;
     if (reading.label && reading.label[0] != '\0') {
         setText(reading.label);
         
@@ -48,6 +55,7 @@ void StatusWidgetBase::update(const Reading& reading) {
 }
 
 void StatusWidgetBase::update(const StatusMessage& status) {
+    if (!_container) return;
     if (status.message && status.message[0] != '\0') {
         setText(status.message);
         
@@ -62,6 +70,7 @@ void StatusWidgetBase::update(const StatusMessage& status) {
 }
 
 void StatusWidgetBase::applyTheme(ITheme* theme) {
+    if (!_container) return;
     auto toLvColor = [](uint16_t c) -> lv_color_t {
         uint8_t r = (c >> 11) & 0x1F; r = (r * 255) / 31;
         uint8_t g = (c >> 5) & 0x3F;  g = (g * 255) / 63;

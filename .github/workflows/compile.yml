@@ -42,8 +42,11 @@ jobs:
       - name: Run PlatformIO Native Tests
         run: pio test -e native
 
-      - name: Run PlatformIO Simulator (Gallery Generation)
-        run: pio test -e simulator
+      - name: Run Factory Integration Tests (Simulator)
+        run: pio test -e simulator -f test_factory_integration
+
+      - name: Run Gallery Generation (Simulator)
+        run: pio test -e simulator -f test_simulator
 
       - name: Check for Documentation Drift
         run: |
