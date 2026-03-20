@@ -151,8 +151,20 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _shotWorkflow = WorkflowFactory::createShotWorkflow(&_dispatcher);
 
         _workflowEngine->setRootWorkflow(_startupWorkflow);
-        _workflowEngine->setDefaultWorkflow(_dashboardWorkflow);
-        _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100);
+        
+        // Dashboard is a child of Startup. It should always be active if no higher precedence child matches.
+        // For now, we use a null trigger (Always) or a very simple true trigger.
+        class AlwaysTrigger : public ITrigger {
+        public:
+            void update() override {}
+            bool isActive() const override { return true; }
+        };
+        static AlwaysTrigger always;
+
+        _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, &always, 1, _startupWorkflow);
+        
+        // Shot is a child of Dashboard. It only triggers if focus is on Dashboard.
+        _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100, _dashboardWorkflow);
     }
     return _workflowEngine;
 }

@@ -21,6 +21,7 @@ public:
         std::string name;
         std::string exitCondition;
         std::string imagePath;
+        std::string breadcrumb;
     };
 
     struct WorkflowResult {
@@ -31,7 +32,7 @@ public:
     WorkflowSnapshotter(LVGLPainter* painter, ISensorRegistry* registry)
         : _painter(painter), _registry(registry) {}
 
-    void capture(IWorkflow* wf, const std::string& baseDir = "docs/previews") {
+    void capture(IWorkflow* wf, const std::string& baseDir = "docs/previews", const std::string& label = "") {
         if (!wf) return;
 
         std::string wfName = sanitize(wf->getName());
@@ -65,7 +66,8 @@ public:
                 result.screens.push_back({
                     screen->getName(),
                     screen->getExitCondition(),
-                    filename
+                    filename,
+                    label // Store the breadcrumb here
                 });
 
                 std::cout << "  [+] Captured Screen: " << screen->getName() << " to " << filename << std::endl;

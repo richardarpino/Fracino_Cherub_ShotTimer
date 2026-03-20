@@ -45,12 +45,12 @@ private:
 
         doc << "# Journey: " << res.name << "\n\n";
         doc << "## Sequence of Events" << "\n\n";
-        doc << "| Step | Screen | Visualization | Exit Condition |" << "\n";
-        doc << "| :---: | :--- | :--- | :--- |" << "\n";
+        doc << "| Step | Context | Screen | Visualization | Exit Condition |" << "\n";
+        doc << "| :---: | :--- | :--- | :--- | :--- |" << "\n";
 
         for (size_t i = 0; i < res.screens.size(); ++i) {
             const auto& s = res.screens[i];
-            doc << "| " << i << " | **" << s.name << "** | ![" << s.name << "](" << s.imagePath << ") | " 
+            doc << "| " << i << " | `" << s.breadcrumb << "` | **" << s.name << "** | ![" << s.name << "](" << s.imagePath << ") | " 
                 << "_" << s.exitCondition << "_ |" << "\n";
         }
     }

@@ -30,7 +30,7 @@ private:
 
 class MockScreen : public IScreen {
 public:
-    MockScreen(const char* name) : _name(name), _isDone(false) {}
+    MockScreen(const char* name) : _name(name), _isDone(true) {}
     void update() override {}
     bool isDone() const override { return _isDone; }
     void setDone(bool done) { _isDone = done; }
@@ -324,6 +324,167 @@ void test_workflow_factory_assembly() {
     delete systemWf;
 }
 
+#include "../../lib/Logic/Workflows/WorkflowNode.h"
+
+void test_node_hierarchy() {
+    BasicWorkflow rootWf("Root", "root");
+    BasicWorkflow childWf("Child", "child");
+    MockTrigger trigger;
+
+    WorkflowNode rootNode(&rootWf);
+    WorkflowNode* childNode = new WorkflowNode(&childWf);
+    rootNode.addChild(childNode, &trigger, 100);
+
+    TEST_ASSERT_EQUAL_PTR(&rootWf, rootNode.getWorkflow());
+    TEST_ASSERT_EQUAL(1, rootNode.getChildren().size());
+    TEST_ASSERT_EQUAL_PTR(&childWf, rootNode.getChildren()[0].node->getWorkflow());
+}
+
+void test_blocking_traversal() {
+    MockScreen* blockerScreen = new MockScreen("Blocker");
+    blockerScreen->setDone(false); // It's blocking!
+    
+    BasicWorkflow* rootWf = new BasicWorkflow("Root", "root");
+    rootWf->addScreen(blockerScreen);
+
+    BasicWorkflow* childWf = new BasicWorkflow("Child", "child");
+    childWf->addScreen(new MockScreen("ChildScreen"));
+    
+    MockTrigger* trigger = new MockTrigger();
+    trigger->setActive(true); // Trigger is active, but parent should block
+
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+    engine.setRootWorkflow(rootWf);
+    engine.addTriggerWorkflow(childWf, trigger, 100);
+
+    engine.update();
+    
+    // Since the root workflow's current screen (blocker) is NOT done, 
+    // the engine should NOT traverse to the child, even though the trigger is active.
+    TEST_ASSERT_EQUAL_PTR(rootWf, engine.getActiveWorkflow());
+    TEST_ASSERT_EQUAL_PTR(blockerScreen, engine.getActiveScreen());
+}
+
+void test_shot_timer_return() {
+    BasicWorkflow* dashWf = new BasicWorkflow("Dashboard", "dash");
+    dashWf->addScreen(new MockScreen("DashScreen"));
+
+    BasicWorkflow* shotWf = new BasicWorkflow("Shot", "shot");
+    shotWf->addScreen(new MockScreen("ShotScreen"));
+    
+    MockTrigger* pumpTrigger = new MockTrigger();
+    pumpTrigger->setActive(true);
+
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+    engine.setRootWorkflow(dashWf);
+    engine.addTriggerWorkflow(shotWf, pumpTrigger, 100);
+
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(shotWf, engine.getActiveWorkflow());
+
+    // DEACTIVATE Trigger: Should return to Dashboard
+    pumpTrigger->setActive(false);
+    engine.update();
+    
+    TEST_ASSERT_EQUAL_PTR(dashWf, engine.getActiveWorkflow());
+}
+
+void test_deep_hierarchy_traversal() {
+    BasicWorkflow* rootWf = new BasicWorkflow("Root", "root");
+    rootWf->addScreen(new MockScreen("RootScreen"));
+
+    BasicWorkflow* childWf = new BasicWorkflow("Child", "child");
+    childWf->addScreen(new MockScreen("ChildScreen"));
+
+    BasicWorkflow* grandChildWf = new BasicWorkflow("GrandChild", "gc");
+    grandChildWf->addScreen(new MockScreen("GrandChildScreen"));
+
+    MockTrigger* childTrigger = new MockTrigger();
+    childTrigger->setActive(true);
+
+    MockTrigger* grandChildTrigger = new MockTrigger();
+    grandChildTrigger->setActive(true);
+
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+    engine.setRootWorkflow(rootWf);
+    
+    // Root -> Child
+    engine.addTriggerWorkflow(childWf, childTrigger, 100, rootWf);
+    // Child -> GrandChild
+    engine.addTriggerWorkflow(grandChildWf, grandChildTrigger, 100, childWf);
+
+    engine.update();
+    
+    // Should traverse all the way to GrandChild
+    TEST_ASSERT_EQUAL_PTR(grandChildWf, engine.getActiveWorkflow());
+
+    // Deactivate GrandChild trigger -> should return to Child
+    grandChildTrigger->setActive(false);
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(childWf, engine.getActiveWorkflow());
+
+    // Deactivate Child trigger -> should return to Root
+    childTrigger->setActive(false);
+    engine.update();
+    TEST_ASSERT_EQUAL_PTR(rootWf, engine.getActiveWorkflow());
+}
+
+void test_global_intercept() {
+    MockScreen* blockerScreen = new MockScreen("Blocker");
+    blockerScreen->setDone(false); // Blocking
+    
+    BasicWorkflow* rootWf = new BasicWorkflow("Root", "root");
+    rootWf->addScreen(blockerScreen);
+
+    BasicWorkflow* alarmWf = new BasicWorkflow("Alarm", "alarm");
+    alarmWf->addScreen(new MockScreen("AlarmScreen"));
+    
+    MockTrigger* alarmTrigger = new MockTrigger();
+    alarmTrigger->setActive(true);
+
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+    engine.setRootWorkflow(rootWf);
+    
+    // Add as Global Trigger (High precedence)
+    engine.addGlobalTrigger(alarmWf, alarmTrigger, 999);
+
+    engine.update();
+    
+    // Should override even the blocker because it's global
+    TEST_ASSERT_EQUAL_PTR(alarmWf, engine.getActiveWorkflow());
+}
+
+void test_breadcrumb_generation() {
+    BasicWorkflow* rootWf = new BasicWorkflow("System", "sys");
+    BasicWorkflow* childWf = new BasicWorkflow("Dash", "dash");
+    BasicWorkflow* grandChildWf = new BasicWorkflow("Shot", "shot");
+
+    MockTrigger* t1 = new MockTrigger(); t1->setActive(true);
+    MockTrigger* t2 = new MockTrigger(); t2->setActive(true);
+
+    SensorDispatcher registry;
+    WorkflowEngine engine(&registry);
+    engine.setRootWorkflow(rootWf);
+    engine.addTriggerWorkflow(childWf, t1, 1, rootWf);
+    engine.addTriggerWorkflow(grandChildWf, t2, 1, childWf);
+
+    engine.update();
+    
+    // Initially should be System > Dash > Shot
+    // Note: Use a fixed buffer or std::string if available, but here we expect a specific format.
+    const char* bc = engine.getActiveBreadcrumb();
+    TEST_ASSERT_EQUAL_STRING("System > Dash > Shot", bc);
+
+    // Deactivate grandchild -> System > Dash
+    t2->setActive(false);
+    engine.update();
+    TEST_ASSERT_EQUAL_STRING("System > Dash", engine.getActiveBreadcrumb());
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_painter_infrastructure);
@@ -340,5 +501,11 @@ int main(int argc, char **argv) {
     RUN_TEST(test_screen_metadata);
     RUN_TEST(test_workflow_metadata);
     RUN_TEST(test_workflow_factory_assembly);
+    RUN_TEST(test_node_hierarchy);
+    RUN_TEST(test_blocking_traversal);
+    RUN_TEST(test_shot_timer_return);
+    RUN_TEST(test_deep_hierarchy_traversal);
+    RUN_TEST(test_global_intercept);
+    RUN_TEST(test_breadcrumb_generation);
     return UNITY_END();
 }

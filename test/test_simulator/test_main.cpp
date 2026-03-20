@@ -470,7 +470,15 @@ void test_capture_workflow_previews() {
     WorkflowSnapshotter snapshotter(&painter, &registry);
     
     for (IWorkflow* wf : workflows) {
-        snapshotter.capture(wf);
+        std::string label = "System";
+        std::string name = wf->getName();
+        if (name == "Main Dashboard") label = "System > Dashboard";
+        if (name == "Shot Progress") label = "System > Dashboard > Shot";
+        if (name == "WiFi Service") label = "System > WiFi";
+        if (name == "OTA Service") label = "System > OTA";
+        if (name == "Warming Up") label = "System > Warming Up";
+
+        snapshotter.capture(wf, "docs/previews", label);
         delete wf;
     }
 

@@ -36,8 +36,9 @@ public:
     }
     
     bool isDone() const override {
-        // If we have a blocker, we are done when the blocker is active (finished)
-        return _blocker && _blocker->isActive();
+        // If we have no blocker, we are not blocking. 
+        // If we have a blocker, we are done when it is active (finished).
+        return _blocker == nullptr || _blocker->isActive();
     }
 
     void paint(IPainter& p) override {

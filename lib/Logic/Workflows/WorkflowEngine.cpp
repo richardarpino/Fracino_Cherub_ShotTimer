@@ -4,12 +4,17 @@
 #include <Arduino.h>
 
 WorkflowEngine::WorkflowEngine(ISensorRegistry* registry, uint32_t transitionPauseMs)
-    : _registry(registry), _root(nullptr), _default(nullptr), _activeWorkflow(nullptr),
+    : _registry(registry), _rootNode(nullptr), _default(nullptr), _activeWorkflow(nullptr),
       _transitionPauseMs(transitionPauseMs), _currentTransitionPauseMs(0), _lastScreen(nullptr), 
       _transitionStartTime(0), _isTransitioning(false) {}
 
+WorkflowEngine::~WorkflowEngine() {
+    if (_rootNode) delete _rootNode;
+}
+
 void WorkflowEngine::setRootWorkflow(IWorkflow* root) {
-    _root = root;
+    if (_rootNode) delete _rootNode;
+    _rootNode = new WorkflowNode(root);
     if (!_activeWorkflow) _activeWorkflow = root;
 }
 
@@ -17,14 +22,92 @@ void WorkflowEngine::setDefaultWorkflow(IWorkflow* defaultWf) {
     _default = defaultWf;
 }
 
-void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, ITrigger* trigger, int precedence) {
-    _triggeredWorkflows.emplace_back(workflow, trigger, precedence);
+void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, ITrigger* trigger, int precedence, IWorkflow* parent) {
+    if (!_rootNode) return;
+    
+    WorkflowNode* parentNode = _rootNode;
+    if (parent) {
+        parentNode = _rootNode->findNode(parent);
+    }
+
+    if (parentNode) {
+        parentNode->addChild(new WorkflowNode(workflow), trigger, precedence);
+    }
+}
+
+void WorkflowEngine::addGlobalTrigger(IWorkflow* workflow, ITrigger* trigger, int precedence) {
+    _globalTriggers.emplace_back(workflow, trigger, precedence);
     
     // Sort by precedence (highest first)
-    std::sort(_triggeredWorkflows.begin(), _triggeredWorkflows.end(), 
-        [](const TriggeredWorkflow& a, const TriggeredWorkflow& b) {
+    std::sort(_globalTriggers.begin(), _globalTriggers.end(), 
+        [](const GlobalTrigger& a, const GlobalTrigger& b) {
             return a.precedence > b.precedence;
         });
+}
+
+IWorkflow* WorkflowEngine::findNextActiveWorkflow() const {
+    const_cast<WorkflowEngine*>(this)->_activeBreadcrumb = "";
+
+    // 1. Check Global Triggers first (Override everything)
+    for (auto& gt : _globalTriggers) {
+        if (gt.trigger) {
+            gt.trigger->update();
+            if (gt.trigger->isActive()) {
+                const_cast<WorkflowEngine*>(this)->_activeBreadcrumb = "Global > ";
+                const_cast<WorkflowEngine*>(this)->_activeBreadcrumb += (gt.workflow ? gt.workflow->getName() : "Unknown");
+                return gt.workflow;
+            }
+        }
+    }
+
+    if (!_rootNode) return nullptr;
+    
+    WorkflowNode* currentNode = _rootNode;
+    IWorkflow* result = _rootNode->getWorkflow();
+
+    while (currentNode) {
+        IWorkflow* wf = currentNode->getWorkflow();
+        result = wf;
+
+        if (!const_cast<WorkflowEngine*>(this)->_activeBreadcrumb.empty()) {
+            const_cast<WorkflowEngine*>(this)->_activeBreadcrumb += " > ";
+        }
+        const_cast<WorkflowEngine*>(this)->_activeBreadcrumb += (wf ? wf->getName() : "Unknown");
+
+        // Check for blockers
+        IScreen* screen = wf ? wf->getActiveScreen() : nullptr;
+        if (screen && !screen->isDone()) {
+            return wf;
+        }
+
+        // Evaluate children
+        WorkflowNode* nextNode = nullptr;
+        int highestPrecedence = -1;
+
+        for (auto& child : currentNode->getChildren()) {
+            if (child.trigger) {
+                child.trigger->update();
+                if (child.trigger->isActive()) {
+                    if (child.precedence > highestPrecedence) {
+                        nextNode = child.node;
+                        highestPrecedence = child.precedence;
+                    }
+                }
+            }
+        }
+
+        if (nextNode) {
+            currentNode = nextNode;
+        } else {
+            // Default fallback if root is finished
+            if (wf && wf->isFinished() && _default && currentNode == _rootNode) {
+                const_cast<WorkflowEngine*>(this)->_activeBreadcrumb = "Default";
+                return _default;
+            }
+            break;
+        }
+    }
+    return result;
 }
 
 void WorkflowEngine::update() {
@@ -40,26 +123,7 @@ void WorkflowEngine::update() {
         _activeWorkflow->update();
     }
 
-    IWorkflow* nextActive = _root;
-    
-    // If root is done, fall back to default
-    if (_root && _root->isFinished() && _default) {
-        nextActive = _default;
-    }
-
-    int highestMatchedPrecedence = -1;
-
-    for (auto& tw : _triggeredWorkflows) {
-        if (tw.trigger) {
-            tw.trigger->update();
-            if (tw.trigger->isActive()) {
-                if (tw.precedence > highestMatchedPrecedence) {
-                    nextActive = tw.workflow;
-                    highestMatchedPrecedence = tw.precedence;
-                }
-            }
-        }
-    }
+    IWorkflow* nextActive = findNextActiveWorkflow();
 
     // Detect Transition
     if (nextActive != _activeWorkflow) {
@@ -89,6 +153,10 @@ void WorkflowEngine::update() {
 
 IWorkflow* WorkflowEngine::getActiveWorkflow() const {
     return _activeWorkflow;
+}
+
+const char* WorkflowEngine::getActiveBreadcrumb() const {
+    return _activeBreadcrumb.c_str();
 }
 
 IScreen* WorkflowEngine::getActiveScreen() const {
