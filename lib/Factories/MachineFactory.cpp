@@ -205,19 +205,7 @@ void MachineFactory::update() {
     _wifiBlocker.update();
     _otaBlocker.update();
     if (_warmingUpBlocker) _warmingUpBlocker->update();
-
 #ifndef NATIVE
-    static unsigned long lastLog = 0;
-    if (millis() - lastLog > 500) {
-        lastLog = millis();
-        float raw = _dispatcher.getLatestReading("RawWeight").value;
-        float cal = _dispatcher.getLatestReading("Weight").value;
-        float tared = _dispatcher.getLatestReading("TaredWeight").value;
-        Serial.printf("[SCALE] Raw: %.0f | Cal: %.2f | Tared: %.2f | WiFi: %s (%s)\n", 
-            raw, cal, tared, 
-            (WiFi.status() == WL_CONNECTED ? "OK" : "NO"), 
-            WiFi.localIP().toString().c_str());
-    }
 #endif
 }
 

@@ -67,7 +67,7 @@ IWorkflow* WorkflowFactory::createShotWorkflow(ISensorRegistry* registry) {
 
     wf->addScreen(new GenericScreen(
         ScreenComposition(2, 1)
-            .add(SensorWidgetTag::NAME, LastValidShotReading::NAME)
+            .add(SensorWidgetTag::NAME, TaredWeightReading::NAME)
             .add(ShotTimerWidgetTag::NAME, ShotTimeReading::NAME),
         registry,
         "Shot Timer",
