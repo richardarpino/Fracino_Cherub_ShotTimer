@@ -22,4 +22,8 @@ const int backlightPin = 4;
 const int buttonRightPin = 35;     // Built-in "Right" button
 const int buttonLeftPin = 0;  // Built-in "Left" button
 
+// HX711 Weight Sensor
+const int hx711DoutPin = 39; // Adjust for your wiring
+const int hx711SckPin = 33; 
+
 #endif // PINS_H

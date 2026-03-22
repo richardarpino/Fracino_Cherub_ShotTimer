@@ -5,11 +5,13 @@
 #include "../Interfaces/SensorTags.h"
 #include "Registry/RegistrySwitch.h"
 
+#include "../Interfaces/ITagProcessor.h"
+
 /**
  * Reactive Processor that handles Taring.
  * SRP: Reads raw weight, applies offset based on Pump trigger, and publishes results.
  */
-class TaredWeightProcessor {
+class TaredWeightProcessor : public ITagProcessor {
 public:
     TaredWeightProcessor(ISensorRegistry* registry) 
         : _registry(registry), _pump(registry), _offset(0.0f) {}

@@ -17,6 +17,8 @@ MachineConfig config = {
 #else
   .verboseBoot = false
 #endif
+  , .weightZeroOffset = weightZeroOffset,
+  .weightScale = weightScale
 };
 
 MachineFactory* factory = nullptr;

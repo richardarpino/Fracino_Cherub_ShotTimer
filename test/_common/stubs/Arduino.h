@@ -14,7 +14,16 @@ void setHardwareTime(unsigned long ms);
 void addHardwareTime(unsigned long ms);
 void pinMode(int pin, int mode);
 int digitalRead(int pin);
+void digitalWrite(int pin, int value);
 int analogRead(int pin);
+
+// Mocking interface
+void setDigitalRead(int pin, int value);
+void setAnalogRead(int pin, int value);
+void resetArduinoStubs();
+
+// Sequence mocking
+void setDigitalReadSequence(int pin, const int* values, int count);
 
 #ifdef __cplusplus
 }

@@ -4,7 +4,9 @@
 #include "../Interfaces/IMachineProvider.h"
 #include "../Hardware/ADCRawSource.h"
 #include "../Hardware/DigitalRawSource.h"
+#include "../Hardware/HX711Source.h"
 #include "../Sensors/Hardware/DigitalSensor.h"
+#include "../Sensors/Hardware/RawHardwareSensor.h"
 #include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Hardware/WeightSensor.h"
@@ -26,6 +28,7 @@
 #include "../Services/WiFiBlocker.h"
 #include "../Logic/SensorDispatcher.h"
 #include "../Interfaces/SensorTags.h"
+#include "../Logic/Processors/WeightCalibrationProcessor.h"
 #include "../Themes/DefaultTheme.h"
 #include "../Themes/CandyTheme.h"
 #include "../Themes/ChristmasTheme.h"
@@ -81,11 +84,13 @@ private:
     DigitalRawSource _pumpInput;
     DigitalRawSource _buttonRightInput;
     DigitalRawSource _buttonLeftInput;
+    HX711Source _hx711Input;
 
     // Hardware Input Sensors (Publish to Registry)
     DigitalSensor _pumpSensor;
     DigitalSensor _buttonRightSensor;
     DigitalSensor _buttonLeftSensor;
+    RawHardwareSensor _rawWeightSensor;
 
     // Registry-Connected Switches (Consume from Registry)
     RegistrySwitch<PumpReading> _pumpRegSw;
@@ -97,6 +102,7 @@ private:
     WeightSensor _weightSensor;
 
     // Logical Processors (Reactive)
+    WeightCalibrationProcessor _weightCalibProc;
     TaredWeightProcessor _taredWeight;
     BoilerTemperatureProcessor _boilerTempProc;
     ShotMonitorProcessor _shotMonitorProc;

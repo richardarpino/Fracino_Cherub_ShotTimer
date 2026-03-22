@@ -13,11 +13,14 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _pumpSensor(&_pumpInput, true, config.debounceMs),
       _buttonRightSensor(&_buttonRightInput, true, config.debounceMs),
       _buttonLeftSensor(&_buttonLeftInput, true, config.debounceMs),
+      _hx711Input(hx711DoutPin, hx711SckPin),
       _pumpRegSw(&_dispatcher),
       _buttonRightRegSw(&_dispatcher),
       _buttonLeftRegSw(&_dispatcher),
       _boilerPressure(&_pressureADC, pressureScalar),
       _weightSensor(nullptr), 
+      _weightCalibProc(&_dispatcher, config.weightZeroOffset, config.weightScale),
+      _rawWeightSensor(&_hx711Input),
       _taredWeight(&_dispatcher),
       _boilerTempProc(&_dispatcher),
       _shotMonitorProc(&_dispatcher, config.debounceMs / 1000.0f),
@@ -68,6 +71,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.provide<ButtonLeftReading>(&_buttonLeftSensor);
     _dispatcher.provide<BoilerPressureReading>(&_boilerPressure);
     _dispatcher.provide<WeightReading>(&_weightSensor);
+    _dispatcher.provide<RawWeightReading>(&_rawWeightSensor);
 
     // Apply global whitelists to the Dispatcher (Auto-seeds all metadata)
     _dispatcher.applyTypeWhitelists(AllowedSensors{});
@@ -77,6 +81,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     // Attach Reactive Processors
     _dispatcher.attachProcessor<HeatingCycleReading>(&_heatingCycleProc);
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
+    _dispatcher.attachProcessor<WeightReading>(&_weightCalibProc);
+    _dispatcher.attachProcessor<TaredWeightReading>(&_taredWeight);
     _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
     _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
     _dispatcher.attachProcessor<WiFiRawReading>(&_wifiProc);
@@ -199,6 +205,20 @@ void MachineFactory::update() {
     _wifiBlocker.update();
     _otaBlocker.update();
     if (_warmingUpBlocker) _warmingUpBlocker->update();
+
+#ifndef NATIVE
+    static unsigned long lastLog = 0;
+    if (millis() - lastLog > 500) {
+        lastLog = millis();
+        float raw = _dispatcher.getLatestReading("RawWeight").value;
+        float cal = _dispatcher.getLatestReading("Weight").value;
+        float tared = _dispatcher.getLatestReading("TaredWeight").value;
+        Serial.printf("[SCALE] Raw: %.0f | Cal: %.2f | Tared: %.2f | WiFi: %s (%s)\n", 
+            raw, cal, tared, 
+            (WiFi.status() == WL_CONNECTED ? "OK" : "NO"), 
+            WiFi.localIP().toString().c_str());
+    }
+#endif
 }
 
 void MachineFactory::setHeartbeat(std::function<void()> heartbeat) {

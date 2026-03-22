@@ -40,6 +40,7 @@ struct OTARawReading;
 struct WarmingUpStatus;
 struct BoilerSafetyStatus;
 struct SystemUptimeReading;
+struct RawWeightReading;
 
 /**
  * Logical Tags for the Sensor Registry.
@@ -106,6 +107,15 @@ struct TaredWeightReading : public BaseTelemetryTag {
     static constexpr const char* NAME = "TaredWeight";
     static SensorMetadata getMetadata() {
         return Units::Weight.range("WEIGHT", -2000.0f, 2000.0f);
+    }
+};
+
+struct RawWeightReading : public BaseTelemetryTag {
+    static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
+    static constexpr const char* NAME = "RawWeight";
+    using Children = TagList<struct WeightReading>;
+    static SensorMetadata getMetadata() {
+        return Units::Weight.range("COUNTS", 0.0f, 16777216.0f); // 24-bit range
     }
 };
 
@@ -252,7 +262,8 @@ using AllowedSensors = TagList<
     BoilerTempReading,
     ShotTimeReading,
     LastValidShotReading,
-    TaredWeightReading
+    TaredWeightReading,
+    RawWeightReading
 >;
 
 using AllowedServices = TagList<
