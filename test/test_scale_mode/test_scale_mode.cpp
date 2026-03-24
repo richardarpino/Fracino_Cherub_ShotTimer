@@ -63,9 +63,10 @@ void test_weight_calibration_ema_smoothing() {
     // 1. Hardware Layer: Setup raw source mock and sensor
     class MockSource : public IRawSource {
     public:
-        MockSource() : val(0) {}
-        RawReading read() override { return RawReading(val, 100); }
+        MockSource() : val(0), ts(0) {}
+        RawReading read() override { return RawReading(val, ++ts); }
         int val;
+        unsigned long ts;
     } source;
 
     // Create hardware sensor with EMA alpha = 0.5
@@ -91,9 +92,10 @@ void test_weight_sensor_adaptive_alpha() {
     SensorDispatcher registry;
     class MockSource : public IRawSource {
     public:
-        MockSource() : val(0) {}
-        RawReading read() override { return RawReading(val, 100); }
+        MockSource() : val(0), ts(0) {}
+        RawReading read() override { return RawReading(val, ++ts); }
         int val;
+        unsigned long ts;
     } source;
 
     // Use alpha = 0.05 (Slow) for small changes
@@ -104,10 +106,12 @@ void test_weight_sensor_adaptive_alpha() {
     TEST_ASSERT_EQUAL_FLOAT(1000.0f, hw.getReading());
 
     // 2. Large Change (1000 -> 2000) - Should reach 1800 in 1 step (Alpha=0.8)
+    // Diff is 1000, which is > 100 (threshold)
     source.val = 2000;
     TEST_ASSERT_EQUAL_FLOAT(1800.0f, hw.getReading());
 
     // 3. Small Change (1800 -> 1810) - Should use Alpha=0.05
+    // Diff is 10, which is < 100
     // Result: (0.05 * 1810) + (0.95 * 1800) = 90.5 + 1710 = 1800.5
     source.val = 1810;
     TEST_ASSERT_EQUAL_FLOAT(1800.5f, hw.getReading());
