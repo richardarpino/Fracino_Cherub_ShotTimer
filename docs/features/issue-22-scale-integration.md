@@ -93,3 +93,28 @@ The user raised the point: "where should calibration values live given it will b
 ### Iteration 2 (Calibrated)
 - **Primary**: Apply a 100g weight. Verify the registry shows ~100.0 (even if unscaled).
 - **Secondary**: Verify that placing the weight on the left vs. right side of the tray yields the same total sum (checks parallel bridge parity).
+
+---
+
+## 7. Calibration Process (Production)
+
+To maintain accuracy as the physical tray mount evolves, a permanent diagnostic path is provided via the `CALIBRATE_SCALE` build flag.
+
+### A. Enabling Calibration Mode
+In `platformio.ini`, uncomment the following line to enable raw count logging:
+```ini
+build_flags = 
+    ...
+    -D CALIBRATE_SCALE=1
+```
+
+### B. Calibration Procedure
+1.  **Zero Tare**: Record the `[SCALE] Raw Counts` value from the Serial Monitor with an empty tray. This is your `weightZeroOffset`.
+2.  **Known Weight**: Place a calibrated weight (e.g., 500g) on the tray and record the new raw value.
+3.  **Calculate Scalar**:
+    - `delta = RawValueWithWeight - weightZeroOffset`
+    - `weightScale = KnownWeight / delta`
+4.  **Update Config**: Apply these values to `include/pins.h`.
+
+### C. Implementation Detail
+The calibration logger in `MachineFactory.cpp` is throttled to 500ms and guarded by `#ifdef CALIBRATE_SCALE` to ensure it does not interfere with the performance of the production loop or the stability of the OTA service.

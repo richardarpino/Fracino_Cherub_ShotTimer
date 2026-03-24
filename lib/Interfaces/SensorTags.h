@@ -97,6 +97,7 @@ struct ShotTimeReading : public BaseTelemetryTag {
 struct WeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "Weight";
+    using Children = TagList<struct TaredWeightReading>;
     static SensorMetadata getMetadata() {
         return Units::Weight.range("WEIGHT", 0.0f, 2000.0f);
     }

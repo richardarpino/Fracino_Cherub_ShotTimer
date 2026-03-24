@@ -70,7 +70,6 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.provide<ButtonRightReading>(&_buttonRightSensor);
     _dispatcher.provide<ButtonLeftReading>(&_buttonLeftSensor);
     _dispatcher.provide<BoilerPressureReading>(&_boilerPressure);
-    _dispatcher.provide<WeightReading>(&_weightSensor);
     _dispatcher.provide<RawWeightReading>(&_rawWeightSensor);
 
     // Apply global whitelists to the Dispatcher (Auto-seeds all metadata)
@@ -206,6 +205,15 @@ void MachineFactory::update() {
     _otaBlocker.update();
     if (_warmingUpBlocker) _warmingUpBlocker->update();
 #ifndef NATIVE
+#ifdef CALIBRATE_SCALE
+    static uint32_t lastWeightLog = 0;
+    if (millis() - lastWeightLog > 500) {
+        Reading raw = _dispatcher.getLatestReading(RawWeightReading::NAME);
+        Serial.print("[SCALE] Raw Counts: ");
+        Serial.println(raw.value);
+        lastWeightLog = millis();
+    }
+#endif
 #endif
 }
 
