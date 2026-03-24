@@ -12,6 +12,9 @@ extern "C" {
 unsigned long millis();
 void setHardwareTime(unsigned long ms);
 void addHardwareTime(unsigned long ms);
+void delayMicroseconds(unsigned int us);
+void noInterrupts();
+void interrupts();
 void pinMode(int pin, int mode);
 int digitalRead(int pin);
 void digitalWrite(int pin, int value);

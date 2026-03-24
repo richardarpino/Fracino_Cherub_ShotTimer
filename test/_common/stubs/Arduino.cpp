@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include <string.h>
 
 static unsigned long _mock_millis = 0;
@@ -17,6 +18,12 @@ void setHardwareTime(unsigned long ms) {
 
 void addHardwareTime(unsigned long ms) {
     _mock_millis += ms;
+}
+ 
+void noInterrupts() {}
+void interrupts() {}
+void delayMicroseconds(unsigned int us) {
+    // We don't advance mock_millis here as it's too fine-grained
 }
 
 void pinMode(int pin, int mode) {}
