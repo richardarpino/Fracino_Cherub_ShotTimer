@@ -9,6 +9,7 @@ The core pillars of the system design. Understand the "Why" behind the "How."
 *   Coordinator-Logic Pattern
 *   Passive UI Strategy
 *   Hardware Abstraction (IMachineProvider)
+*   **[Sensor Development Principles](principles/sensors.md)** - Standards for filtering and hardware abstraction.
 
 ### ☕ [Project Philosophy](philosophy.md)
 The heart and soul of the project. Why we do this and what we believe in.

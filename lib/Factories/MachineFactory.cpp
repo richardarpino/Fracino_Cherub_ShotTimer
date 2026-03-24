@@ -20,7 +20,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _boilerPressure(&_pressureADC, pressureScalar),
       _weightSensor(nullptr), 
       _weightCalibProc(&_dispatcher, config.weightZeroOffset, config.weightScale),
-      _rawWeightSensor(&_hx711Input),
+      _rawWeightSensor(&_hx711Input, 0.05f, 50.0f), // Alpha=0.05, Hysteresis=50 counts (~0.1g)
       _taredWeight(&_dispatcher),
       _manualWeight(&_dispatcher),
       _boilerTempProc(&_dispatcher),

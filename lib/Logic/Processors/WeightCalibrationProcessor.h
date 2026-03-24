@@ -17,7 +17,7 @@ public:
     void update() override {
         if (!_registry) return;
         
-        // Pull the latest raw count
+        // Pull the latest raw count (which is now filtered by the HardwareSensor)
         Reading raw = _registry->getLatestReading(RawWeightReading::NAME);
         
         // Apply calibration

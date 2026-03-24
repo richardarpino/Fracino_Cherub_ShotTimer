@@ -6,7 +6,6 @@
 #include "../Hardware/DigitalRawSource.h"
 #include "../Hardware/HX711Source.h"
 #include "../Sensors/Hardware/DigitalSensor.h"
-#include "../Sensors/Hardware/RawHardwareSensor.h"
 #include "../Sensors/Registry/RegistrySwitch.h"
 #include "../Sensors/Hardware/BoilerPressure.h"
 #include "../Sensors/Hardware/WeightSensor.h"
@@ -94,7 +93,7 @@ private:
     DigitalSensor _pumpSensor;
     DigitalSensor _buttonRightSensor;
     DigitalSensor _buttonLeftSensor;
-    RawHardwareSensor _rawWeightSensor;
+    WeightSensor _rawWeightSensor;
 
     // Registry-Connected Switches (Consume from Registry)
     RegistrySwitch<PumpReading> _pumpRegSw;
