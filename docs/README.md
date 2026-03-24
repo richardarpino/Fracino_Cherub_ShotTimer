@@ -4,6 +4,9 @@ Welcome to the internal standards of the Fracino Cherub Shot Timer project. This
 
 ## 🧭 Navigation
 
+### 📜 [Way of Working](way_of_working.md)
+The mandatory engineering contract for all contributors (Human and AI). **Read this first.**
+
 ### 🏗️ [Architectural Principles](principles.md)
 The core pillars of the system design. Understand the "Why" behind the "How."
 *   Coordinator-Logic Pattern

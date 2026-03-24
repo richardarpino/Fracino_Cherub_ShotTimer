@@ -1,4 +1,4 @@
-# [BETA] Way of Working: Verification-First Development
+# Way of Working: Verification-First Development
 
 ## 1. Scope & Strategy
 - **One Feature per Branch**: Each feature (Issue) is developed in its own branch.
@@ -19,7 +19,7 @@
    - Write a failing test (Native for logic, Simulator for UI).
 4. **GREEN Phase**:
    - Implement the minimum code to pass the test.
-   - **Halt on Drift**: If passing the test requires changing the plan or existing tests, stop and seek approval.
+   - **Halt on Drift**: If passing the test requires changing the plan or existing tests (including transitive regressions), **STOP** and seek approval.
 5. **BLUE Phase (Refactoring)**:
    - Clean up code and ensure adherence to project patterns.
    - Led by the human or guided by the AI with strict oversight.
@@ -29,17 +29,20 @@ Each iteration must complete a "verify-all" pass before commitment:
 1. `pio test -e native` (Logic)
 2. `pio run -e lilygo-t-display` (Build/Syntax)
 3. `pio test -e simulator` (UI structure)
-4. **Hardware Soak Test**: Verification on the production board (e.g., "making coffee").
+4. **Hardware Soak Test**: Mandatory verification on the production board (e.g., "Cup On/Off" test).
 
 ### Commitment Rules:
 - **Checkpoint Commit**: Local commit after every GREEN phase.
-- **Iteration Commit**: Local commit after successful verify-all/soak test.
+- **The Commit Gate**: AI must explicitly present the staging area (`git status`) and request a "Proceed to Commit" from the Human. **Zero autonomy on commits.**
+- **Iteration Commit**: Final commit only after successful verify-all/soak test.
 - **Ghost Code Prevention**: Run `pio run -e native` immediately after any `git` operation.
 
 ## 4. Problem Resolution
 - **Test-Driven Debugging**: Every bug must be exposed by a failing test.
+- **Legacy Failure Protocol**: If a non-related test fails, do not ignore or delete it. Perform a "Divergence Report" to explain why it's failing and propose a fix/relocation before proceeding.
+- **Strict Test Invariance**: Behavioral tests are contracts. If a code change breaks a test, do **NOT** update the expectation to match the NEW code. You must first provide a "Contract Breach Report" justifying why the previous behavior is obsolete. If both behaviors remain valid, the logic must be abstracted and a new test suite added.
 - **3-Attempt Limit**: If a problem cannot be derived or fixed in 3 attempts, halt and discuss.
 - **No Guessing**: Changes must be justified by evidence (compiler errors or failing tests).
 
 ## 5. Local Tooling & Environment
-- **PlatformIO Shim**: The project includes a local `./pio` script in the root. This is a shim that points to the system's `pio` core. Always use `./pio` in project-related commands and workflows to ensure portability and discoverability.
+- **PlatformIO Shim**: Always use the `./pio` script in the root to ensure environment parity.
