@@ -1,4 +1,5 @@
 # Feature Planning: Scale Integration (Issue #22)
+Status: Finished
 
 ## 1. Problem Statement
 Measuring espresso by weight (yield) is the gold standard for consistency. External scales are logically decoupled from the machine's state, take up valuable vertical space, and are often messy in a drip-tray environment. Integrating load cells directly into the machine's frame/drip-tray assembly provides a seamless, automated way to track shot yield.

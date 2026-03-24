@@ -1,4 +1,5 @@
 # Feature Planning: Hierarchical Workflow Tree (Issue #19)
+Status: Finished
 
 ## 1. Problem Statement
 The current `WorkflowEngine` treats all workflows as a flat list of potential overrides governed by a single `precedence` value. This leads to several architectural "pain points":

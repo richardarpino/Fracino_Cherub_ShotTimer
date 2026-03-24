@@ -1,3 +1,6 @@
+# Feature Planning: Widget Registration & Factory (Issue #15)
+Status: Finished
+
 # Feature Plan: Widget Registry & Categorical Mapping (Issue #15)
 
 ## Status

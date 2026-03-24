@@ -1,4 +1,5 @@
 # Feature Planning: Automated Workflow Previews (Issue #16)
+Status: Finished
 
 ## Problem Statement
 Workflows and screen sequences are currently opaque to everyone except the production device user. This prevents rapid experimentation and makes it difficult to document the intended user journey for stakeholders.

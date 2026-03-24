@@ -1,4 +1,5 @@
 # Feature: Scale Mode (Issue #23)
+Status: In-Progress
 
 ## Goal
 Provide a dedicated, manual weighing mode ("Scale Mode") for general coffee preparation tasks (e.g., weighing beans, dosing hot water for Americanos, or diagnostic troubleshooting) that is integrated seamlessly with the automated Shot Timer.

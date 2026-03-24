@@ -1,4 +1,5 @@
 # Feature Planning: OTA Download Progress Visualization (Issue #20)
+Status: Finished
 
 ## 1. Problem Statement
 The current OTA firmware update process occurs silently in the background. When an update is received, the board restarts without warning, which can appear as a system glitch or a crash to the user, especially if they are actively using the machine.

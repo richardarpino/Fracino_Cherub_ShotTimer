@@ -1,4 +1,5 @@
-# Feature Planning: Serial Logging & Boot Diagnostics (Issue #18)
+# Feature Planning: Improved Serial Logging & Diagnostics (Issue #18)
+Status: Finished
 
 ## Problem Statement
 As the codebase grew in complexity, "silent" startup failures (e.g., hanging on a blank screen or failing to connect to WiFi) became difficult to diagnose. Because the `MachineFactory` was initialized in the global static scope, it ran before the `Serial` port was initialized in `setup()`, making early failures invisible.
