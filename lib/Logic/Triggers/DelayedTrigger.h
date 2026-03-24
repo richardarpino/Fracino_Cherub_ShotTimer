@@ -11,7 +11,7 @@
 class DelayedTrigger : public ITrigger {
 public:
     DelayedTrigger(ITrigger* wrapped, uint32_t delayMs) 
-        : _wrapped(wrapped), _delayMs(delayMs), _lastActiveTime(0), _wasActive(false) {}
+        : _wrapped(wrapped), _delayMs(delayMs), _lastActiveTime(0), _wasActive(false), _hasBeenActive(false) {}
 
     void update() override {
         if (!_wrapped) return;
@@ -21,6 +21,7 @@ public:
         
         if (currentActive) {
             _lastActiveTime = millis();
+            _hasBeenActive = true;
         }
         
         _wasActive = currentActive;
@@ -29,8 +30,9 @@ public:
     bool isActive() const override {
         if (!_wrapped) return false;
         
-        // Active if the inner trigger is active OR if we are within the delay period
+        // Active if the inner trigger is active OR if we are within the delay period (if it has been active before)
         if (_wrapped->isActive()) return true;
+        if (!_hasBeenActive) return false;
         
         return (millis() - _lastActiveTime < _delayMs);
     }
@@ -40,6 +42,7 @@ private:
     uint32_t _delayMs;
     uint32_t _lastActiveTime;
     bool _wasActive;
+    bool _hasBeenActive;
 };
 
 #endif

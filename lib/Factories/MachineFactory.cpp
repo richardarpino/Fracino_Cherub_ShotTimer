@@ -40,6 +40,8 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _otaUpdateWorkflow(nullptr),
       _otaDownloadingTrigger(nullptr),
       _shotSummaryTrigger(nullptr),
+      _startupRunningTrigger(nullptr),
+      _alwaysTrigger(nullptr),
       _config(config),
       _widgetRegistry(&_dispatcher)
 #if !defined(NATIVE) || defined(SIMULATOR)
@@ -136,6 +138,9 @@ MachineFactory::~MachineFactory() {
     if (_shotWorkflow) delete _shotWorkflow;
     if (_otaUpdateWorkflow) delete _otaUpdateWorkflow;
     if (_otaDownloadingTrigger) delete _otaDownloadingTrigger;
+    if (_shotSummaryTrigger) delete _shotSummaryTrigger;
+    if (_startupRunningTrigger) delete _startupRunningTrigger;
+    if (_alwaysTrigger) delete _alwaysTrigger;
 }
 
 IBlocker* MachineFactory::createOTA() {
@@ -178,11 +183,12 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
             void update() override {}
             bool isActive() const override { return true; }
         };
-        static AlwaysTrigger always;
-        static WorkflowRunningTrigger startupRunning(_startupWorkflow);
-
-        _workflowEngine->addTriggerWorkflow(_startupWorkflow, &startupRunning, 10, systemRoot);
-        _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, &always, 1, systemRoot);
+        
+        if (!_alwaysTrigger) _alwaysTrigger = new AlwaysTrigger();
+        if (!_startupRunningTrigger) _startupRunningTrigger = new WorkflowRunningTrigger(_startupWorkflow);
+        
+        _workflowEngine->addTriggerWorkflow(_startupWorkflow, _startupRunningTrigger, 10, systemRoot);
+        _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, _alwaysTrigger, 1, systemRoot);
         
         // Shot Workflow - High Precedence when pump is ON (with 10s persistence)
         _shotSummaryTrigger = new DelayedTrigger(&_pumpRegSw, 10000);

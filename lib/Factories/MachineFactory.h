@@ -28,6 +28,7 @@
 #include "../Services/WiFiBlocker.h"
 #include "../Logic/Triggers/DelayedTrigger.h"
 #include "../Logic/SensorDispatcher.h"
+#include "../Logic/Triggers/WorkflowRunningTrigger.h"
 #include "../Interfaces/SensorTags.h"
 #include "../Logic/Processors/WeightCalibrationProcessor.h"
 #include "../Themes/DefaultTheme.h"
@@ -126,6 +127,8 @@ private:
     IWorkflow* _otaUpdateWorkflow;
     OTADownloadingTrigger* _otaDownloadingTrigger;
     DelayedTrigger* _shotSummaryTrigger;
+    WorkflowRunningTrigger* _startupRunningTrigger;
+    ITrigger* _alwaysTrigger;
 
     MachineConfig _config;
 

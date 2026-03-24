@@ -28,6 +28,13 @@ void WorkflowEngine::addTriggerWorkflow(IWorkflow* workflow, ITrigger* trigger, 
     WorkflowNode* parentNode = _rootNode;
     if (parent) {
         parentNode = _rootNode->findNode(parent);
+        if (!parentNode) {
+#ifdef ARDUINO
+            Serial.print("[WF] Error: Could not find parent node for ");
+            Serial.println(workflow ? workflow->getName() : "NULL");
+#endif
+            return; // DO NOT fall back to root if a specific parent was requested
+        }
     }
 
     if (parentNode) {
