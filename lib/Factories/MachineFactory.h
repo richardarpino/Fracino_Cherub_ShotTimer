@@ -12,12 +12,14 @@
 #include "../Sensors/Hardware/WeightSensor.h"
 #include "../Sensors/Hardware/SystemTimeSensor.h"
 #include "../Logic/Processors/TaredWeightProcessor.h"
+#include "../Logic/Processors/ManualWeightProcessor.h"
 #include "../Logic/Processors/BoilerTemperatureProcessor.h"
 #include "../Logic/Processors/ShotMonitorProcessor.h"
 #include "../Logic/Processors/BoilerSafetyProcessor.h"
 #include "../Logic/Workflows/WorkflowEngine.h"
 #include "../Logic/Workflows/BasicWorkflow.h"
 #include "../Logic/Triggers/OTADownloadingTrigger.h"
+#include "../Logic/Triggers/ToggleTrigger.h"
 #include "../Services/WiFiService.h"
 #include "../Services/OTAService.h"
 #include "../Services/OTABlocker.h"
@@ -105,11 +107,6 @@ private:
 
     // Logical Processors (Reactive)
     WeightCalibrationProcessor _weightCalibProc;
-    TaredWeightProcessor _taredWeight;
-    BoilerTemperatureProcessor _boilerTempProc;
-    ShotMonitorProcessor _shotMonitorProc;
-    BoilerSafetyProcessor _safetyProc;
-
     WiFiService* _wifiService;
     WiFiProcessor _wifiProc;
     WiFiBlocker _wifiBlocker;
@@ -118,15 +115,22 @@ private:
     WarmingUpBlocker* _warmingUpBlocker;
     SystemTimeSensor _uptimeSensor;
     HeatingCycleProcessor _heatingCycleProc;
+    TaredWeightProcessor _taredWeight;
+    ManualWeightProcessor _manualWeight;
+    BoilerTemperatureProcessor _boilerTempProc;
+    ShotMonitorProcessor _shotMonitorProc;
+    BoilerSafetyProcessor _safetyProc;
     WarmingUpProcessor _warmingUpProc;
  
     WorkflowEngine* _workflowEngine;
     IWorkflow* _startupWorkflow;
     IWorkflow* _dashboardWorkflow;
     IWorkflow* _shotWorkflow;
+    IWorkflow* _scaleWorkflow;
     IWorkflow* _otaUpdateWorkflow;
     OTADownloadingTrigger* _otaDownloadingTrigger;
     DelayedTrigger* _shotSummaryTrigger;
+    ToggleTrigger* _scaleToggleTrigger;
     WorkflowRunningTrigger* _startupRunningTrigger;
     ITrigger* _alwaysTrigger;
 

@@ -120,6 +120,7 @@ void seedDispatcherWithInit(SensorDispatcher* dispatcher) {
     dispatcher->publish<LastValidShotReading>(LastValidShotReading::getMetadata().init);
     dispatcher->publish<WeightReading>(WeightReading::getMetadata().init);
     dispatcher->publish<TaredWeightReading>(TaredWeightReading::getMetadata().init);
+    dispatcher->publish<ManualWeightReading>(ManualWeightReading::getMetadata().init);
     dispatcher->publish<HeatingCycleReading>(HeatingCycleReading::getMetadata().init);
     dispatcher->publish<SystemUptimeReading>(SystemUptimeReading::getMetadata().init);
     
@@ -159,7 +160,8 @@ void test_generate_examples() {
         createEntry<ShotTimeReading>("ShotTime"),
         createEntry<LastValidShotReading>("LastValidShot"),
         createEntry<WeightReading>("WeightSensor", ws),
-        createEntry<TaredWeightReading>("TaredWeight")
+        createEntry<TaredWeightReading>("TaredWeight"),
+        createEntry<ManualWeightReading>("ManualWeight")
     };
 
     SensorDispatcher dispatcher;

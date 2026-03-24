@@ -83,11 +83,8 @@ void loop() {
   lv_timer_handler();
   delay(5);
 
-  // Update network services and blockers
+  // 2. Hardware Pass (Managed by Factory)
   factory->update();
-
-  // 2. Registry Pass - Triggers all reactive processors
-  factory->getRegistry()->update();
 
   // 3. Workflow & Logic Coordination
   if (workflowEngine) {

@@ -74,12 +74,12 @@ bool SensorDispatcher::hasProcessor(const char* name) {
 }
 
 void SensorDispatcher::attachProcessorInternal(const char* targetTagName, ITagProcessor* processor) {
-    _processors[targetTagName] = processor;
+    _processors.insert({targetTagName, processor});
 }
 
 void SensorDispatcher::triggerResolution(const char* name) {
-    auto it = _processors.find(name);
-    if (it != _processors.end()) {
+    auto range = _processors.equal_range(name);
+    for (auto it = range.first; it != range.second; ++it) {
         it->second->update();
     }
 }

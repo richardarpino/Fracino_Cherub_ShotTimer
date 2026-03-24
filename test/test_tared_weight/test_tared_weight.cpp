@@ -1,5 +1,6 @@
 #include <unity.h>
 #include "Logic/Processors/TaredWeightProcessor.h"
+#include "Logic/Processors/ManualWeightProcessor.h"
 #include "Logic/SensorDispatcher.h"
 #include "Logic/SensorDispatcher.cpp"
 
@@ -52,8 +53,53 @@ void test_tared_weight_locking_rigor() {
     TEST_ASSERT_EQUAL_FLOAT(0.0f, output.value);
 }
 
+void test_americano_scenario() {
+    SensorDispatcher registry;
+    TaredWeightProcessor shotProc(&registry);
+    ManualWeightProcessor manualProc(&registry);
+
+    // 1. Initial State: Scale empty
+    registry.publish<WeightReading>(0.0f);
+    shotProc.update();
+    manualProc.update();
+    
+    // 2. Enter Scale Mode (Button Press) -> Manual Tare to 0
+    manualProc.tare(); 
+    
+    // 3. Add 100g Hot Water
+    registry.publish<WeightReading>(100.0f);
+    shotProc.update();
+    manualProc.update();
+    
+    // ManualWeight should be 100.0
+    Reading manual = registry.getLatest<ManualWeightReading>();
+    TEST_ASSERT_EQUAL_FLOAT(100.0f, manual.value);
+
+    // 4. Start Pump (Espresso Shot)
+    registry.publish<PumpReading>(1.0f);
+    shotProc.update();
+    manualProc.update();
+    
+    // Shot Timer should show 0.0g (Fresh tare for the shot)
+    Reading shot = registry.getLatest<TaredWeightReading>();
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, shot.value);
+
+    // 5. Add 30g Espresso
+    registry.publish<WeightReading>(130.0f);
+    shotProc.update();
+    manualProc.update();
+    
+    shot = registry.getLatest<TaredWeightReading>();
+    TEST_ASSERT_EQUAL_FLOAT(30.0f, shot.value);
+    
+    // 6. Manual Weight should still show CUMULATIVE (130.0)
+    manual = registry.getLatest<ManualWeightReading>();
+    TEST_ASSERT_EQUAL_FLOAT(130.0f, manual.value);
+}
+
 int main(int argc, char **argv) {
     UNITY_BEGIN();
     RUN_TEST(test_tared_weight_locking_rigor);
+    RUN_TEST(test_americano_scenario);
     return UNITY_END();
 }

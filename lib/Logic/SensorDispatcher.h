@@ -80,7 +80,7 @@ private:
     std::map<std::string, StatusMessage> _statusCache;
     std::map<std::string, SensorMetadata> _sensorMetadata;
     std::map<std::string, ServiceMetadata> _serviceMetadata;
-    std::map<std::string, class ITagProcessor*> _processors;
+    std::multimap<std::string, class ITagProcessor*> _processors;
     std::vector<IPollTask*> _pollers;
 };
 

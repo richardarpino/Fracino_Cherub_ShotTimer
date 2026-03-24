@@ -11,6 +11,7 @@ Continuous data streams visualized across different widgets and themes.
 - [**LastValidShot**](LastValidShot/README.md) - Visualizing LastValidShot data.
 - [**WeightSensor**](WeightSensor/README.md) - Visualizing WeightSensor data.
 - [**TaredWeight**](TaredWeight/README.md) - Visualizing TaredWeight data.
+- [**ManualWeight**](ManualWeight/README.md) - Visualizing ManualWeight data.
 
 ## System Services (Blockers)
 Procedural services that manage system state and connectivity.

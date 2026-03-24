@@ -7,4 +7,5 @@ This gallery contains automated visual documentation of all user journeys in the
 | [System Startup](system-startup/README.md) | User journey for System Startup. | 3 |
 | [Main Dashboard](main-dashboard/README.md) | User journey for Main Dashboard. | 1 |
 | [Shot Progress](shot-progress/README.md) | User journey for Shot Progress. | 1 |
+| [Scale Mode](scale-mode/README.md) | User journey for Scale Mode. | 1 |
 | [OTA Update](ota-update/README.md) | User journey for OTA Update. | 1 |

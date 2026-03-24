@@ -22,6 +22,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _weightCalibProc(&_dispatcher, config.weightZeroOffset, config.weightScale),
       _rawWeightSensor(&_hx711Input),
       _taredWeight(&_dispatcher),
+      _manualWeight(&_dispatcher),
       _boilerTempProc(&_dispatcher),
       _shotMonitorProc(&_dispatcher, config.debounceMs / 1000.0f),
       _safetyProc(&_dispatcher),
@@ -37,9 +38,11 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _startupWorkflow(nullptr),
       _dashboardWorkflow(nullptr),
       _shotWorkflow(nullptr),
+      _scaleWorkflow(nullptr),
       _otaUpdateWorkflow(nullptr),
       _otaDownloadingTrigger(nullptr),
       _shotSummaryTrigger(nullptr),
+      _scaleToggleTrigger(nullptr),
       _startupRunningTrigger(nullptr),
       _alwaysTrigger(nullptr),
       _config(config),
@@ -85,6 +88,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
     _dispatcher.attachProcessor<WarmingUpStatus>(&_warmingUpProc);
     _dispatcher.attachProcessor<WeightReading>(&_weightCalibProc);
     _dispatcher.attachProcessor<TaredWeightReading>(&_taredWeight);
+    _dispatcher.attachProcessor<ManualWeightReading>(&_manualWeight);
     _dispatcher.attachProcessor<BoilerTempReading>(&_boilerTempProc);
     _dispatcher.attachProcessor<ShotTimeReading>(&_shotMonitorProc);
     _dispatcher.attachProcessor<WiFiRawReading>(&_wifiProc);
@@ -136,9 +140,11 @@ MachineFactory::~MachineFactory() {
     if (_startupWorkflow) delete _startupWorkflow;
     if (_dashboardWorkflow) delete _dashboardWorkflow;
     if (_shotWorkflow) delete _shotWorkflow;
+    if (_scaleWorkflow) delete _scaleWorkflow;
     if (_otaUpdateWorkflow) delete _otaUpdateWorkflow;
     if (_otaDownloadingTrigger) delete _otaDownloadingTrigger;
     if (_shotSummaryTrigger) delete _shotSummaryTrigger;
+    if (_scaleToggleTrigger) delete _scaleToggleTrigger;
     if (_startupRunningTrigger) delete _startupRunningTrigger;
     if (_alwaysTrigger) delete _alwaysTrigger;
 }
@@ -166,6 +172,7 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _startupWorkflow = WorkflowFactory::createSystemWorkflow(&_dispatcher, getWiFiSwitch(), createOTA(), getWarmingUpBlocker());
         _dashboardWorkflow = WorkflowFactory::createDashboardWorkflow(&_dispatcher);
         _shotWorkflow = WorkflowFactory::createShotWorkflow(&_dispatcher);
+        _scaleWorkflow = WorkflowFactory::createScaleWorkflow(&_dispatcher);
         _otaUpdateWorkflow = WorkflowFactory::createOTAUpdateWorkflow(&_dispatcher, createOTA());
 
         _otaDownloadingTrigger = new OTADownloadingTrigger(&_dispatcher);
@@ -193,6 +200,26 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         // Shot Workflow - High Precedence when pump is ON (with 10s persistence)
         _shotSummaryTrigger = new DelayedTrigger(&_pumpRegSw, 10000);
         _workflowEngine->addTriggerWorkflow(_shotWorkflow, _shotSummaryTrigger, 100, _dashboardWorkflow);
+
+        // Scale Mode - Medium Precedence when toggled ON
+        // Custom Trigger that also handles the TARE on entry
+        class ScaleTareTrigger : public ToggleTrigger {
+        public:
+            ScaleTareTrigger(ISwitch* btn, ManualWeightProcessor* proc) 
+                : ToggleTrigger(btn), _proc(proc) {}
+            void update() override {
+                bool wasActive = isActive();
+                ToggleTrigger::update();
+                if (!wasActive && isActive() && _proc) {
+                    _proc->tare();
+                }
+            }
+        private:
+            ManualWeightProcessor* _proc;
+        };
+
+        _scaleToggleTrigger = new ScaleTareTrigger(new RegistrySwitch<ButtonLeftReading>(&_dispatcher), &_manualWeight);
+        _workflowEngine->addTriggerWorkflow(_scaleWorkflow, _scaleToggleTrigger, 50, _dashboardWorkflow);
     }
     return _workflowEngine;
 }
@@ -206,7 +233,9 @@ void MachineFactory::update() {
     if (_otaService) _otaService->update();
     
     // 3. Update triggers/switches needed for pre-emption
-    _pumpRegSw.update();
+    // We remove redundant manual update() calls here. 
+    // Triggers/Processors will call update() on their OWN RegistrySwitch instances
+    // to ensure independent edge detection.
 
     // 4. Update blockers (Passive polling)
     _wifiBlocker.update();

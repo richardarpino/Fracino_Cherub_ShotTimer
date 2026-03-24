@@ -28,6 +28,7 @@ struct BoilerTempReading;
 struct ShotTimeReading;
 struct WeightReading;
 struct TaredWeightReading;
+struct ManualWeightReading;
 struct WiFiStrengthReading;
 struct LastValidShotReading;
 struct PumpReading;
@@ -97,7 +98,7 @@ struct ShotTimeReading : public BaseTelemetryTag {
 struct WeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "Weight";
-    using Children = TagList<struct TaredWeightReading>;
+    using Children = TagList<struct TaredWeightReading, struct ManualWeightReading>;
     static SensorMetadata getMetadata() {
         return Units::Weight.range("WEIGHT", 0.0f, 2000.0f);
     }
@@ -106,6 +107,14 @@ struct WeightReading : public BaseTelemetryTag {
 struct TaredWeightReading : public BaseTelemetryTag {
     static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
     static constexpr const char* NAME = "TaredWeight";
+    static SensorMetadata getMetadata() {
+        return Units::Weight.range("WEIGHT", -2000.0f, 2000.0f);
+    }
+};
+
+struct ManualWeightReading : public BaseTelemetryTag {
+    static constexpr PhysicalQuantity QUANTITY = PhysicalQuantity::WEIGHT;
+    static constexpr const char* NAME = "ManualWeight";
     static SensorMetadata getMetadata() {
         return Units::Weight.range("WEIGHT", -2000.0f, 2000.0f);
     }
@@ -264,6 +273,7 @@ using AllowedSensors = TagList<
     ShotTimeReading,
     LastValidShotReading,
     TaredWeightReading,
+    ManualWeightReading,
     RawWeightReading
 >;
 
