@@ -118,3 +118,21 @@ build_flags =
 
 ### C. Implementation Detail
 The calibration logger in `MachineFactory.cpp` is throttled to 500ms and guarded by `#ifdef CALIBRATE_SCALE` to ensure it does not interfere with the performance of the production loop or the stability of the OTA service.
+
+---
+
+## 8. UX Refinements: Shot Summary (Iteration 4)
+
+Real-world testing revealed two critical UX "teething" problems during espresso extraction:
+
+### A. The "Disappearing Timer" Problem
+- **Observation**: The Shot Timer screen transitions back to the Dashboard immediately (or within ~1.5s) after the pump stops. This is too fast for the user to record the final yield and time.
+- **Requirement**: The Shot Timer screen must persist for a configurable duration (e.g., 7-10 seconds) after the pump stops to serve as a **Shot Summary**.
+
+### B. The "Solenoid Purge" Problem
+- **Observation**: When a 3-way solenoid machine stops, it vents pressure into the drip tray. Since the scales are in the tray, this "purge water" adds 2g-5g of weight to the final reading, corrupting the yield data.
+- **Requirement**: The yield weight must **freeze** at the exact moment the pump signal is lost. Any subsequent weight changes (solenoid purge, cup removal) must be ignored while the Summary is displayed.
+
+### C. Proposed Logic Change
+- **TaredWeightProcessor**: Will monitor the `justStopped()` edge of the pump. Upon stopping, it will capture a `finalWeight` and enter a "Frozen" state.
+- **WorkflowEngine**: Will be adjusted to allow the Shot Workflow to remain "Active" (based on a timer) even after its primary trigger (Pump) has cleared.

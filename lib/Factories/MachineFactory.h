@@ -26,6 +26,7 @@
 #include "../Services/WarmingUpBlocker.h"
 #include "../Logic/Processors/WiFiProcessor.h"
 #include "../Services/WiFiBlocker.h"
+#include "../Logic/Triggers/DelayedTrigger.h"
 #include "../Logic/SensorDispatcher.h"
 #include "../Interfaces/SensorTags.h"
 #include "../Logic/Processors/WeightCalibrationProcessor.h"
@@ -124,6 +125,7 @@ private:
     IWorkflow* _shotWorkflow;
     IWorkflow* _otaUpdateWorkflow;
     OTADownloadingTrigger* _otaDownloadingTrigger;
+    DelayedTrigger* _shotSummaryTrigger;
 
     MachineConfig _config;
 

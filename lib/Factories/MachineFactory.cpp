@@ -39,6 +39,7 @@ MachineFactory::MachineFactory(const MachineConfig& config)
       _shotWorkflow(nullptr),
       _otaUpdateWorkflow(nullptr),
       _otaDownloadingTrigger(nullptr),
+      _shotSummaryTrigger(nullptr),
       _config(config),
       _widgetRegistry(&_dispatcher)
 #if !defined(NATIVE) || defined(SIMULATOR)
@@ -183,8 +184,9 @@ WorkflowEngine* MachineFactory::getWorkflowEngine() {
         _workflowEngine->addTriggerWorkflow(_startupWorkflow, &startupRunning, 10, systemRoot);
         _workflowEngine->addTriggerWorkflow(_dashboardWorkflow, &always, 1, systemRoot);
         
-        // Shot is a child of Dashboard. It only triggers if focus is on Dashboard.
-        _workflowEngine->addTriggerWorkflow(_shotWorkflow, &_pumpRegSw, 100, _dashboardWorkflow);
+        // Shot Workflow - High Precedence when pump is ON (with 10s persistence)
+        _shotSummaryTrigger = new DelayedTrigger(&_pumpRegSw, 10000);
+        _workflowEngine->addTriggerWorkflow(_shotWorkflow, _shotSummaryTrigger, 100, _dashboardWorkflow);
     }
     return _workflowEngine;
 }
