@@ -29,8 +29,11 @@ protected:
     
     lv_color_t _bgColor, _textColor, _errorColor, _labelColor, _alertBgColor;
     
+public:
     float getMin() const { return _minValue; }
     float getMax() const { return _maxValue; }
+
+protected:
 
 protected:
     uint16_t _tick_count;
